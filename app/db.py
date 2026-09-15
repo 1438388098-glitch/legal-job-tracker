@@ -33,11 +33,13 @@ CREATE TABLE IF NOT EXISTS jobs(
   search_text TEXT NOT NULL DEFAULT '',
   status TEXT NOT NULL DEFAULT 'new',
   needs_review INTEGER NOT NULL DEFAULT 0,
+  notice_kind TEXT NOT NULL DEFAULT 'opening',
   merge_count INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_jobs_urlfp ON jobs(url_fingerprint);
 CREATE INDEX IF NOT EXISTS idx_jobs_deadline ON jobs(deadline);
+CREATE INDEX IF NOT EXISTS idx_jobs_kind ON jobs(notice_kind);
 CREATE TABLE IF NOT EXISTS job_sources(
   job_id INTEGER NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
   source_slug TEXT NOT NULL,
@@ -71,7 +73,28 @@ def connect(path) -> sqlite3.Connection:
     return conn
 
 
+# 后续版本新增的列。CREATE TABLE IF NOT EXISTS 不会给已存在的表补列，
+# 用户手上的库要能平滑升级，所以这里显式补。
+_MIGRATIONS = [
+    ("jobs", "notice_kind", "TEXT NOT NULL DEFAULT 'opening'"),
+]
+
+
+def _migrate(conn: sqlite3.Connection) -> None:
+    """给已存在的老表补列。只处理已存在的表（新库交给 SCHEMA 建）。
+    必须在 executescript(SCHEMA) 之前跑：SCHEMA 里含依赖新列的索引。"""
+    existing = {r[0] for r in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table'")}
+    for table, col, decl in _MIGRATIONS:
+        if table not in existing:
+            continue
+        cols = {r[1] for r in conn.execute(f"PRAGMA table_info({table})")}
+        if col not in cols:
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN {col} {decl}")
+
+
 def init_db(conn: sqlite3.Connection) -> None:
+    _migrate(conn)
     conn.executescript(SCHEMA)
     try:
         conn.execute(

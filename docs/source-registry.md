@@ -98,3 +98,52 @@
 3. 需 http 降级：省检察院（证书链异常）、珠海中院（证书指向无关域名）。
 4. 需 gb2312 转码：省检察院。
 5. 需 WAF 对策：韶关门户（www.sg.gov.cn）直抓路径易 403。
+
+---
+
+## 实施期校准记录（2026-09-15，13 源真实录制后逐条核对）
+
+### 选定的容器选择器
+
+| slug | 列表容器 | 标题来源 | 日期 | 备注 |
+|---|---|---|---|---|
+| gdcourts | `ul.list li` | `a[title]` | `span.time` | |
+| gd_jcy | `tr` + `a.b16[href^="./20"]` | 链接文本 | `span.h12` | 嵌套表格会让同一 `<a>` 被多个 `tr` 命中，必须按 URL 去重 |
+| hrss_gd | `ul.list li` | `a[title]` | `span.pubDate` | |
+| hrss_gz | `ul.infoList li` | `a[title]` | `span.time` | 列表头部混有"网上报名"子栏目须知，用 `exclude_url=[sydwzpwsbm]` 排除 |
+| hrss_sz | `div.AllListCon li` | `a[title]` | `span` | 页面文本被"…"截断，必须取 title 属性 |
+| hrss_zs | `ul.news_list li` | 链接文本 | `span` | |
+| hrss_zh | `ul.news-list-02 li` | `a[title]` | `span.time` | |
+| hrss_fs | `div.list_rightbox li` | `a[title]` | `span.time` | 日期在标题之前 |
+| sg_gov | `div.pageList ul li` | `a[title]` | `span.time` | **栏目以法院送达公告为主，招聘稿件每页仅约 2 条**，需 `title_keywords` 过滤 |
+| fs_lvxie | `div.recruit.ny a[href*="recruit/details"]`（`link_sel="self"`） | `a[title]` | 无 | 一条 `<div>` 容器里并列多个 `<a>`，每个 `<a>` 就是一个律所 |
+| hz_lvxie | `a[href^="/show/"]`（`link_sel="self"`） | `div.text-base` | `div.text-xs div` | Tailwind 站，详情正文用 `div.rich-text` |
+| gdufs / gzhu | `div.jobs-list div.col-xs-6` | `div.job-name` | `div.job-time` | 单位取 `div.job-company` |
+| zuel | JSON 接口 | — | — | 见下 |
+
+分页规律三种：政务 CMS `index.html`→`index_2.html`…；律协 `?page=N`；高校平台 `?p=N`。
+
+### 新发现（摸排时未记录的）
+
+1. **深圳人社 https 在本机 OpenSSL 3 下完全不可用**（`[SSL: BAD_ECPOINT]`，verify 关了也一样），
+   但 **http 正常**。列表页里却是绝对 https 链接，因此需要 `url_scheme: "http"` 在解析阶段改写协议。
+2. **高校就业平台支持站内关键词检索**：`.../job-list?keyword=法务` 能直接返回法务专员/法务助理，
+   `?keyword=律师` 返回律师助理/仲裁院书记员。这比"全量拉取后本地过滤"精准得多。
+   注意该平台详情页是 JS 渲染，HTML 里拿不到"专业要求"，只能靠检索词命中。
+3. **中南财接口的 `majors=` 参数语义不完整**：`majors=法学` 只返回 4 条（且匹配逻辑不透明），
+   而按返回记录的 `majors` 字段在本地做子串匹配，近期记录里约 1/3 命中。因此改用
+   "按页拉取 + 本地过滤"，并在正文里写入专业/学历/人数/截止等字段。
+4. **律协站点的"日期"常常不是投递截止日**：广东律师网列表页无日期，detail 页的日期是律所
+   资料发布时间。这类源的 deadline 一律留空，由用户在详情页手工确认。
+5. **政务栏目的稿件性质需要分流**：广东法院网/深圳人社/中山人社等栏目里，事后结果公示
+   （拟聘用人员名单公示、笔试成绩、合格分数线）占比很高（首批 299 条里 68 条），
+   它们天然没有截止日期，混在"岗位列表"里就是噪音。系统按标题+正文前 600 字判为
+   `opening`/`result`/`info`，默认只显示 `opening`。律所招聘栏目与校园职位板
+   （条目本身就是岗位）用源级 `notice_kind: "opening"` 直接指定，不靠标题猜。
+
+### 需 WAF / 慢站对策的源
+
+- `hrss_sz`：慢（单页详情常 > 20 秒），详情抓取预算降到 60 秒。
+- `hrss_gz`：详情慢，预算 60 秒。
+- `sg_gov`：直抓路径易 403，实际用正式 UA 抓 index.html 可通（本次录制成功）。
+

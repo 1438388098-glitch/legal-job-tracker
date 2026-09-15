@@ -1,13 +1,18 @@
 import json
+import logging
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, timedelta
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit, urlunsplit
 
 from selectolax.parser import HTMLParser
 
-from ..classify import infer_city, infer_job_type
+from ..classify import infer_city, infer_job_type, infer_notice_kind
 from ..dateparse import guess_deadline, parse_date_text
 from ..dedup import url_fingerprint
 from .http import fetch
+
+log = logging.getLogger("collect")
 
 # 列表页配置字段（全部可选，除 list_url/item_sel）：
 #   item_sel    条目容器选择器
@@ -31,6 +36,21 @@ def _text(node) -> str:
     return ""
 
 
+def apply_url_scheme(url: str, cfg: dict) -> str:
+    """把条目 URL 强制切到指定协议（如 url_scheme="http"）。
+
+    深圳人社详情页的 https 在 OpenSSL 3 下握手失败（BAD_ECPOINT），http 正常，
+    列表页里却是绝对 https 链接，只能在解析阶段改写协议。
+    """
+    scheme = cfg.get("url_scheme")
+    if not scheme:
+        return url
+    p = urlsplit(url)
+    if p.scheme == scheme:
+        return url
+    return urlunsplit((scheme, p.netloc, p.path, p.query, p.fragment))
+
+
 def parse_list(html: str, cfg: dict) -> list[dict]:
     tree = HTMLParser(html)
     link_sel = cfg.get("link_sel", "a")
@@ -40,6 +60,7 @@ def parse_list(html: str, cfg: dict) -> list[dict]:
         if link is None or not link.attributes.get("href"):
             continue
         url = urljoin(cfg["list_url"], link.attributes["href"])
+        url = apply_url_scheme(url, cfg)
         if url in seen:
             continue  # 嵌套表格会让同一条目被多个 tr 命中，按 URL 去重
 
@@ -138,6 +159,9 @@ def enrich(item: dict, body: str, cfg: dict) -> dict:
     item["deadline"] = guess_deadline(body)
     item["job_type"] = cfg.get("job_type") or infer_job_type(item["title"])
     item["city"] = cfg.get("city") or infer_city(item["title"])
+    # 职位板/律所招聘栏目里的条目本身就是开放岗位，标题常是"法务助理""某某律师事务所"
+    # 这类不含"招聘"字样的短名，靠标题判性质会误判成"其他信息"，所以允许源级指定。
+    item["notice_kind"] = cfg.get("notice_kind") or infer_notice_kind(item["title"], body)
     if not item.get("org"):
         item["org"] = cfg.get("org")
     return item
@@ -168,18 +192,14 @@ class Adapter:
         items = items[: cfg.get("max_items", 30)]
         items = apply_noise_filters(items, cfg)
         if cfg.get("no_detail"):
-            return [enrich(it, "", cfg) for it in items]
-        out = []
-        for it in items:
-            if url_fingerprint(it["url"]) in known:
-                continue
-            try:
-                d = fetch(it["url"], encoding=cfg.get("encoding"),
-                          verify=cfg.get("verify", True))
-                body = extract_text(d.text, cfg.get("detail_sel"))
-            except Exception:  # noqa: BLE001 详情抓取失败不放弃该条
-                body = ""
-            out.append(enrich(it, body, cfg))
+            out = [enrich(it, "", cfg) for it in items]
+        else:
+            todo = [it for it in items if url_fingerprint(it["url"]) not in known]
+            bodies = fetch_details(todo, cfg.get("encoding"), cfg.get("verify", True),
+                                  cfg.get("detail_sel"),
+                                  cfg.get("workers", 6),
+                                  cfg.get("detail_budget", 90.0))
+            out = [enrich(it, body, cfg) for it, body in zip(todo, bodies)]
         kw = cfg.get("keep_keywords")
         if kw:
             # 取并集语义：列表标题、单位或详情正文任一命中法学关键词即保留
@@ -187,6 +207,40 @@ class Adapter:
             out = [x for x in out if matches_keywords(
                 f"{x['title']} {x.get('org') or ''} {x.get('body') or ''}", kw)]
         return out
+
+
+def fetch_details(items: list[dict], encoding, verify: bool, detail_sel,
+                  workers: int = 6, budget: float = 90.0,
+                  timeout: float = 20.0) -> list[str]:
+    """并发抓详情正文，保序返回。单条失败不放弃该条，正文置空继续。
+
+    budget 为该源的墙钟预算（秒）：慢站（如深圳人社）不能拖垮整轮采集，
+    超预算后剩余条目只保留列表页已拿到的标题/日期，正文与截止日期留空。
+    """
+    if not items:
+        return []
+    results = [""] * len(items)
+    deadline = time.monotonic() + budget
+
+    def one(it):
+        try:
+            d = fetch(it["url"], encoding=encoding, verify=verify,
+                      tries=2, timeout=timeout)
+            return extract_text(d.text, detail_sel)
+        except Exception:  # noqa: BLE001 详情抓取失败不放弃该条
+            return ""
+
+    with ThreadPoolExecutor(max_workers=max(1, min(workers, len(items)))) as ex:
+        futures = {}
+        for i, it in enumerate(items):
+            if time.monotonic() >= deadline:
+                log.warning("detail budget %.0fs exhausted, %d items left without body",
+                            budget, len(items) - i)
+                break
+            futures[ex.submit(one, it)] = i
+        for fut in as_completed(futures):
+            results[futures[fut]] = fut.result()
+    return results
 
 
 def adapter_from_source_row(row) -> Adapter:

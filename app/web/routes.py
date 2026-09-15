@@ -18,6 +18,7 @@ JOB_TYPES = [("lawfirm", "律所"), ("public", "体制内"), ("legal_counsel", "
              ("intern", "实习"), ("unknown", "未分类")]
 APP_STATUSES = ["待投", "已投", "笔试", "面试", "Offer", "拒"]
 CITIES = ["广州", "深圳", "珠海", "佛山", "惠州", "东莞", "中山", "江门", "肇庆", "韶关"]
+NOTICE_KINDS = [("opening", "可投递"), ("result", "结果公示"), ("info", "其他信息")]
 
 
 def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
@@ -29,6 +30,7 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
         ctx.setdefault("job_types", JOB_TYPES)
         ctx.setdefault("cities", CITIES)
         ctx.setdefault("app_statuses", APP_STATUSES)
+        ctx.setdefault("notice_kinds", NOTICE_KINDS)
         ctx["urgent"] = request.app.state.conn.execute(
             "SELECT COUNT(*) c FROM jobs WHERE deadline IS NOT NULL "
             "AND deadline BETWEEN date('now') AND date('now','+3 day') "
@@ -38,6 +40,15 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
     def list_query(request: Request):
         q = dict(request.query_params)
         where, params = ["j.status != 'archived'"], []
+        # 默认只看"可投递"的岗位；政务渠道里大量事后结果公示对求职者没有价值
+        kind = q.get("notice_kind")
+        if kind == "all":
+            pass
+        elif kind:
+            where.append("j.notice_kind=?")
+            params.append(kind)
+        else:
+            where.append("j.notice_kind='opening'")
         if q.get("job_type"):
             where.append("j.job_type=?")
             params.append(q["job_type"])
@@ -178,21 +189,34 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
     return templates
 
 
-def export_xlsx(app: FastAPI) -> Response:
+def export_xlsx(app: FastAPI, notice_kind: str | None = None) -> Response:
+    """导出汇总表。默认只导"可投递"岗位，与首页默认视图一致；
+    需要全部稿件（含结果公示）时传 notice_kind=all。"""
     from openpyxl import Workbook
 
     conn = app.state.conn
     wb = Workbook()
     ws = wb.active
     ws.title = "招聘信息汇总"
-    ws.append(["序号", "标题", "单位", "类型", "城市", "发布日期", "截止日期", "状态", "链接", "备注"])
+    ws.append(["序号", "标题", "单位", "类型", "城市", "发布日期", "截止日期",
+               "性质", "状态", "链接", "备注"])
     tmap = dict(JOB_TYPES)
+    kmap = dict(NOTICE_KINDS)
+    where, params = ["status != 'archived'"], []
+    if notice_kind == "all":
+        pass
+    elif notice_kind in kmap:
+        where.append("notice_kind=?")
+        params.append(notice_kind)
+    else:
+        where.append("notice_kind='opening'")
     rows = conn.execute(
-        "SELECT * FROM jobs WHERE status != 'archived' "
-        "ORDER BY deadline IS NULL, deadline, id").fetchall()
+        f"SELECT * FROM jobs WHERE {' AND '.join(where)} "
+        "ORDER BY deadline IS NULL, deadline, id", params).fetchall()
     for i, r in enumerate(rows, 1):
         ws.append([i, r["title"], r["org"] or "", tmap.get(r["job_type"], r["job_type"]),
                    r["city"] or "", r["publish_date"] or "", r["deadline"] or "",
+                   kmap.get(r["notice_kind"], r["notice_kind"]),
                    r["status"], r["url"], r["notes"] or ""])
     buf = io.BytesIO()
     wb.save(buf)

@@ -41,6 +41,41 @@ def parse_date_text(text: str) -> str | None:
     return dates[0] if dates else None
 
 
+# ── 截止日期推断 ────────────────────────────────────────────────────────
+# 只取"截止"相关词附近窗口内的日期，而不是整篇公告里最大的那个日期。
+# 早期版本取全篇最大日期，实测经常把体检时间、考试时间、甚至"年龄截止至报名开始当天"
+# 当成投递截止，产生假的红色临期提醒——错误的截止日比没有截止日更糟。
+_CTX_KEY = re.compile(
+    r"(截止|截至|止于|报名时间|报名期限|报名日期|投递时间|投递截止|"
+    r"申请时间|受理时间|起止时间|报名截止|接收时间|投递期限)")
+# 取"截止"词所在整句（按句读切分，不按换行——公告常在半句处折行）。
+# 不切句就会把后一句的"笔试时间/体检时间"一起吃进来，推断出错误的截止日。
+_SENT_END = "。；;！？!?"
+
+
+def _sentence_at(text: str, pos: int) -> str:
+    start = 0
+    for ch in _SENT_END:
+        start = max(start, text.rfind(ch, 0, pos) + 1)
+    end = len(text)
+    for ch in _SENT_END:
+        i = text.find(ch, pos)
+        if i != -1:
+            end = min(end, i)
+    return text[start:end]
+
+
+# "9月20日前" / "2026年9月20日之前" 这类没有"截止"二字的写法
+_BEFORE_DATE = re.compile(
+    r"(20\d{2}[年\-/.]\d{1,2}[月\-/.]\d{1,2}日?|\d{1,2}月\d{1,2}日)\s*(?:之前|以前|前)")
+
+
 def guess_deadline(text: str, today: date | None = None) -> str | None:
-    dates = extract_dates(text, today)
-    return dates[-1] if dates else None
+    if not text:
+        return None
+    found: list[str] = []
+    for m in _CTX_KEY.finditer(text):
+        found.extend(extract_dates(_sentence_at(text, m.start()), today))
+    for m in _BEFORE_DATE.finditer(text):
+        found.extend(extract_dates(m.group(0), today))
+    return max(found) if found else None

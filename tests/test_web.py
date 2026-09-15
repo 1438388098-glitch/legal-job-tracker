@@ -39,6 +39,49 @@ def test_detail_and_status(client):
     assert st == "read"
 
 
+def _add(conn, title, url, kind):
+    conn.execute(
+        "INSERT INTO jobs(title,source_slug,url,url_fingerprint,search_text,notice_kind) "
+        "VALUES(?,?,'https://d/'||?,'fp'||?,?,?)", (title, "demo", url, url, title, kind))
+    conn.commit()
+
+
+def test_result_notices_hidden_by_default(client):
+    """事后结果公示默认不出现在列表里，但可搜索、可切换查看。"""
+    conn = client.app.state.conn
+    _add(conn, "某单位2026年公开招聘拟聘用人员名单公示", "r1", "result")
+    _add(conn, "某单位2026年公开招聘工作人员公告", "o1", "opening")
+
+    assert "拟聘用人员名单公示" not in client.get("/").text
+    assert "公开招聘工作人员公告" in client.get("/").text
+    assert "拟聘用人员名单公示" in client.get("/", params={"notice_kind": "result"}).text
+    # 搜索仍能召回（用户想查自己那次考试结果时用得上）。
+    # 用 2 字关键词走 LIKE 分支：测试直接插表，没建 FTS 索引，3 字以上会走 FTS 查不到。
+    assert "拟聘用人员名单公示" in client.get(
+        "/", params={"q": "拟聘", "notice_kind": "all"}).text
+
+
+def test_export_defaults_to_openings(client):
+    conn = client.app.state.conn
+    _add(conn, "某某公司招聘法务专员公告", "o2", "opening")
+    _add(conn, "某某公司拟录用人员名单公示", "r2", "result")
+
+    import io
+
+    import openpyxl
+    r = client.get("/export.xlsx")
+    assert r.status_code == 200
+    ws = openpyxl.load_workbook(io.BytesIO(r.content)).active
+    titles = [row[1] for row in ws.iter_rows(values_only=True)][1:]
+    assert any("法务专员" in (t or "") for t in titles)
+    assert not any("拟录用人员名单公示" in (t or "") for t in titles)
+
+    ws2 = openpyxl.load_workbook(io.BytesIO(
+        client.get("/export.xlsx", params={"notice_kind": "all"}).content)).active
+    titles2 = [row[1] for row in ws2.iter_rows(values_only=True)][1:]
+    assert any("拟录用人员名单公示" in (t or "") for t in titles2)
+
+
 def test_apply_flow(client):
     client.post("/jobs/1/apply")
     r = client.get("/board")

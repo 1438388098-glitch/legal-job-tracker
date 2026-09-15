@@ -55,7 +55,7 @@ def create_app(db_path: str | None = None) -> FastAPI:
     templates.env.filters["dcolor"] = _deadline_class_filter()
 
     @app.get("/export.xlsx")
-    def export():
-        return routes.export_xlsx(app)
+    def export(notice_kind: str | None = None):
+        return routes.export_xlsx(app, notice_kind)
 
     return app

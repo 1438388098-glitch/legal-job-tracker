@@ -1,7 +1,7 @@
 import json
 from urllib.parse import urljoin
 
-from ..classify import infer_city, infer_job_type
+from ..classify import NOTICE_OPENING, infer_city, infer_job_type
 from ..dateparse import parse_date_text
 from .http import fetch
 
@@ -53,6 +53,7 @@ def parse_payload(data: dict, base: str) -> list[dict]:
             "publish_date": parse_date_text(_s(r.get("createTime"))),
             "city": infer_city(f"{_s(r.get('holdAddress'))} {_s(r.get('holdSchool'))}"),
             "job_type": infer_job_type(f"{title} {pos}"),
+            "notice_kind": NOTICE_OPENING,  # 就业中心职位板上的都是开放岗位
             "body": body,
         })
     return out

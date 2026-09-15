@@ -100,6 +100,16 @@ def test_parse_list_dedupes_url():
     assert len(items) == 1
 
 
+def test_url_scheme_rewrite():
+    """深圳人社这类站点的 https 握手失败，需要在解析阶段把协议改成 http。"""
+    html = '<ul class="list"><li><a href="https://x.cn/a/1.html">公告</a></li></ul>'
+    cfg = dict(BASE, item_sel="ul.list li", url_scheme="http")
+    assert generic_html.parse_list(html, cfg)[0]["url"] == "http://x.cn/a/1.html"
+    # 未配置时不改写
+    assert generic_html.parse_list(html, dict(BASE, item_sel="ul.list li"))[0][
+        "url"] == "https://x.cn/a/1.html"
+
+
 def test_noise_filters_drop_stale_and_excluded():
     items = [
         {"title": "陈年须知", "url": "https://x.cn/old", "publish_date": "2019-10-18"},
@@ -150,6 +160,14 @@ def test_keep_keywords_filters_by_body(monkeypatch):
     assert [i["title"] for i in out] == ["管培生"]
 
 
+def test_keep_keywords_applies_when_no_detail(monkeypatch):
+    """no_detail 源也必须过关键词过滤（早返回曾漏掉这一步，导致全专业岗位全量入库）。"""
+    monkeypatch.setattr(generic_html, "fetch", _fake_fetch(BOARD_HTML, {}))
+    cfg = dict(BOARD_CFG, no_detail=True, keep_keywords=["法务"])
+    out = generic_html.Adapter(cfg).collect()
+    assert out == [], "no_detail 分支绕过了关键词过滤"
+
+
 def test_collect_skips_known_urls(monkeypatch):
     """增量采集：已知 URL 不再重复抓详情。"""
     monkeypatch.setattr(generic_html, "fetch",
@@ -158,3 +176,21 @@ def test_collect_skips_known_urls(monkeypatch):
     known = {url_fingerprint("https://x.cn/job?id=1")}
     out = generic_html.Adapter(BOARD_CFG).collect(known)
     assert [i["title"] for i in out] == ["销售业务员"]
+
+
+def test_fetch_details_respects_budget(monkeypatch):
+    """慢站配额用尽后，剩余条目只留标题/日期，不再继续抓详情。"""
+    calls = []
+
+    def slow_fetch(url, **kw):
+        calls.append(url)
+        return _FakeResp("<p>正文</p>")
+
+    monkeypatch.setattr(generic_html, "fetch", slow_fetch)
+    items = [{"url": f"https://x.cn/j/{i}"} for i in range(10)]
+    # 预算 0：一条详情都不该抓
+    assert generic_html.fetch_details(items, None, True, None, budget=0.0) == [""] * 10
+    assert calls == []
+
+    bodies = generic_html.fetch_details(items, None, True, None, budget=60.0)
+    assert bodies == ["正文"] * 10 and len(calls) == 10

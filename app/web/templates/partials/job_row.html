@@ -6,6 +6,8 @@
  {% if job['deadline'] %}<span class="{{ job['deadline']|dcolor }}">{{ job['deadline'] }} 截止</span> ·{% endif %}
  <span class="tag">{{ dict(job_types)[job['job_type']] if job['job_type'] in dict(job_types) else job['job_type'] }}</span>
  {% if job['city'] %}<span class="tag">{{ job['city'] }}</span>{% endif %}
+ {% if job['notice_kind'] == 'result' %}<span class="tag" style="background:#e5e7eb;color:#4b5563">结果公示</span>{% endif %}
+ {% if job['notice_kind'] == 'info' %}<span class="tag" style="background:#e5e7eb;color:#4b5563">其他</span>{% endif %}
  {% if job['merge_count'] > 1 %}<span class="tag">{{ job['merge_count'] }} 个来源</span>{% endif %}
  {% if job['status'] == 'pending' %}<span class="tag" style="background:#fef3c7;color:#92400e">待确认</span>{% endif %}
  <a href="/jobs/{{ job['id'] }}"><strong>{{ job['title'] }}</strong></a>

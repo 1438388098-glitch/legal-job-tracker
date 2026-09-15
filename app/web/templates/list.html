@@ -20,6 +20,15 @@
    <option value="{{ s }}" {% if q.get('status')==s %}selected{% endif %}>{{ {'new':'新','read':'已读','pending':'待确认'}[s] }}</option>
    {% endfor %}
   </select>
+  <select name="notice_kind">
+   <option value="">只看可投递岗位</option>
+   <option value="all" {% if q.get('notice_kind')=='all' %}selected{% endif %}>全部稿件</option>
+   {% for val, label in notice_kinds %}
+   {% if val != 'opening' %}
+   <option value="{{ val }}" {% if q.get('notice_kind')==val %}selected{% endif %}>只看{{ label }}</option>
+   {% endif %}
+   {% endfor %}
+  </select>
   <input type="text" name="q" value="{{ q.get('q','') }}" placeholder="关键词搜索（标题/单位/正文）" style="flex:1;min-width:180px">
   <button class="primary" type="submit">筛选</button>
   <a href="/">重置</a>

@@ -8,10 +8,13 @@ def test_run_source_logs_and_health(conn, monkeypatch, tmp_path):
     conn.execute("INSERT INTO sources(slug,name,kind,config) VALUES('demo','演示','html',?)",
                  (json.dumps({"list_url": "https://demo/list", "item_sel": "li a"}),))
     import app.collect.generic_html as gh
+    # 第二条来自另一渠道（source_slug 不同）且标题够长 → 应当合并为一条
     monkeypatch.setattr(gh.Adapter, "collect", lambda self, known_fps=None: [
-        {"title": "A法院招聘公告", "url": "https://demo/1", "source_slug": "demo",
+        {"title": "某市中级人民法院2026年公开招聘劳动合同制书记员公告",
+         "url": "https://demo/1", "source_slug": "demo",
          "job_type": "public", "city": "深圳", "body": "报名截止2026年10月1日"},
-        {"title": "A法院 招聘公告", "url": "https://demo/2", "source_slug": "demo",
+        {"title": "某市中级人民法院2026年公开招聘劳动合同制书记员公告",
+         "url": "https://demo/2", "source_slug": "other",
          "job_type": "public", "city": "深圳", "body": "x"},
     ])
     monkeypatch.setattr("app.snapshot.SNAP_DIR", tmp_path / "snap")

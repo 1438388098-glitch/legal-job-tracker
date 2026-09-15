@@ -83,11 +83,25 @@ def test_all_sources_have_required_config():
         assert s["name"], s["slug"]
 
 
-def test_campus_boards_are_keyword_filtered():
-    """全专业职位板必须带法学过滤，否则会把无关岗位灌进来。"""
-    for slug in ("gdufs", "gzhu", "zuel"):
-        assert BY_SLUG[slug]["config"]["keep_keywords"], slug
-        assert "法学" in BY_SLUG[slug]["config"]["keep_keywords"]
+def test_campus_boards_query_by_law_keywords():
+    """全专业职位板必须做筛选，否则会把无关岗位灌进来。
+
+    广外/广大的详情页是 JS 渲染，拿不到专业字段，只能靠站内 ?keyword= 检索法学岗；
+    中南财接口有 majors 字段，改用 keep_keywords 在本地过滤。
+    """
+    for slug in ("gdufs", "gzhu"):
+        urls = BY_SLUG[slug]["config"]["list_urls"]
+        assert urls and all("keyword=" in u for u in urls), slug
+        assert any("%E6%B3%95%E5%8A%A1" in u for u in urls), f"{slug}: 检索词里缺「法务」"
+    assert "法学" in BY_SLUG["zuel"]["config"]["keep_keywords"]
+
+
+def test_sz_source_forces_http():
+    """深圳人社 https 握手失败，必须按 http 拼详情 URL。"""
+    assert BY_SLUG["hrss_sz"]["config"]["url_scheme"] == "http"
+    cfg = BY_SLUG["hrss_sz"]["config"]
+    items = generic_html.parse_list(_load("hrss_sz", cfg), cfg)
+    assert items and all(i["url"].startswith("http://") for i in items)
 
 
 def test_zuel_in_seed():
