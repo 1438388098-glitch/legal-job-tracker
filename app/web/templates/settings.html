@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card" style="max-width:520px">
+ <h2 style="margin-top:0">⚙️ 设置</h2>
+ <form method="post" action="/settings">
+  <label>
+   <input type="checkbox" name="toast_enabled" value="1" {% if toast_enabled == '1' %}checked{% endif %}>
+   采集完成后弹 Windows 桌面通知（需 <code>pip install win11toast</code>）
+  </label>
+  <p><button class="primary" type="submit">保存</button></p>
+ </form>
+ <p class="muted">每日采集：每天 08:05 自动运行（服务保持开启时）。也可在「源健康」页手动触发。</p>
+</div>
+{% endblock %}

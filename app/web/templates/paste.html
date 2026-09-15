@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+ <h2 style="margin-top:0">📎 公众号粘贴箱</h2>
+ <p class="muted">把微信公众号文章链接粘进来（mp.weixin.qq.com/...），系统自动抓正文并提取截止时间等字段，下一步确认后入库。</p>
+ <form method="post" action="/paste" style="display:flex;gap:8px">
+  <input name="url" placeholder="https://mp.weixin.qq.com/s/xxxx" style="flex:1" required>
+  <button class="primary" type="submit">抓取</button>
+ </form>
+ {% if error %}<p style="color:#dc2626">{{ error }}</p>{% endif %}
+</div>
+{% endblock %}

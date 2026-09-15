@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>法学招聘信息中台</title>
+<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js"></script>
+<style>
+ body{font-family:system-ui,'Microsoft YaHei',sans-serif;margin:0;background:#f6f7f9;color:#222}
+ header{background:#1f2937;color:#fff;padding:10px 20px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+ header a{color:#e5e7eb;text-decoration:none;font-size:14px}
+ header a:hover{color:#fff}
+ .banner{background:#fee2e2;color:#991b1b;padding:8px 20px;font-size:14px}
+ .wrap{max-width:1150px;margin:16px auto;padding:0 12px}
+ .card{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:10px}
+ .red{color:#dc2626;font-weight:700}
+ .yellow{color:#d97706;font-weight:600}
+ .tag{display:inline-block;background:#eef2ff;color:#3730a3;border-radius:4px;padding:1px 6px;font-size:12px;margin-right:6px;vertical-align:middle}
+ form.inline{display:inline;margin:0}
+ button{cursor:pointer;border:1px solid #d1d5db;background:#fff;border-radius:5px;padding:2px 8px;font-size:13px}
+ button:hover{background:#f3f4f6}
+ .primary{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
+ .board{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+ @media (max-width:900px){.board{grid-template-columns:repeat(2,1fr)}}
+ .col{background:#eef1f5;border-radius:8px;padding:8px;min-height:220px}
+ .col h3{margin:2px 4px 8px;font-size:14px;color:#374151}
+ .col .card{padding:8px;font-size:13px}
+ table{border-collapse:collapse;width:100%}
+ td,th{border:1px solid #e5e7eb;padding:6px;text-align:left;font-size:13px}
+ th{background:#f9fafb}
+ input,select{border:1px solid #d1d5db;border-radius:5px;padding:4px 8px;font-size:14px}
+ pre.snap{white-space:pre-wrap;font-family:inherit;background:#fafafa;border:1px solid #eee;border-radius:6px;padding:12px;font-size:14px;line-height:1.7}
+ .muted{color:#6b7280;font-size:13px}
+ a{color:#1d4ed8;text-decoration:none}
+</style>
+</head>
+<body>
+<header>
+ <strong>⚖️ 法学招聘信息中台</strong>
+ <a href="/">岗位列表</a>
+ <a href="/board">我的投递</a>
+ <a href="/paste">粘贴箱</a>
+ <a href="/health">源健康</a>
+ <a href="/settings">设置</a>
+ <a href="/export.xlsx">导出汇总表</a>
+</header>
+{% if urgent and urgent > 0 %}
+<div class="banner">⏰ 未来 3 天内截止岗位 <strong>{{ urgent }}</strong> 个，<a href="/?status=new" style="color:inherit;text-decoration:underline">点此处理</a></div>
+{% endif %}
+<div class="wrap">
+{% block content %}{% endblock %}
+</div>
+</body>
+</html>

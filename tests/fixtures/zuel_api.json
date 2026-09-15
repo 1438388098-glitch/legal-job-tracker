@@ -1,0 +1,40 @@
+{
+  "code": 0,
+  "msg": "success",
+  "count": 20028,
+  "data": [
+    {
+      "id": 1001,
+      "title": "广东恒益律师事务所招聘实习律师",
+      "companyName": "广东恒益律师事务所",
+      "nature": "实习",
+      "validTime": "2026-10-01",
+      "createTime": "2026-09-10 10:00:00",
+      "education": "本科及以上",
+      "majors": "法学",
+      "number": "3"
+    },
+    {
+      "id": 1002,
+      "title": "广州市某区人民法院招聘劳动合同制书记员",
+      "companyName": "广州市某区人民法院",
+      "nature": "全职",
+      "validTime": "2026-09-30",
+      "createTime": "2026-09-12 09:30:00",
+      "education": "大专及以上",
+      "majors": "法律事务",
+      "number": "10"
+    },
+    {
+      "id": 1003,
+      "title": "某科技公司法务专员（合规方向）",
+      "companyName": "某科技有限公司",
+      "nature": "全职",
+      "validTime": "",
+      "createTime": "2026-09-14 16:20:00",
+      "education": "本科及以上",
+      "majors": "法学、知识产权",
+      "number": "1"
+    }
+  ]
+}

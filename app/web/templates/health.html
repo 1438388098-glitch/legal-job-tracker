@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+ <div style="display:flex;justify-content:space-between;align-items:center">
+  <h2 style="margin:0">🩺 信息源健康</h2>
+  <form class="inline" method="post" action="/collect/run">
+   <button class="primary">▶ 立即采集全部源</button>
+  </form>
+ </div>
+ <table style="margin-top:10px">
+  <tr><th>源</th><th>名称</th><th>上次成功</th><th>连续失败</th><th>最近错误</th><th>操作</th></tr>
+  {% for s in sources %}
+  <tr>
+   <td><code>{{ s['slug'] }}</code></td>
+   <td>{{ s['name'] }}</td>
+   <td>{{ s['last_success_at'] or '从未' }}</td>
+   <td style="{% if s['consecutive_failures'] > 0 %}color:#dc2626;font-weight:700{% endif %}">{{ s['consecutive_failures'] }}</td>
+   <td class="muted">{{ (s['last_error'] or '')[:80] }}</td>
+   <td>
+    <form class="inline" method="post" action="/collect/run">
+     <input type="hidden" name="slug" value="{{ s['slug'] }}">
+     <button>采集</button>
+    </form>
+   </td>
+  </tr>
+  {% endfor %}
+  {% if sources|length == 0 %}<tr><td colspan="6" class="muted">还没有信息源，运行 <code>python scripts/seed_sources.py</code> 写入 T1 源配置。</td></tr>{% endif %}
+ </table>
+</div>
+<div class="card">
+ <h3 style="margin-top:0">最近采集日志</h3>
+ <table>
+  <tr><th>时间</th><th>源</th><th>新增</th><th>合并</th><th>错误</th></tr>
+  {% for l in logs %}
+  <tr><td>{{ l['ran_at'] }}</td><td>{{ l['source_slug'] }}</td>
+   <td>{{ l['inserted'] }}</td><td>{{ l['merged'] }}</td>
+   <td class="muted">{{ (l['error'] or '')[:100] }}</td></tr>
+  {% endfor %}
+  {% if logs|length == 0 %}<tr><td colspan="5" class="muted">暂无日志</td></tr>{% endif %}
+ </table>
+</div>
+{% endblock %}

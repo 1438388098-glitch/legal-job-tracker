@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+ <form method="get" action="/" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+  <select name="job_type">
+   <option value="">全部类型</option>
+   {% for val, label in job_types %}
+   <option value="{{ val }}" {% if q.get('job_type')==val %}selected{% endif %}>{{ label }}</option>
+   {% endfor %}
+  </select>
+  <select name="city">
+   <option value="">全部城市</option>
+   {% for c in cities %}
+   <option value="{{ c }}" {% if q.get('city')==c %}selected{% endif %}>{{ c }}</option>
+   {% endfor %}
+  </select>
+  <select name="status">
+   <option value="">全部状态</option>
+   {% for s in ['new','read','pending'] %}
+   <option value="{{ s }}" {% if q.get('status')==s %}selected{% endif %}>{{ {'new':'新','read':'已读','pending':'待确认'}[s] }}</option>
+   {% endfor %}
+  </select>
+  <input type="text" name="q" value="{{ q.get('q','') }}" placeholder="关键词搜索（标题/单位/正文）" style="flex:1;min-width:180px">
+  <button class="primary" type="submit">筛选</button>
+  <a href="/">重置</a>
+ </form>
+</div>
+{% if jobs|length == 0 %}
+<div class="card muted">暂无岗位。去「源健康」页点「立即采集」，或在「粘贴箱」粘入公众号文章链接。</div>
+{% endif %}
+{% for job in jobs %}
+{% include "partials/job_row.html" %}
+{% endfor %}
+{% endblock %}

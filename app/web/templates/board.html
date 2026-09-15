@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 style="font-size:18px">我的投递看板</h2>
+<div class="board">
+{% for status, rows in cols.items() %}
+ <div class="col">
+  <h3>{{ status }}（{{ rows|length }}）</h3>
+  {% for r in rows %}
+  <div class="card">
+   <a href="/jobs/{{ r['id'] }}"><strong>{{ r['title'][:30] }}</strong></a>
+   {% if r['deadline'] %}<div class="{{ r['deadline']|dcolor }}">{{ r['deadline'] }} 截止</div>{% endif %}
+   <form class="inline" method="post" action="/applications/{{ r['aid'] }}/status">
+    <input type="hidden" name="status" value="{{ status }}">
+    <input type="hidden" name="note" value="">
+    <button title="留在此列">↻</button>
+   </form>
+   {% set order = app_statuses %}
+   {% set idx = order.index(status) %}
+   {% if idx > 0 %}
+   <form class="inline" method="post" action="/applications/{{ r['aid'] }}/status">
+    <input type="hidden" name="status" value="{{ order[idx-1] }}">
+    <input type="hidden" name="note" value="">
+    <button title="移到 {{ order[idx-1] }}">←</button>
+   </form>
+   {% endif %}
+   {% if idx < order|length - 1 %}
+   <form class="inline" method="post" action="/applications/{{ r['aid'] }}/status">
+    <input type="hidden" name="status" value="{{ order[idx+1] }}">
+    <input type="text" name="note" placeholder="备注（可空）" style="width:90px;font-size:12px">
+    <button class="primary" title="推进到 {{ order[idx+1] }}">{{ order[idx+1] }} →</button>
+   </form>
+   {% endif %}
+  </div>
+  {% endfor %}
+ </div>
+{% endfor %}
+</div>
+{% endblock %}
