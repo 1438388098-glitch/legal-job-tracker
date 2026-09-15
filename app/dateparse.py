@@ -17,8 +17,22 @@ def _valid(y, m, d):
         return False
 
 
+# 某些 CMS 把年月和日拆在两个节点里，取父节点文本会得到 "2026-09 04"（年月在前）
+# 或 "15 2026-09"（日在前，如中山律协/广东能源）。归一化成完整日期再走常规解析，
+# 省得每个源写特殊逻辑。
+_SPLIT_DATE = re.compile(r"((?:19|20)\d{2})\s*[-年/.]\s*(\d{1,2})\s*[-月/.]?\s+(\d{1,2})\s*日?")
+_SPLIT_DATE_REV = re.compile(
+    r"(?<!\d)(\d{1,2})\s+((?:19|20)\d{2})\s*[-年/.]\s*(\d{1,2})(?!\d)")
+
+
+def _normalize(text: str) -> str:
+    t = _SPLIT_DATE.sub(lambda m: f"{m[1]}-{int(m[2])}-{int(m[3])}", text or "")
+    return _SPLIT_DATE_REV.sub(lambda m: f"{m[2]}-{int(m[3])}-{int(m[1])}", t)
+
+
 def extract_dates(text: str, today: date | None = None) -> list[str]:
     today = today or date.today()
+    text = _normalize(text)
     out = []
     for m in _FULL.finditer(text or ""):
         y, mo, d = int(m[1]), int(m[2]), int(m[3])

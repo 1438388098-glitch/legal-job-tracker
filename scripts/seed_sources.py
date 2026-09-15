@@ -116,8 +116,10 @@ SOURCES = [
         city="韶关", job_type="public")),
 
     # ── 律所 / 律师行业 ────────────────────────────────────────────────
+    # 注意：www.gdlawyers.net 实测是"佛山市律师协会"官网（页脚有主办单位声明），
+    # 不是省律协；它就是我们最早的律所招聘源。
     dict(slug="fs_lvxie", **_html(
-        "广东律师网·律所招聘",
+        "佛山市律师协会·律所招聘",
         _q("https://www.gdlawyers.net/recruit/index.html", "page", 2),
         'div.recruit.ny a[href*="recruit/details"]', link_sel="self",
         title_attr="title", detail_sel="div.page-right", job_type="lawfirm",
@@ -128,6 +130,91 @@ SOURCES = [
         'a[href^="/show/"]', link_sel="self", title_sel="div.text-base",
         date_sel="div.text-xs div", detail_sel="div.rich-text",
         max_items=20, city="惠州", job_type="lawfirm", notice_kind="opening")),
+    # 广州律协：列表是 JSP 片段接口（GET 即可，无需 POST），职位/律所/日期三列齐全；
+    # 详情页正文是 JS 注入抓不到，走 no_detail
+    dict(slug="gz_lvxie", **_html(
+        "广州市律协·律所招聘",
+        _q("https://www.gzlawyer.org/plugins/getIndexZhaopinListCatalog_new.jsp"
+           "?lawfirm=&categoryId=", "page", 1),
+        "tr", link_sel='a[href^="/lawfirmhr?id="]',
+        title_sel="td:nth-child(1)", org_sel="td:nth-child(2)",
+        date_sel="td:nth-child(3)",
+        no_detail=True, max_items=30, city="广州", job_type="lawfirm",
+        notice_kind="opening")),
+    # 深圳律协：catalog 页是 SSR 表格，tbody 前两行是登录弹窗的表格（无链接，
+    # parse_list 会因取不到链接自动跳过）；列表直接给出截止日列
+    dict(slug="sz_lvxie", **_html(
+        "深圳市律协·律所招聘",
+        _q("https://www.szlawyers.com/catalog/66982c75d70240108a39a1ea57c4c4e5",
+           "currentPageNo", 1),
+        "tbody tr", link_sel='a[href*="/info/"]',
+        title_sel="td:nth-child(2)", org_sel="td:nth-child(1)",
+        date_sel="td:nth-child(3)", deadline_sel="td:nth-child(4)",
+        no_detail=True, max_items=40, city="深圳", job_type="lawfirm",
+        notice_kind="opening")),
+    # 中山律协：日期拆在两个节点（"2026-09" + "04"），dateparse 已做归一化，
+    # date_sel 直接取包含两个节点的父容器
+    dict(slug="zs_lvxie", **_html(
+        "中山市律协·律所招聘",
+        _q("http://www.gdzslx.com/index.php?c=category&id=25", "page", 1),
+        "div.g-list1 ul li", link_sel="a", title_sel="div.tit",
+        date_sel="div.date", detail_sel="div.news-cont",
+        max_items=20, city="中山", job_type="lawfirm", notice_kind="opening")),
+    # 江门律协：list_url 必须带尾斜杠（条目 href 是 ./202609/xxx.html 的相对路径）
+    dict(slug="jm_lvxie", **_html(
+        "江门市律协·律所招聘",
+        ["http://www.jmlawyer.org.cn/xhzx/zpxx/"],
+        "div.newslist ul li", link_sel="a", date_sel="span",
+        max_items=25, city="江门", job_type="lawfirm", notice_kind="opening")),
+
+    # ── 国企（聚合专栏优先：政策要求国企招聘信息公开，专栏一个源覆盖几十家
+    #    一级集团及其二级公司；抽查 9 家集团官网，4 家不可达、4 家 JS 渲染，
+    #    逐家攻官网在工程上不成立）────────────────────────────────────────
+    dict(slug="gzw_gd", **_html(
+        "广东省国资委·百万英才汇南粤（国企招聘）",
+        _idx("https://gzw.gd.gov.cn/214/index.html", 2),
+        "ul.list li", title_attr="title", date_sel="span",
+        detail_sel="div.article|div.content|div.TRS_Editor",
+        job_type="public", notice_kind="opening")),
+    dict(slug="geg", **_html(
+        "广东能源集团·招聘信息",
+        _idx("https://www.geg.com.cn/gdyd/zjyd/zhaopin/index.html", 1),
+        "ul.news-list li", link_sel="h3 a", date_sel="div.time",
+        # 集团岗位以技术类为主，只留法学相关，避免灌入大量无关条目
+        keep_keywords=LAW_KW,
+        job_type="public", notice_kind="opening")),
+
+    # ── 公务员 / 选调 / 军队文职 ───────────────────────────────────────
+    dict(slug="gdzz_luqu", **_html(
+        "广东组织工作网·公务员录用",
+        _idx("https://www.gdzz.gov.cn/gwygz/lypytzgg/index.html", 2),
+        "li.clearfix", link_sel="a", title_attr="title", date_sel="div.time",
+        detail_sel="div.zw|div.article|div.content",
+        # 栏目里混着各地招录工作新闻稿，只留公告类
+        title_keywords=["公告", "录用", "选调", "考试录用", "资格审核", "面试",
+                        "报名", "招录"],
+        job_type="public", notice_kind="opening")),
+    dict(slug="army_81rc", **_html(
+        "军队人才网·文职招考公告",
+        ["http://81rc.81.cn/sy/tzgg_210284/index.html"],
+        "div.left-news li", title_attr="title", date_sel="span",
+        detail_sel="#c_center|div.wzzzy_left",
+        job_type="public", notice_kind="opening")),
+
+    # ── 人社系统补缺（东莞/韶关人事人才栏）────────────────────────────
+    dict(slug="hrss_dg", **_html(
+        "东莞市人社局·公开招聘",
+        _idx("https://dghrss.dg.gov.cn/xwzx/gsgg/gkzp/index.html", 2),
+        "div.infolist.ymd ul li", link_sel="a", date_sel="span",
+        city="东莞", job_type="public")),
+    # 韶关：人事人才栏比现有 tzgg（大量送达公告）更聚焦，两个源并存
+    dict(slug="sg_rsrc", **_html(
+        "韶关市人社局·人事人才",
+        _idx("https://www.sg.gov.cn/bmpdlm/rlzyhshbzj/yw/rsrc/index.html", 2),
+        "div.pageList ul li", title_attr="title", date_sel="span.time",
+        title_keywords=["招聘", "招录", "考录", "选聘", "选调", "引进", "岗位",
+                        "拟聘", "聘用", "雇员", "招募", "面试", "笔试", "英才"],
+        city="韶关", job_type="public")),
 
     # ── 高校就业网（站内关键词检索法学岗）────────────────────────────
     # 该平台详情页为 JS 渲染、HTML 里拿不到"专业要求"，但站内 ?keyword= 检索可用。
@@ -147,6 +234,21 @@ SOURCES = [
         title_sel="div.job-name", date_sel="div.job-time", org_sel="div.job-company",
         no_detail=True, max_items=60, keep_keywords=LAW_KW,
         notice_kind="opening")),
+    # 广东金融学院 / 广州商学院：与广外/广大同一套平台（A 系），配置照抄换域名
+    dict(slug="gduf", **_html(
+        "广东金融学院·招聘职位",
+        _kw("https://jy.gduf.edu.cn/web/Index/job-list", LAW_QUERY),
+        "div.jobs-list div.col-xs-6", link_sel="a.job-block",
+        title_sel="div.job-name", date_sel="div.job-time", org_sel="div.job-company",
+        no_detail=True, max_items=60, keep_keywords=LAW_KW,
+        notice_kind="opening")),
+    dict(slug="gcc", **_html(
+        "广州商学院·招聘职位",
+        _kw("https://jy.gcc.edu.cn/web/Index/job-list", LAW_QUERY),
+        "div.jobs-list div.col-xs-6", link_sel="a.job-block",
+        title_sel="div.job-name", date_sel="div.job-time", org_sel="div.job-company",
+        no_detail=True, max_items=60, keep_keywords=LAW_KW,
+        notice_kind="opening")),
 
     # ── 外校就业中心 JSON 接口（免登录，已验证）────────────────────────
     # 法学过滤在 zuel.py 里按"岗位名含法学角色词"完成：该接口的 majors 字段会把
@@ -155,6 +257,31 @@ SOURCES = [
          job_type=None, config=dict(
              api="https://jyzx.zuel.edu.cn/api/publicly/recruit/list",
              base="https://jyzx.zuel.edu.cn", type=1, pages=4, limit=20)),
+
+    # ── 国企 JSON 接口（比逐家攻集团官网现实：抽查 9 家，4 家不可达、4 家 JS 渲染）
+    # 省人社厅"国企招聘专区"：POST JSON 接口（从前端 chunk 逆向），按关键词分片拉取，
+    # 聚合全省公共就业机构发布的国企岗位（含二级公司），当日更新
+    dict(slug="ggfw_gq", name="广东省人社厅·国企招聘专区", kind="ggfw", city=None,
+         job_type=None, config=dict(
+             api="https://ggfw.hrss.gd.gov.cn/recruitment/internet/main/internet"
+                 "/retrieval/c/recruitment/homepage/positions",
+             base="https://ggfw.hrss.gd.gov.cn/recruitment/internet/main/",
+             pages=2, size=50, unit_kinds="110,141,151", keep_keywords=LAW_KW)),
+    # 越秀集团（大易系统）：列表接口直接给工作内容/任职要求/截止日期，
+    # 聚合越秀系全部二级公司（金控/租赁/资本/服务）；positionName 服务端精准过滤
+    dict(slug="yuexiu", name="越秀集团·招聘岗位", kind="hotjob", city=None,
+         job_type=None, config=dict(
+             api="https://yuexiu.hotjob.cn/wt/YUEXIU/web/json/position/list",
+             detail_base="https://yuexiu.hotjob.cn/wt/YUEXIU/web/jobDetail",
+             brand_code=1, post_type=1, pages=3, limit=50,
+             position_keywords=["法务", "法律", "合规", "风控", "知识产权"],
+             keep_keywords=LAW_KW)),
+
+    # ── 西南政法大学（五院四系，单位质量高）：首页"最新职位"块 SSR 可抓；
+    #    搜索页 JS 渲染抓不到，所以只有首页增量
+    dict(slug="swupl", name="西南政法大学·最新职位", kind="swupl", city=None,
+         job_type=None, config=dict(
+             list_url="https://swupl.cqbys.com/", keep_keywords=LAW_KW)),
 ]
 
 

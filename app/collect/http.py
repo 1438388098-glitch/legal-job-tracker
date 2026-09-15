@@ -50,17 +50,27 @@ def _retryable(e: Exception) -> bool:
 
 def fetch(url: str, *, encoding: str | None = None, verify: bool = True,
           params: dict | None = None, tries: int = 3,
-          timeout: float = DEFAULT_TIMEOUT) -> httpx.Response:
+          timeout: float = DEFAULT_TIMEOUT,
+          method: str = "GET", json_body: dict | None = None,
+          headers: dict | None = None) -> httpx.Response:
     """抓一个 URL。
 
     超时故意做得比较短：一期一次要抓几百个详情页，个别政务站单页要挂 20 秒以上，
     与其死等不如放弃这条（正文留空，岗位本身仍会入库），把时间留给其他源。
+
+    method/json_body/headers 是给 JSON 接口用的（如省人社厅国企专区要求 POST +
+    Referer，不带就返回空数据）。headers 会覆盖默认 UA 之外的头。
     """
     delay = 1.0
     last: Exception | None = None
     for attempt in range(tries):
         try:
-            r = _client(verify).get(url, params=params, timeout=timeout)
+            client = _client(verify)
+            if method.upper() == "POST":
+                r = client.post(url, params=params, json=json_body, timeout=timeout,
+                                headers=headers)
+            else:
+                r = client.get(url, params=params, timeout=timeout, headers=headers)
             r.raise_for_status()
             if encoding:
                 r.encoding = encoding
@@ -73,3 +83,14 @@ def fetch(url: str, *, encoding: str | None = None, verify: bool = True,
             time.sleep(delay)
             delay *= 2
     raise last  # type: ignore[misc]
+
+
+def post_json(url: str, *, json_body: dict, params: dict | None = None,
+              encoding: str | None = None, verify: bool = True, tries: int = 3,
+              timeout: float = DEFAULT_TIMEOUT,
+              headers: dict | None = None) -> dict:
+    """POST 一个 JSON 接口并解析响应，顺手补上 Referer（多数政务接口校验它）。"""
+    h = {"Referer": url, **(headers or {})}
+    r = fetch(url, encoding=encoding, verify=verify, params=params, tries=tries,
+              timeout=timeout, method="POST", json_body=json_body, headers=h)
+    return r.json()

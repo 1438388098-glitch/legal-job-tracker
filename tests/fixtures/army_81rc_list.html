@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-cn">>
+<head>
+	<meta charset="utf-8">
+	<title>通知公告 - 军队人才网</title>
+	<link rel="stylesheet" href="http://81rc.81.cn/template/tenant207/t578/css/css.css">
+	<link rel="stylesheet" href="http://81rc.81.cn/material/css/fenye.css">
+	 <style>
+     .fenye-more #displaypagenum span.page {
+        background: #27a7fe !important;
+      }
+      .fenye-more #displaypagenum a:hover {
+        background: #27a7fe !important;
+      }
+	 </style>
+
+	 <!-- 统计 start -->
+	<meta name="filetype" content="1" />
+	<meta name="publishedtype" content="1" />
+	<meta name="pagetype" content="2" />
+	<meta
+	id="node-id-path"
+	name="catalogs"
+	content="cbf-210284"
+	/>
+	<!-- 统计 start -->
+
+	<!-- 公共头部引入 -->
+ <style>
+  @font-face {
+    font-family: 'icomoon';
+    src: url('http://81rc.81.cn/material/fonts/icomoon.eot?v3lc3l');
+    src: url('http://81rc.81.cn/material/fonts/icomoon.eot?v3lc3l#iefix') format('embedded-opentype'),
+    url('http://81rc.81.cn/material/fonts/icomoon.woff?v3lc3l') format('woff'),
+    url('http://81rc.81.cn/material/fonts/icomoon.svg?v3lc3l#icomoon') format('svg');
+    font-weight: normal;
+    font-style: normal;
+  }
+</style>
+<link rel="icon" type="image/png" href='http://81rc.81.cn/material/img/favicon.ico'>
+<script>
+  // 判断shi是否是IE以下，是出现提示弹窗  对象不支持“prepend”属性或方法
+  var temp = window.navigator.userAgent.toUpperCase()
+  var charHead = temp.indexOf('MSIE')
+  var charLast = temp.indexOf(';', charHead)
+  var ieVersion = temp.substring(charHead, charLast)
+  ieVersion = ieVersion.split(' ')[1]
+  if (ieVersion < 11) {
+    // document.write(
+    //   '<p style="margin: 0;padding: 10px 0;text-align: center;font-size: 16px;color: #333;background: #ececec">您当前的浏览器版本过低，为了保障的浏览体验，请升级浏览器至ie11以上或使用Chrome，Firefox，Edge等浏览器访问</p>'
+    // )
+    window.location.href = 'http://81rc.81.cn/zjlm/Ibbgdts/index.html'
+  }
+</script>
+<script type="text/javascript" src="http://81rc.81.cn/material/js/jquery-3.5.1.min.js"></script>
+<!--[if lt IE 9]>
+<script src='http://81rc.81.cn/material/js/respond.min.js'></script>
+<script src='http://81rc.81.cn/material/js/es5-sham.min.js'></script>
+<script src='http://81rc.81.cn/material/js/es5-shim.min.js'></script>
+<![endif]-->
+<!-- make template id  561 name 公共头部引入 -->
+<!-- make time 2025-06-05 16:00:11 -->
+<!-- make template id  561 name 公共头部引入 -->
+
+</head>
+
+<body>
+
+	<div class="time">欢迎来到军队人才网！
+	    <script> 
+var CalendarData=new Array(20); 
+var madd=new Array(12); 
+var TheDate=new Date(); 
+var numString="一二三四五六七八九十"; 
+var monString="正二三四五六七八九十冬腊"; 
+var weekString="日一二三四五六";  
+var cYear; 
+var cMonth; 
+var cDay; 
+var cDateString; 
+var DateString; 
+var Browser=navigator.appName; 
+function init() 
+{ 
+CalendarData[0]=0x41A95; 
+CalendarData[1]=0xD4A; 
+CalendarData[2]=0xDA5; 
+CalendarData[3]=0x20B55; 
+CalendarData[4]=0x56A; 
+CalendarData[5]=0x7155B; 
+CalendarData[6]=0x25D; 
+CalendarData[7]=0x92D; 
+CalendarData[8]=0x5192B; 
+CalendarData[9]=0xA95; 
+CalendarData[10]=0xB4A; 
+CalendarData[11]=0x416AA; 
+CalendarData[12]=0xAD5; 
+CalendarData[13]=0x90AB5; 
+CalendarData[14]=0x4BA; 
+CalendarData[15]=0xA5B; 
+CalendarData[16]=0x60A57; 
+CalendarData[17]=0x52B; 
+CalendarData[18]=0xA93; 
+CalendarData[19]=0x40E95; 
+madd[0]=0; 
+madd[1]=31; 
+madd[2]=59; 
+madd[3]=90; 
+madd[4]=120; 
+madd[5]=151; 
+madd[6]=181; 
+madd[7]=212; 
+madd[8]=243; 
+madd[9]=273; 
+madd[10]=304; 
+madd[11]=334; 
+} 
+function GetBit(m,n) 
+{ 
+return (m>>n)&1; 
+} 
+function e2c() 
+{ 
+var total,m,n,k; 
+var isEnd=false; 
+var tmp=TheDate.getYear(); 
+if (tmp<1900) tmp+=1900; 
+total=(tmp-2001)*365 
++Math.floor((tmp-2001)/4) 
++madd[TheDate.getMonth()] 
++TheDate.getDate() 
+-23; 
+if (TheDate.getYear()%4==0&&TheDate.getMonth()>1) 
+total++; 
+for(m=0;;m++) 
+{ 
+k=(CalendarData[m]<0xfff)?11:12; 
+for(n=k;n>=0;n--) 
+{ 
+if(total<=29+GetBit(CalendarData[m],n)) 
+{ 
+isEnd=true; 
+break; 
+} 
+total=total-29-GetBit(CalendarData[m],n); 
+} 
+if(isEnd)break; 
+} 
+cYear=2001 + m; 
+cMonth=k-n+1; 
+cDay=total; 
+if(k==12) 
+{ 
+if(cMonth==Math.floor(CalendarData[m]/0x10000)+1) 
+cMonth=1-cMonth; 
+if(cMonth>Math.floor(CalendarData[m]/0x10000)+1) 
+cMonth--; 
+} 
+cHour=Math.floor((TheDate.getHours()+3)/2); 
+} 
+function GetcDateString() 
+{ var tmp="";   
+if(cMonth<1) 
+{ 
+tmp+="闰"; 
+tmp+=monString.charAt(-cMonth-1); 
+} 
+else 
+tmp+=monString.charAt(cMonth-1); 
+tmp+="月"; 
+tmp+=(cDay<11)?"初":((cDay<20)?"十":((cDay<30)?"廿":"卅")); 
+if(cDay%10!=0||cDay==10) 
+tmp+=numString.charAt((cDay-1)%10); 
+cDateString=tmp; 
+return tmp; 
+} 
+function GetDateString() 
+{ 
+var tmp=""; 
+var t1=TheDate.getYear(); 
+if (t1<1900)t1+=1900; 
+tmp+=t1 
++"年" 
++(TheDate.getMonth()+1)+"月" 
++TheDate.getDate()+"日 " 
++" 星期"+weekString.charAt(TheDate.getDay()); 
+DateString=tmp; 
+return tmp; 
+} 
+init(); 
+e2c(); 
+GetDateString(); 
+GetcDateString(); 
+document.write(DateString); 
+</script>	</div>
+
+	<div class="header">
+		<div id="nav">
+			<ul>
+				<li class="bg1"><a href="http://81rc.81.cn">首页</a></li>
+				<li class="bg2"><a href="http://81rc.81.cn/zgks/index.html" target="_blank">资格考试</a>
+				</li>
+				<li class="bg3"><a href="http://81rc.81.cn/wzry/index.html" target="_blank">文职人员</a>
+				</li>
+				<li class="bg4"><a href="http://81rc.81.cn/bsh/index.html" target="_blank">博士后</a>
+				</li>
+				<li class="bg5"><a href="http://81rc.81.cn/jdzs/index.html" target="_blank">军队招生</a>
+				</li>
+				<li class="bg6"><a href="http://81rc.81.cn/sy/rdjj_210281/index.html" target="_blank">热点聚焦</a>
+				</li>
+				<li class="bg7"><a style="width:104px" href="http://81rc.81.cn/sy/zczd_210285/index.html"
+						target="_blank">政策制度</a></li>
+			</ul>
+		</div>
+		<div class="header-sousuolan">
+			<script language="javascript">
+				function submitSearch()
+				{
+					var keyword = document.SearchForm.s_keyword.value;
+					document.GoToUrlForm.keyword.value = encodeURIComponent(keyword);
+					document.GoToUrlForm.submit();
+				}
+			</script>
+			<div class="in_znss">
+				<form action="" name="SearchForm" method="get" onsubmit="submitSearch();return false;">
+					<input name="s_keyword" type="text" class="text" />
+					<input name="" type="button" class="button" onclick="submitSearch()"/>
+				</form>
+				<form action="http://81rc.81.cn/zjlm/ssjg/index.html"
+					name="GoToUrlForm" method="get" target="_blank">
+					<input type="hidden" name="keyword" type="text" class="text" />
+					<input type="hidden"
+						id="serach_type_input"
+						name="searchfield"
+						value="TITLE"
+					/>
+					<input type="hidden" name="indexsearch" value="1" />
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<div id="body">
+		<div class="left">
+			<div class="left-top">
+				<div class="left-word"> 您的位置：
+                                                                                           <a href="http://81rc.81.cn/sy/tzgg_210284/index.html" target="_blank" class="">通知公告</a>
+                                    				</div>
+			</div>
+
+			<div class="left-news">
+				<ul>
+										<li><span>2025-12-04 18:43</span>
+						<a href="http://81rc.81.cn/sy/tzgg_210284/16425314.html" target="_blank">
+							军事科学院2026年直接引进文职人员公告
+						</a>
+					</li>
+										<li><span>2025-06-03 18:30</span>
+						<a href="http://81rc.81.cn/sy/tzgg_210284/16390303.html" target="_blank">
+							关于开展军队文职人员考试培训专项整治的通告
+						</a>
+					</li>
+					
+
+		            <!-- 分页 -->
+				
+					<div id="displaypagenum" class="more-page" style="clear: both;padding-top:15px !important" ></div>
+               
+					<!-- 分页结束 -->
+				</ul>
+			
+			</div>
+		</div>	
+		<div class="right">	
+		
+<link href="http://81rc.81.cn/template/tenant207/t589/index.css" rel="stylesheet" type="text/css" />
+
+
+	<div class="right">
+
+		<!--工作动态-->
+		<div class="right-gzdt">
+			<div class="right-gzdt-top">
+				<h2><span><a href="http://81rc.81.cn/sy/gzdt_210283/index.html" target="_blank">>></a></span></h2>
+			</div>
+			<!--begin 3428451-56297-1-->
+			<ul>
+								<li><a href="http://81rc.81.cn/sy/gzdt_210283/16486339.html" target="_blank">
+							公示网络空间部队2026年公开招考文职人员第三批拟录用对象名单</a>
+				</li>
+								<li><a href="http://81rc.81.cn/sy/gzdt_210283/16484814.html" target="_blank">
+							公示火箭军2026年公开招考文职人员第三批拟录用对象名单</a>
+				</li>
+								<li><a href="http://81rc.81.cn/sy/gzdt_210283/16484209.html" target="_blank">
+							2026-2027年度武警部队直接选拔招录警官公告</a>
+				</li>
+								<li><a href="http://81rc.81.cn/sy/gzdt_210283/16484208.html" target="_blank">
+							2026-2027年度63650部队直接选拔招录军官公告</a>
+				</li>
+								<li><a href="http://81rc.81.cn/sy/gzdt_210283/16484207.html" target="_blank">
+							2026-2027年度国防科技大学直接选拔招录军官公告</a>
+				</li>
+							</ul>
+			<!--end 3428451-56297-1-->
+		</div>
+		<!--工作动态 over-->
+
+
+		<!--新闻图片-->
+		<div class="sp">
+			<div class="sp-t">
+				<h2><span><a href="http://81rc.81.cn/sy/rt_210282/index.html"target="_blank">>></a></span></h2>
+			</div>
+			<!--begin 3428452-57259-1-->
+			<ul class="tu">
+								<li><a href="http://81rc.81.cn/sy/rt_210282/16410195.html"
+						target="_blank"><img src="/sy/rt_210282/_attachment/2025/09/17/16410195_74b419e609456fbfbfc6e8702255b978.jpg" border="0"></a><span>	2025年陆军直接选拔招录军官宣传片</span>
+				</li>
+								<li><a href="http://81rc.81.cn/sy/rt_210282/16410446.html"
+						target="_blank"><img src="/sy/rt_210282/_attachment/2025/09/18/16410446_937c163f35eafea9e4c7ac2dd585fcc7.jpg" border="0"></a><span>	2025年海军直接选拔招录军官宣传片</span>
+				</li>
+								<li><a href="http://81rc.81.cn/sy/rt_210282/16410193.html"
+						target="_blank"><img src="/sy/rt_210282/_attachment/2025/03/19/16410193_09803126f880b18f97530a3c86dc8401.jpg" border="0"></a><span>	2025年武警部队直接选拔招录警官宣传片</span>
+				</li>
+								<li><a href="http://81rc.81.cn/sy/rt_210282/16410035.html"
+						target="_blank"><img src="/sy/rt_210282/_attachment/2025/09/16/16410035_87de251b8ca4f0108951724b89a6c655.jpg" border="0"></a><span>	火箭军2025年第二批次直招军官宣传片</span>
+				</li>
+								<li><a href="http://81rc.81.cn/sy/rt_210282/16375721.html"
+						target="_blank"><img src="/sy/rt_210282/_attachment/2025/03/19/16375721_adcdeca90588b706218a73cef2b982fb.jpg" border="0"></a><span>	2025年空军直接选拔招录军官宣传片</span>
+				</li>
+								<li><a href="http://81rc.81.cn/sy/rt_210282/16375727.html"
+						target="_blank"><img src="/sy/rt_210282/_attachment/2025/03/19/16375727_502bc33f62539b0b6ffb3b4eaec56999.jpg" border="0"></a><span>	2025年军事科学院直接选拔招录军官宣传片</span>
+				</li>
+							</ul>
+			<!--end 3428452-57259-1-->
+
+		</div>
+
+		<!--新闻图片 over-->
+
+		<!--通知公告 over-->
+		<div class="right-tzgg">
+			<div class="right-tzgg-top">
+				<h2><span><a href="http://81rc.81.cn/sy/tzgg_210284/index.html"target="_blank">>></a></span></h2>
+			</div>
+			<!--begin 3428453-56296-1-->
+			<ul>
+								<li><a href="http://81rc.81.cn/sy/tzgg_210284/16425314.html" target="_blank">
+						军事科学院2026年直接引进文职人员公告</a>
+				</li>
+								<li><a href="http://81rc.81.cn/sy/tzgg_210284/16390303.html" target="_blank">
+						关于开展军队文职人员考试培训专项整治的通告</a>
+				</li>
+							</ul>
+			<!--end 3428453-56296-1-->
+
+		</div>
+		<!--通知公告 over-->
+
+	</div>
+
+<!-- make template id  589 name 公共部分-通用栏目页右侧 -->
+<!-- make time 2026-09-14 17:25:00 -->
+<!-- make template id  589 name 公共部分-通用栏目页右侧 -->
+
+		</div>
+    <div class="yqlj">
+				<link href="http://81rc.81.cn/template/tenant207/t212/index.css" rel="stylesheet" type="text/css" />
+<div class="yqlj">
+    <div class="yqlj-top">
+        <h2><span><a href="http://81rc.81.cn/sy/yqlj/index.html" target="_blank">>></a></span></h2>
+    </div>
+    <div class="yqlj-down">
+                <div class="yqlj-down-tu">
+            <a href="http://www.mod.gov.cn/" target="_blank">
+            <img src="/sy/yqlj/_attachment/2021/09/24/10092879_17c1675222b10092879443.jpg" border="0"/>
+            </a>
+        </div>
+                <div class="yqlj-down-tu">
+            <a href="http://www.81.cn/" target="_blank">
+            <img src="/sy/yqlj/_attachment/2021/09/24/10092877_17c1672d77210092877487.jpg" border="0"/>
+            </a>
+        </div>
+                <div class="yqlj-down-tu">
+            <a href="http://www.cpta.com.cn/" target="_blank">
+            <img src="/sy/yqlj/_attachment/2021/09/24/10092883_309c236f8c4c22b7b49b05.jpg" border="0"/>
+            </a>
+        </div>
+                <div class="yqlj-down-tu">
+            <a href="https://www.21wecan.com/" target="_blank">
+            <img src="/sy/yqlj/_attachment/2022/10/10/10190787_309c236f8c4c24adb9d001.jpg" border="0"/>
+            </a>
+        </div>
+                <div class="yqlj-down-tu">
+            <a href="http://rsj.beijing.gov.cn/ywsite/bjpta/" target="_blank">
+            <img src="/sy/yqlj/_attachment/2021/09/24/10092881_309c236f8c4c22b7b43803.jpg" border="0"/>
+            </a>
+        </div>
+            </div>
+</div>
+<!-- make template id  212 name 公共部分-友情链接 -->
+<!-- make time 2024-01-28 20:27:35 -->
+<!-- make template id  212 name 公共部分-友情链接 -->
+
+		<link href="http://81rc.81.cn/template/tenant207/t206/index.css" rel="stylesheet" type="text/css" />
+<div class="footer">
+  <div class="footer-lanmu-pd">
+    <ul>
+      <li><a href="" target="_blank">首页</a></li>
+      <li><a href="http://81rc.81.cn/zgks/index.html" target="_blank">资格考试</a></li>
+      <li><a href="http://81rc.81.cn/wzry/index.html" target="_blank">文职人员</a></li>
+      <li><a href="http://81rc.81.cn/bsh/index.html" target="_blank">博士后</a></li>
+      <li><a href="http://81rc.81.cn/jdzs/index.html" target="_blank">军队招生</a></li>
+      <li><a href="../news/2014-09/02/content_6120545.htm" target="_blank">网站声明</a></li>
+      <li><a href="" onClick="window.external.AddFavorite">加入收藏</a>
+      </li>
+      <li style="background:none"><a href="mailto:wzryzpks@163.com" target="_blank">联系我们</a></li>
+    </ul>
+    <div class="con con-2"> <a href="https://beian.miit.gov.cn" target="_blank">京ICP备2022019176号-2</a><em></em>版权所有<em></em>未经授权<em></em>不得转载</div>
+  </div>
+</div>
+<!-- make template id  206 name 页脚引用 -->
+<!-- make time 2024-01-28 20:27:32 -->
+<!-- make template id  206 name 页脚引用 -->
+
+        </div>
+
+	</div>
+
+		
+<!-- 公共底部引入 838 243940-->
+
+<script type="text/javascript" src="http://81rc.81.cn/material/js/focus.js"></script>
+<script src="http://81rc.81.cn/material/js/jquery.s2t.js"></script>
+<script src="http://81rc.81.cn/material/js/wxs-2.0.0.js"></script>
+		
+	<script src="http://81rc.81.cn/material/js/fenye.js?v=1.0.1"></script>
+	<script>
+		createPageHTML(
+			'1',
+			'1',
+			'index',
+			'html',
+			'2',
+			'fenye' // fenye: pc分页 移动端点击加载   scroll: pc 手机 滚动加载更多
+		)
+	</script>							
+</body>
+</html>
+<!-- make template id  578 name 通用栏目页 -->
+<!-- make time 2026-08-31 15:01:29 -->
+<!-- make template id  578 name 通用栏目页 -->

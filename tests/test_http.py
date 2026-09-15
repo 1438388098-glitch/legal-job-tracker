@@ -10,7 +10,7 @@ class _FakeClient:
         self.behavior = behavior
         self.calls = 0
 
-    def get(self, url, params=None, timeout=None):
+    def get(self, url, params=None, timeout=None, headers=None, **kw):
         self.calls += 1
         self.timeout = timeout
         return self.behavior(url, params)

@@ -1,0 +1,1286 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>
+    职位信息
+ - 广东金融学院大学生就业指导中心</title>
+    <meta name="keywords" content=""/>
+    <meta name="description" content="">
+    <meta charset="UTF-8">
+    <meta name="author" content="广州职迅信息科技有限公司(http://www.jobsys.cn/)">
+    <meta name="renderer" content="webkit|ie-comp|ie-stand">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <link href="https://jy.gduf.edu.cn/web/views/11540/images/favicon.ico" rel="shortcut icon">
+    <link href="https://jy.gduf.edu.cn/web/views/11540/images/favicon.ico" rel="bookmark">
+    <link href="https://jy.gduf.edu.cn/public/plugin/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://jy.gduf.edu.cn/public/fonts/iconfont.css">
+    <link rel="stylesheet" href="https://jy.gduf.edu.cn/public/plugin/idangerous/idangerous.swiper.css">
+
+    <link rel="stylesheet" href="https://jy.gduf.edu.cn/web/views/11540/css/main.css?v=20260515">
+
+        
+    <script src="https://jy.gduf.edu.cn/public/plugin/jquery/jquery-3.min.js"></script>
+    <script type="text/javascript">
+        var ROOT = "https://jy.gduf.edu.cn/";
+
+        var LOGIN_COM =0;
+        var LOGIN_STU =0;
+        var LOGIN_UNI =0;
+        var LOGIN_TQ =0;
+		$.ajaxSetup({
+			headers: {
+				'PADA-CSRF-TOKEN': ''
+			}
+		});
+    </script>
+</head>
+<body>
+
+<div class="modal fade login-block-modal" id="myModal" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="myModalLabel">用户登录</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="login-block" style="height:250px;">
+                    <div class="login-content">
+                        <a href="https://jy.gduf.edu.cn/stu" target="_blank" class="btn-login" style="height: 50px;line-height: 50px;padding:0;font-size: 17px;margin:0;background: #65b0e1;">
+                            <i class="iconfont icon-xueli"></i>
+                            学生登录
+                        </a>
+                        <a href="https://jy.gduf.edu.cn/uni" target="_blank" class="btn-login" style="height: 50px;line-height: 50px;padding:0;font-size: 17px;margin:10px 0 0;background: #00b5ad;">
+                            <i class="iconfont icon-yonghu"></i>
+                            管理员登录
+                        </a>
+                        <a href="https://jy.gduf.edu.cn/com" target="_blank" class="btn-login" style="height: 50px;line-height: 50px;padding:0;font-size: 17px;margin:10px 0 0;background: #19be6b;">
+                            <i class="iconfont icon-kuajingzhifuiconqiye"></i>
+                            用人单位登录
+                        </a>
+                        <a href="https://jy.gduf.edu.cn/tq" target="_blank" class="btn-login" style="height: 50px;line-height: 50px;padding:0;font-size: 17px;margin:10px 0 0;background: #f27200;">
+                            <i class="iconfont icon-jianli"></i>
+                            咨询师登录
+                        </a>
+                    </div>
+                </div>
+                
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="top-navbar">
+    <div class="container">
+        <div class="pull-left">
+            <a href="http://www.gduf.edu.cn/" target="_blank" class="item">学校主页</a>
+            <a href="index" class="item">本站首页</a>
+            <a href="javascript:;" onclick="addFavorite()" class="item">收藏本站</a>
+        </div>
+        <div class="pull-right">
+            <span class="item js-login js-login-name" style="display: none;">欢迎您，</span>
+            <a href="#" target="_blank" class="item js-login js-login-center" style="display: none;">个人中心</a>
+            <a href="#" class="item js-login js-login-out" style="display: none;">退出登录</a>
+            <a href="#" style="border-left: none;" class="item js-unlogin" data-toggle="modal"
+               data-target="#myModal">登录</a>
+            <a href="https://jy.gduf.edu.cn/com/Index/register" target="_blank" class="item js-unlogin">用人单位注册</a>
+            <a href="help" class="item">帮助</a>
+            <a href="javascript:;" id="topHeaderWechat" class="item">微信</a>
+        </div>
+    </div>
+</div>
+
+
+<div class="logo-navbar white">
+    <div class="container">
+
+        <div class="row">
+            <div class="logo col-xs-8">
+                <a href="https://jy.gduf.edu.cn/">
+                    <img src="https://jy.gduf.edu.cn/web/views/11540/images/logo.png" alt="广东金融学院大学生就业指导中心">
+                </a>
+            </div>
+            <div class="col-xs-4 text-right">
+                <img style="height: 126px;" src="https://jy.gduf.edu.cn/web/views/11540/images/school-gate-bg.png">
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="main-navbar">
+    <nav class="navbar navbar-default" role="navigation">
+        <div class="container">
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav nav-justified">
+                    <li class=""><a href="index">首页</a></li>
+                    <!--<li class="dropdown  ">
+                        <a href="#" class="dropdown-toggle">学校概况<span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                                                        
+                        </ul>
+                    </li>-->
+                    <li class="dropdown ">
+                        <a href="news-list" class="dropdown-toggle">新闻公告<span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                                                                                    <li><a href="news-list?type=jiuyexinwen">就业新闻</a></li>
+                                                        <li><a href="news-list?type=xueshenghuodong">学生活动</a></li>
+                                                        <li><a href="news-list?type=zhaoshengxinwen">招生新闻</a></li>
+                            
+                        </ul>
+                    </li>
+                    <li class="dropdown 
+active
+">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">招聘信息<span
+                                class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="job-list">职位信息</a></li>
+                            <li><a href="preach-list">校园宣讲会</a></li>
+                            <li><a href="jobfair-list">校园招聘会</a></li>
+                            <li><a href="jobs-brief-list">招聘简讯</a></li>
+                        </ul>
+                    </li>
+                    <li class=""><a
+                            href="employment-list">就业活动</a></li>
+                    <li class="dropdown ">
+                        <a href="article-list" class="dropdown-toggle">就业指导<span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                                                                                    <li><a href="article-list?type=jiuyezhidao">就业指导</a></li>
+                                                        <li><a href="article-list?type=mianshijiqiao">面试技巧</a></li>
+                            
+                        </ul>
+                    </li>
+
+                    <li class="dropdown ">
+                        <a href="policy-list" class="dropdown-toggle">政策法规<span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                                                        
+                        </ul>
+                    </li>
+
+                    <li class="dropdown ">
+                        <a href="download-list" class="dropdown-toggle">资料下载<span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                                                        
+                        </ul>
+                    </li>
+                    <li class=""><a href="major-list">专业介绍</a></li>
+                    <li class=" dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">特色专栏<span
+                                class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                                                        
+                        </ul>
+                    </li>
+                    <li><a href="company-index">用人单位频道</a></li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+</div>
+
+
+
+    <style>
+        body{
+            background: #f9f9f9;
+        }
+    </style>
+    <div class="container">
+        <div class="search-header">
+            <div class="search-wrapper">
+                <div class="form-group">
+                    <div class="input-group">
+                        <input class="form-control" id="keyword" value="法务" type="text" placeholder="电子商务">
+                        <a id="search_single_btn" href="javascript:;" class="input-group-addon">搜索<span
+                                    class="iconfont icon-search"></span></a>
+                    </div>
+                </div>
+                <div class="hot-words">
+                    <div class="tips">按职位分类:</div>
+                    <span class="words">
+                        <a href="job-list?category=0107">首席运营官/COO</a>
+                        <a href="job-list?category=0216">客户代表/营销代表</a>
+                        <a href="job-list?category=0402">会计主管</a>
+                        <a href="job-list?category=1405">投资银行</a>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="position_search white pd-1px">
+            <table>
+                <tr>
+                    <td>
+                        工作地区：
+                        <div class="input_select" id="district_selection">
+                            <input type="text" id="district" data-val="" placeholder="请选择工作地区" readonly>
+                            <i></i>
+                            <div class="select_show mulselect">
+                                <div class="alreadySelected">
+                                    <p>已选：</p>
+                                    <div class="selectedArea">
+                                        <div class="clearfix"></div>
+                                    </div>
+                                    <div class="submin">
+                                        <span></span>
+                                        <a>确定</a>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div><!--已选-->
+                                <ul id="district_select"></ul>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        学历要求：
+                        <div class="input_select" id="education_selection">
+                            <input type="text" id="education" data-val="" placeholder="请选择学历要求" readonly>
+                            <i></i>
+                            <div class="select_show">
+                                <ul id="education_select"></ul>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        所属行业：
+                        <div class="input_select" id="trade_selection">
+                            <input type="text" id="trade" data-val="" placeholder="请选择公司所属行业" readonly>
+                            <i></i>
+                            <div class="select_show mulselect">
+                                <div class="alreadySelected">
+                                    <p>已选：</p>
+                                    <div class="selectedArea">
+                                        <div class="clearfix"></div>
+                                    </div>
+                                    <div class="submin">
+                                        <span></span>
+                                        <a>确定</a>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div><!--已选-->
+                                <ul id="trade_select"></ul>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        薪酬范围：
+                        <div class="input_select" id="wage_selection">
+                            <input type="text" id="wage" data-val="" placeholder="请选择薪酬范围" readonly>
+                            <i></i>
+                            <div class="select_show">
+                                <ul id="wage_select"></ul>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        职位类别：
+                        <div class="input_select" id="category_selection">
+                            <input type="text" id="category" data-val="" placeholder="请选择职业类型" readonly>
+                            <i></i>
+                            <div class="select_show mulselect">
+                                <div class="alreadySelected">
+                                    <p>已选：</p>
+                                    <div class="selectedArea">
+                                        <div class="clearfix"></div>
+                                    </div>
+                                    <div class="submin">
+                                        <span></span>
+                                        <a>确定</a>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div><!--已选-->
+                                <ul id="category_select"></ul>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        更新时间：
+                        <div class="input_select link_selection" id="sttr_selection">
+                            <input id="settr" type="text" data-val="" placeholder="不限" readonly/>
+                            <i></i>
+                            <div class="select_show">
+                                <ul id="settr_select"></ul>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <div class="btn-center-big" id="search_btn">
+                <a href="javascript:;" class="btn focus">
+                    查找结果
+                </a>
+            </div>
+
+                        <h3 class="job-result-title">当前职位共有<span class="text-orange mg-rl-10">55</span>个</h3>
+            <div class="jobs-list pd-0">
+                <div class="row mg-b-20">
+                                            <div class="col-xs-6">
+                            <a href="job-detail?id=141261" class="job-block card mg-b-10">
+                                <div class="row no-gutter first-line">
+                                    <div class="col-xs-4 job-name">法务</div>
+                                    <div class="col-xs-2 job-time">02/21 发布</div>
+                                    <div class="col-xs-4 col-xs-offset-1 job-company">中继融资租赁有限公司</div>
+                                    <div class="col-xs-1 tiny-qrcode overlay-trigger">
+                                        <span class="iconfont icon-erweima"></span>
+                                    </div>
+                                </div>
+                                <div class="row no-gutter second-line">
+                                    <div class="col-xs-4 job-salary">
+                                        4000～5000元/月
+                                    </div>
+                                    <div class="col-xs-3 job-edu">本科生</div>
+                                    <div class="col-xs-5 job-industry">非货币银行服务</div>
+                                </div>
+                                <div class="row no-gutter second-line pd-t-0">
+                                    <div class="col-xs-12 job-industry">广东省广州市天河区</div>
+                                </div>
+                                <div class="third-line">五险一金,房贴,有年假</div>
+                                <div class="card-overlay">
+                                    <div class="qrcode-container" data-url="https://jy.gduf.edu.cn/wx/index/job-detail/141261"></div>
+                                </div>
+                            </a>
+                        </div>
+                                                <div class="col-xs-6">
+                            <a href="job-detail?id=140988" class="job-block card mg-b-10">
+                                <div class="row no-gutter first-line">
+                                    <div class="col-xs-4 job-name">法务专员-20...</div>
+                                    <div class="col-xs-2 job-time">09/12 发布</div>
+                                    <div class="col-xs-4 col-xs-offset-1 job-company">北京掌上先机网络科技有限公司</div>
+                                    <div class="col-xs-1 tiny-qrcode overlay-trigger">
+                                        <span class="iconfont icon-erweima"></span>
+                                    </div>
+                                </div>
+                                <div class="row no-gutter second-line">
+                                    <div class="col-xs-4 job-salary">
+                                        1万元以上
+                                    </div>
+                                    <div class="col-xs-3 job-edu">本科生</div>
+                                    <div class="col-xs-5 job-industry">互联网和相关服务</div>
+                                </div>
+                                <div class="row no-gutter second-line pd-t-0">
+                                    <div class="col-xs-12 job-industry">北京市西城区</div>
+                                </div>
+                                <div class="third-line"></div>
+                                <div class="card-overlay">
+                                    <div class="qrcode-container" data-url="https://jy.gduf.edu.cn/wx/index/job-detail/140988"></div>
+                                </div>
+                            </a>
+                        </div>
+                                                <div class="col-xs-6">
+                            <a href="job-detail?id=140175" class="job-block card mg-b-10">
+                                <div class="row no-gutter first-line">
+                                    <div class="col-xs-4 job-name">法务专员</div>
+                                    <div class="col-xs-2 job-time">09/08 发布</div>
+                                    <div class="col-xs-4 col-xs-offset-1 job-company">瀛通通讯股份有限公司</div>
+                                    <div class="col-xs-1 tiny-qrcode overlay-trigger">
+                                        <span class="iconfont icon-erweima"></span>
+                                    </div>
+                                </div>
+                                <div class="row no-gutter second-line">
+                                    <div class="col-xs-4 job-salary">
+                                        8000～10000元/月
+                                    </div>
+                                    <div class="col-xs-3 job-edu">博士研究生,硕士研究生,本科生</div>
+                                    <div class="col-xs-5 job-industry">视听设备制造</div>
+                                </div>
+                                <div class="row no-gutter second-line pd-t-0">
+                                    <div class="col-xs-12 job-industry">广东省东莞市</div>
+                                </div>
+                                <div class="third-line">五险一金,包食宿,有年假,管理规范,晋升快</div>
+                                <div class="card-overlay">
+                                    <div class="qrcode-container" data-url="https://jy.gduf.edu.cn/wx/index/job-detail/140175"></div>
+                                </div>
+                            </a>
+                        </div>
+                                                <div class="col-xs-6">
+                            <a href="job-detail?id=139853" class="job-block card mg-b-10">
+                                <div class="row no-gutter first-line">
+                                    <div class="col-xs-4 job-name">财务会计&法务助理岗</div>
+                                    <div class="col-xs-2 job-time">05/20 发布</div>
+                                    <div class="col-xs-4 col-xs-offset-1 job-company">深圳市中电科技产业集成创新服务有限公司</div>
+                                    <div class="col-xs-1 tiny-qrcode overlay-trigger">
+                                        <span class="iconfont icon-erweima"></span>
+                                    </div>
+                                </div>
+                                <div class="row no-gutter second-line">
+                                    <div class="col-xs-4 job-salary">
+                                        5000～8000元/月
+                                    </div>
+                                    <div class="col-xs-3 job-edu">二学位,本科生</div>
+                                    <div class="col-xs-5 job-industry">其他商务服务业</div>
+                                </div>
+                                <div class="row no-gutter second-line pd-t-0">
+                                    <div class="col-xs-12 job-industry">广东省深圳市南山区</div>
+                                </div>
+                                <div class="third-line">双休,朝九晚五,五险一金,年终奖,交通方便</div>
+                                <div class="card-overlay">
+                                    <div class="qrcode-container" data-url="https://jy.gduf.edu.cn/wx/index/job-detail/139853"></div>
+                                </div>
+                            </a>
+                        </div>
+                                                <div class="col-xs-6">
+                            <a href="job-detail?id=139636" class="job-block card mg-b-10">
+                                <div class="row no-gutter first-line">
+                                    <div class="col-xs-4 job-name">法务专员</div>
+                                    <div class="col-xs-2 job-time">03/13 发布</div>
+                                    <div class="col-xs-4 col-xs-offset-1 job-company">易坚时（成都）商务服务有限公司</div>
+                                    <div class="col-xs-1 tiny-qrcode overlay-trigger">
+                                        <span class="iconfont icon-erweima"></span>
+                                    </div>
+                                </div>
+                                <div class="row no-gutter second-line">
+                                    <div class="col-xs-4 job-salary">
+                                        1万元以上
+                                    </div>
+                                    <div class="col-xs-3 job-edu">本科生</div>
+                                    <div class="col-xs-5 job-industry">人力资源服务</div>
+                                </div>
+                                <div class="row no-gutter second-line pd-t-0">
+                                    <div class="col-xs-12 job-industry">广东省广州市</div>
+                                </div>
+                                <div class="third-line">五险一金,年终奖,有年假,有提成</div>
+                                <div class="card-overlay">
+                                    <div class="qrcode-container" data-url="https://jy.gduf.edu.cn/wx/index/job-detail/139636"></div>
+                                </div>
+                            </a>
+                        </div>
+                                                <div class="col-xs-6">
+                            <a href="job-detail?id=133948" class="job-block card mg-b-10">
+                                <div class="row no-gutter first-line">
+                                    <div class="col-xs-4 job-name">法务专员(岗位...</div>
+                                    <div class="col-xs-2 job-time">05/06 发布</div>
+                                    <div class="col-xs-4 col-xs-offset-1 job-company">广州高周转资源整合有限公司</div>
+                                    <div class="col-xs-1 tiny-qrcode overlay-trigger">
+                                        <span class="iconfont icon-erweima"></span>
+                                    </div>
+                                </div>
+                                <div class="row no-gutter second-line">
+                                    <div class="col-xs-4 job-salary">
+                                        4000～5000元/月
+                                    </div>
+                                    <div class="col-xs-3 job-edu">本科生</div>
+                                    <div class="col-xs-5 job-industry">其他商务服务业</div>
+                                </div>
+                                <div class="row no-gutter second-line pd-t-0">
+                                    <div class="col-xs-12 job-industry">广东省广州市</div>
+                                </div>
+                                <div class="third-line"></div>
+                                <div class="card-overlay">
+                                    <div class="qrcode-container" data-url="https://jy.gduf.edu.cn/wx/index/job-detail/133948"></div>
+                                </div>
+                            </a>
+                        </div>
+                                                <div class="col-xs-6">
+                            <a href="job-detail?id=138095" class="job-block card mg-b-10">
+                                <div class="row no-gutter first-line">
+                                    <div class="col-xs-4 job-name">法务</div>
+                                    <div class="col-xs-2 job-time">03/02 发布</div>
+                                    <div class="col-xs-4 col-xs-offset-1 job-company">深圳市前海一方科技研发集团有限公司</div>
+                                    <div class="col-xs-1 tiny-qrcode overlay-trigger">
+                                        <span class="iconfont icon-erweima"></span>
+                                    </div>
+                                </div>
+                                <div class="row no-gutter second-line">
+                                    <div class="col-xs-4 job-salary">
+                                        8000～10000元/月
+                                    </div>
+                                    <div class="col-xs-3 job-edu">硕士研究生,本科生</div>
+                                    <div class="col-xs-5 job-industry">控股公司服务</div>
+                                </div>
+                                <div class="row no-gutter second-line pd-t-0">
+                                    <div class="col-xs-12 job-industry">广东省深圳市</div>
+                                </div>
+                                <div class="third-line"></div>
+                                <div class="card-overlay">
+                                    <div class="qrcode-container" data-url="https://jy.gduf.edu.cn/wx/index/job-detail/138095"></div>
+                                </div>
+                            </a>
+                        </div>
+                                                <div class="col-xs-6">
+                            <a href="job-detail?id=137689" class="job-block card mg-b-10">
+                                <div class="row no-gutter first-line">
+                                    <div class="col-xs-4 job-name">法务</div>
+                                    <div class="col-xs-2 job-time">11/23 发布</div>
+                                    <div class="col-xs-4 col-xs-offset-1 job-company">上海俺来也人才服务有限公司</div>
+                                    <div class="col-xs-1 tiny-qrcode overlay-trigger">
+                                        <span class="iconfont icon-erweima"></span>
+                                    </div>
+                                </div>
+                                <div class="row no-gutter second-line">
+                                    <div class="col-xs-4 job-salary">
+                                        5000～8000元/月
+                                    </div>
+                                    <div class="col-xs-3 job-edu"></div>
+                                    <div class="col-xs-5 job-industry">人力资源服务</div>
+                                </div>
+                                <div class="row no-gutter second-line pd-t-0">
+                                    <div class="col-xs-12 job-industry">上海市市辖区</div>
+                                </div>
+                                <div class="third-line">五险一金,年终奖,包食宿,加班费,双休</div>
+                                <div class="card-overlay">
+                                    <div class="qrcode-container" data-url="https://jy.gduf.edu.cn/wx/index/job-detail/137689"></div>
+                                </div>
+                            </a>
+                        </div>
+                                                <div class="col-xs-6">
+                            <a href="job-detail?id=137325" class="job-block card mg-b-10">
+                                <div class="row no-gutter first-line">
+                                    <div class="col-xs-4 job-name">法务岗管培生</div>
+                                    <div class="col-xs-2 job-time">10/21 发布</div>
+                                    <div class="col-xs-4 col-xs-offset-1 job-company">保利商业管理有限公司佛山分公司</div>
+                                    <div class="col-xs-1 tiny-qrcode overlay-trigger">
+                                        <span class="iconfont icon-erweima"></span>
+                                    </div>
+                                </div>
+                                <div class="row no-gutter second-line">
+                                    <div class="col-xs-4 job-salary">
+                                        5000～8000元/月
+                                    </div>
+                                    <div class="col-xs-3 job-edu">博士研究生,硕士研究生,本科生</div>
+                                    <div class="col-xs-5 job-industry">物业管理</div>
+                                </div>
+                                <div class="row no-gutter second-line pd-t-0">
+                                    <div class="col-xs-12 job-industry">广东省广州市</div>
+                                </div>
+                                <div class="third-line"></div>
+                                <div class="card-overlay">
+                                    <div class="qrcode-container" data-url="https://jy.gduf.edu.cn/wx/index/job-detail/137325"></div>
+                                </div>
+                            </a>
+                        </div>
+                                                <div class="col-xs-6">
+                            <a href="job-detail?id=136985" class="job-block card mg-b-10">
+                                <div class="row no-gutter first-line">
+                                    <div class="col-xs-4 job-name">2022届管培...</div>
+                                    <div class="col-xs-2 job-time">09/30 发布</div>
+                                    <div class="col-xs-4 col-xs-offset-1 job-company">广东电声市场营销股份有限公司</div>
+                                    <div class="col-xs-1 tiny-qrcode overlay-trigger">
+                                        <span class="iconfont icon-erweima"></span>
+                                    </div>
+                                </div>
+                                <div class="row no-gutter second-line">
+                                    <div class="col-xs-4 job-salary">
+                                        5000～8000元/月
+                                    </div>
+                                    <div class="col-xs-3 job-edu">本科生</div>
+                                    <div class="col-xs-5 job-industry">其他娱乐业</div>
+                                </div>
+                                <div class="row no-gutter second-line pd-t-0">
+                                    <div class="col-xs-12 job-industry">广东省广州市天河区</div>
+                                </div>
+                                <div class="third-line">五险一金,年终奖,双休,有年假,晋升快</div>
+                                <div class="card-overlay">
+                                    <div class="qrcode-container" data-url="https://jy.gduf.edu.cn/wx/index/job-detail/136985"></div>
+                                </div>
+                            </a>
+                        </div>
+                                                <div class="col-xs-6">
+                            <a href="job-detail?id=136757" class="job-block card mg-b-10">
+                                <div class="row no-gutter first-line">
+                                    <div class="col-xs-4 job-name">法务</div>
+                                    <div class="col-xs-2 job-time">09/17 发布</div>
+                                    <div class="col-xs-4 col-xs-offset-1 job-company">广州白云电器设备股份有限公司</div>
+                                    <div class="col-xs-1 tiny-qrcode overlay-trigger">
+                                        <span class="iconfont icon-erweima"></span>
+                                    </div>
+                                </div>
+                                <div class="row no-gutter second-line">
+                                    <div class="col-xs-4 job-salary">
+                                        5000～8000元/月
+                                    </div>
+                                    <div class="col-xs-3 job-edu">本科生</div>
+                                    <div class="col-xs-5 job-industry">输配电及控制设备制造</div>
+                                </div>
+                                <div class="row no-gutter second-line pd-t-0">
+                                    <div class="col-xs-12 job-industry">广东省广州市白云区</div>
+                                </div>
+                                <div class="third-line">五险一金,有年假,旅游</div>
+                                <div class="card-overlay">
+                                    <div class="qrcode-container" data-url="https://jy.gduf.edu.cn/wx/index/job-detail/136757"></div>
+                                </div>
+                            </a>
+                        </div>
+                                                <div class="col-xs-6">
+                            <a href="job-detail?id=136684" class="job-block card mg-b-10">
+                                <div class="row no-gutter first-line">
+                                    <div class="col-xs-4 job-name">综合类-法务岗</div>
+                                    <div class="col-xs-2 job-time">09/16 发布</div>
+                                    <div class="col-xs-4 col-xs-offset-1 job-company">广州拓客商贸有限公司</div>
+                                    <div class="col-xs-1 tiny-qrcode overlay-trigger">
+                                        <span class="iconfont icon-erweima"></span>
+                                    </div>
+                                </div>
+                                <div class="row no-gutter second-line">
+                                    <div class="col-xs-4 job-salary">
+                                        8000～10000元/月
+                                    </div>
+                                    <div class="col-xs-3 job-edu"></div>
+                                    <div class="col-xs-5 job-industry">其他批发业</div>
+                                </div>
+                                <div class="row no-gutter second-line pd-t-0">
+                                    <div class="col-xs-12 job-industry">广东省广州市白云区</div>
+                                </div>
+                                <div class="third-line"></div>
+                                <div class="card-overlay">
+                                    <div class="qrcode-container" data-url="https://jy.gduf.edu.cn/wx/index/job-detail/136684"></div>
+                                </div>
+                            </a>
+                        </div>
+                                                <div class="col-xs-6">
+                            <a href="job-detail?id=91639" class="job-block card mg-b-10">
+                                <div class="row no-gutter first-line">
+                                    <div class="col-xs-4 job-name">法务专员</div>
+                                    <div class="col-xs-2 job-time">09/10 发布</div>
+                                    <div class="col-xs-4 col-xs-offset-1 job-company">广州市欧亚床垫家具有限公司</div>
+                                    <div class="col-xs-1 tiny-qrcode overlay-trigger">
+                                        <span class="iconfont icon-erweima"></span>
+                                    </div>
+                                </div>
+                                <div class="row no-gutter second-line">
+                                    <div class="col-xs-4 job-salary">
+                                        5000～8000元/月
+                                    </div>
+                                    <div class="col-xs-3 job-edu">本科生</div>
+                                    <div class="col-xs-5 job-industry">其他家具制造</div>
+                                </div>
+                                <div class="row no-gutter second-line pd-t-0">
+                                    <div class="col-xs-12 job-industry">广东省</div>
+                                </div>
+                                <div class="third-line"></div>
+                                <div class="card-overlay">
+                                    <div class="qrcode-container" data-url="https://jy.gduf.edu.cn/wx/index/job-detail/91639"></div>
+                                </div>
+                            </a>
+                        </div>
+                                                <div class="col-xs-6">
+                            <a href="job-detail?id=136477" class="job-block card mg-b-10">
+                                <div class="row no-gutter first-line">
+                                    <div class="col-xs-4 job-name">法务培训生（深...</div>
+                                    <div class="col-xs-2 job-time">09/03 发布</div>
+                                    <div class="col-xs-4 col-xs-offset-1 job-company">深圳竹芒科技有限公司</div>
+                                    <div class="col-xs-1 tiny-qrcode overlay-trigger">
+                                        <span class="iconfont icon-erweima"></span>
+                                    </div>
+                                </div>
+                                <div class="row no-gutter second-line">
+                                    <div class="col-xs-4 job-salary">
+                                        5000～8000元/月
+                                    </div>
+                                    <div class="col-xs-3 job-edu">本科生,专科生</div>
+                                    <div class="col-xs-5 job-industry"></div>
+                                </div>
+                                <div class="row no-gutter second-line pd-t-0">
+                                    <div class="col-xs-12 job-industry">广东省深圳市南山区</div>
+                                </div>
+                                <div class="third-line">五险一金,有年假</div>
+                                <div class="card-overlay">
+                                    <div class="qrcode-container" data-url="https://jy.gduf.edu.cn/wx/index/job-detail/136477"></div>
+                                </div>
+                            </a>
+                        </div>
+                                                <div class="col-xs-6">
+                            <a href="job-detail?id=136237" class="job-block card mg-b-10">
+                                <div class="row no-gutter first-line">
+                                    <div class="col-xs-4 job-name">法务应届毕业生...</div>
+                                    <div class="col-xs-2 job-time">08/13 发布</div>
+                                    <div class="col-xs-4 col-xs-offset-1 job-company">上海零碳在线投资股份有限公司</div>
+                                    <div class="col-xs-1 tiny-qrcode overlay-trigger">
+                                        <span class="iconfont icon-erweima"></span>
+                                    </div>
+                                </div>
+                                <div class="row no-gutter second-line">
+                                    <div class="col-xs-4 job-salary">
+                                        5000～8000元/月
+                                    </div>
+                                    <div class="col-xs-3 job-edu">博士研究生,硕士研究生,本科生</div>
+                                    <div class="col-xs-5 job-industry"></div>
+                                </div>
+                                <div class="row no-gutter second-line pd-t-0">
+                                    <div class="col-xs-12 job-industry">上海市</div>
+                                </div>
+                                <div class="third-line"></div>
+                                <div class="card-overlay">
+                                    <div class="qrcode-container" data-url="https://jy.gduf.edu.cn/wx/index/job-detail/136237"></div>
+                                </div>
+                            </a>
+                        </div>
+                                                <div class="col-xs-6">
+                            <a href="job-detail?id=136154" class="job-block card mg-b-10">
+                                <div class="row no-gutter first-line">
+                                    <div class="col-xs-4 job-name">法务岗</div>
+                                    <div class="col-xs-2 job-time">07/26 发布</div>
+                                    <div class="col-xs-4 col-xs-offset-1 job-company">中国人寿财产保险股份有限公司江门中心支公司</div>
+                                    <div class="col-xs-1 tiny-qrcode overlay-trigger">
+                                        <span class="iconfont icon-erweima"></span>
+                                    </div>
+                                </div>
+                                <div class="row no-gutter second-line">
+                                    <div class="col-xs-4 job-salary">
+                                        5000～8000元/月
+                                    </div>
+                                    <div class="col-xs-3 job-edu">本科生</div>
+                                    <div class="col-xs-5 job-industry">财产保险</div>
+                                </div>
+                                <div class="row no-gutter second-line pd-t-0">
+                                    <div class="col-xs-12 job-industry">广东省江门市</div>
+                                </div>
+                                <div class="third-line">五险一金,年终奖,双休,有年假,管理规范</div>
+                                <div class="card-overlay">
+                                    <div class="qrcode-container" data-url="https://jy.gduf.edu.cn/wx/index/job-detail/136154"></div>
+                                </div>
+                            </a>
+                        </div>
+                                                <div class="col-xs-6">
+                            <a href="job-detail?id=128959" class="job-block card mg-b-10">
+                                <div class="row no-gutter first-line">
+                                    <div class="col-xs-4 job-name">法务风控岗</div>
+                                    <div class="col-xs-2 job-time">03/26 发布</div>
+                                    <div class="col-xs-4 col-xs-offset-1 job-company">广东国民资产管理有限公司</div>
+                                    <div class="col-xs-1 tiny-qrcode overlay-trigger">
+                                        <span class="iconfont icon-erweima"></span>
+                                    </div>
+                                </div>
+                                <div class="row no-gutter second-line">
+                                    <div class="col-xs-4 job-salary">
+                                        4000～5000元/月
+                                    </div>
+                                    <div class="col-xs-3 job-edu">本科生</div>
+                                    <div class="col-xs-5 job-industry">其他商务服务业</div>
+                                </div>
+                                <div class="row no-gutter second-line pd-t-0">
+                                    <div class="col-xs-12 job-industry">广东省广州市天河区</div>
+                                </div>
+                                <div class="third-line">五险一金,年终奖,朝九晚五,有年假,交通方便</div>
+                                <div class="card-overlay">
+                                    <div class="qrcode-container" data-url="https://jy.gduf.edu.cn/wx/index/job-detail/128959"></div>
+                                </div>
+                            </a>
+                        </div>
+                                                <div class="col-xs-6">
+                            <a href="job-detail?id=128447" class="job-block card mg-b-10">
+                                <div class="row no-gutter first-line">
+                                    <div class="col-xs-4 job-name">风控法务专员</div>
+                                    <div class="col-xs-2 job-time">03/24 发布</div>
+                                    <div class="col-xs-4 col-xs-offset-1 job-company">深圳鼎益控股集团有限公司</div>
+                                    <div class="col-xs-1 tiny-qrcode overlay-trigger">
+                                        <span class="iconfont icon-erweima"></span>
+                                    </div>
+                                </div>
+                                <div class="row no-gutter second-line">
+                                    <div class="col-xs-4 job-salary">
+                                        5000～8000元/月
+                                    </div>
+                                    <div class="col-xs-3 job-edu">本科生</div>
+                                    <div class="col-xs-5 job-industry">金融信托与管理服务</div>
+                                </div>
+                                <div class="row no-gutter second-line pd-t-0">
+                                    <div class="col-xs-12 job-industry">广东省深圳市南山区</div>
+                                </div>
+                                <div class="third-line"></div>
+                                <div class="card-overlay">
+                                    <div class="qrcode-container" data-url="https://jy.gduf.edu.cn/wx/index/job-detail/128447"></div>
+                                </div>
+                            </a>
+                        </div>
+                                                <div class="col-xs-6">
+                            <a href="job-detail?id=128263" class="job-block card mg-b-10">
+                                <div class="row no-gutter first-line">
+                                    <div class="col-xs-4 job-name">法务助理</div>
+                                    <div class="col-xs-2 job-time">03/26 发布</div>
+                                    <div class="col-xs-4 col-xs-offset-1 job-company">广州瑞丰岭南房地产有限公司</div>
+                                    <div class="col-xs-1 tiny-qrcode overlay-trigger">
+                                        <span class="iconfont icon-erweima"></span>
+                                    </div>
+                                </div>
+                                <div class="row no-gutter second-line">
+                                    <div class="col-xs-4 job-salary">
+                                        1万元以上
+                                    </div>
+                                    <div class="col-xs-3 job-edu">本科生</div>
+                                    <div class="col-xs-5 job-industry">房地产开发经营</div>
+                                </div>
+                                <div class="row no-gutter second-line pd-t-0">
+                                    <div class="col-xs-12 job-industry">广东省广州市</div>
+                                </div>
+                                <div class="third-line">五险一金,年终奖,双休,有年假,旅游</div>
+                                <div class="card-overlay">
+                                    <div class="qrcode-container" data-url="https://jy.gduf.edu.cn/wx/index/job-detail/128263"></div>
+                                </div>
+                            </a>
+                        </div>
+                                                <div class="col-xs-6">
+                            <a href="job-detail?id=128164" class="job-block card mg-b-10">
+                                <div class="row no-gutter first-line">
+                                    <div class="col-xs-4 job-name">法务专员</div>
+                                    <div class="col-xs-2 job-time">03/23 发布</div>
+                                    <div class="col-xs-4 col-xs-offset-1 job-company">银雁科技服务集团股份有限公司</div>
+                                    <div class="col-xs-1 tiny-qrcode overlay-trigger">
+                                        <span class="iconfont icon-erweima"></span>
+                                    </div>
+                                </div>
+                                <div class="row no-gutter second-line">
+                                    <div class="col-xs-4 job-salary">
+                                        5000～8000元/月
+                                    </div>
+                                    <div class="col-xs-3 job-edu">硕士研究生,双学位,本科生</div>
+                                    <div class="col-xs-5 job-industry">货币银行服务</div>
+                                </div>
+                                <div class="row no-gutter second-line pd-t-0">
+                                    <div class="col-xs-12 job-industry">广东省深圳市</div>
+                                </div>
+                                <div class="third-line"></div>
+                                <div class="card-overlay">
+                                    <div class="qrcode-container" data-url="https://jy.gduf.edu.cn/wx/index/job-detail/128164"></div>
+                                </div>
+                            </a>
+                        </div>
+                        
+                </div>
+
+                                        
+
+    
+    <div class="pagination-wrapper">
+        <ul class="pagination">
+
+            
+                            <li class="disabled">
+                    <a aria-label="上一页">
+                        <span aria-hidden="true">上一页</span>
+                    </a>
+                </li>
+            
+            
+                            
+                                                            <li class="active"><span>1</span></li>
+                                                                                <li><a href="http://jy.gduf.edu.cn/index.php/web/Index/job-list?keyword=法务&p=2">2</a></li>
+                                                                                <li><a href="http://jy.gduf.edu.cn/index.php/web/Index/job-list?keyword=法务&p=3">3</a></li>
+                                    
+            
+            
+                            <li>
+                    <a href="http://jy.gduf.edu.cn/index.php/web/Index/job-list?keyword=法务&p=2" aria-label="下一页">
+                        <span aria-hidden="true">下一页</span>
+                    </a>
+                </li>
+                    </ul>
+
+    </div>
+
+            </div>
+        </div>
+
+                        <div class="friend-link-wrapper mg-t-20">
+            <div class="main-header">
+                <div class="title-zh">友情链接</div>
+                <div class="title-en">links</div>
+            </div>
+            <div class="js-friend-swiper item-more-swiper friend-link-swiper relative">
+                <div class="swiper-container">
+                    <div class="swiper-wrapper">
+                        
+                                                                                    <div class="swiper-slide">
+                                                        <a href="https://www.ncss.cn/" target="_blank"
+                               style="margin-right:10px;width:calc(100% - 10px);">
+                                国家大学生就业服务平台—24365校园招聘服务
+                            </a>
+                            
+                                                                                <a href="https://edu.gd.gov.cn/ztzlnew/jycy/" target="_blank"
+                               style="margin-right:10px;width:calc(100% - 10px);">
+                                广东大学生就业创业
+                            </a>
+                                                            </div>
+                            
+                                                                                    <div class="swiper-slide">
+                                                        <a href="http://xibu.youth.cn" target="_blank"
+                               style="margin-right:10px;width:calc(100% - 10px);">
+                                西部计划
+                            </a>
+                            
+                                                                                <a href="https://www.gfbzb.gov.cn/" target="_blank"
+                               style="margin-right:10px;width:calc(100% - 10px);">
+                                全国征兵网
+                            </a>
+                                                            </div>
+                            
+                                                                                    <div class="swiper-slide">
+                                                        <a href="http://gj.ncss.cn" target="_blank"
+                               style="margin-right:10px;width:calc(100% - 10px);">
+                                到国际组织实习任职信息服务平台
+                            </a>
+                            
+                                                                                <a href="http://www.newjobs.com.cn/" target="_blank"
+                               style="margin-right:10px;width:calc(100% - 10px);">
+                                中国国家人才网
+                            </a>
+                                                            </div>
+                            
+                                                                                    <div class="swiper-slide">
+                                                        <a href="http://www.gduf.edu.cn" target="_blank"
+                               style="margin-right:10px;width:calc(100% - 10px);">
+                                广东金融学院
+                            </a>
+                            
+                                                                                <a href="http://www.gdrsks.gov.cn/" target="_blank"
+                               style="margin-right:10px;width:calc(100% - 10px);">
+                                广东省人事考试网
+                            </a>
+                                                            </div>
+                            
+                                                                                    <div class="swiper-slide">
+                                                        <a href="https://jobone.51job.com/School/GDUF" target="_blank"
+                               style="margin-right:10px;width:calc(100% - 10px);">
+                                JOBONE求职平台
+                            </a>
+                            
+                                                                                <a href="https://www.xiaozhaozhao.com/" target="_blank"
+                               style="margin-right:10px;width:calc(100% - 10px);">
+                                校找找招聘网
+                            </a>
+                                                            </div>
+                            
+                        
+                    </div>
+                </div>
+
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
+        </div>
+            </div>
+
+
+<div class="toolbar-wrap">
+    <div class="toolbar" >
+    
+    <style>
+        .toolbar-tab .my-tab-ico{
+            font-size: 13px;
+            font-style: normal;
+            direction: ltr;
+            writing-mode: vertical-rl;
+            writing-mode: tb-rl;
+            text-align: center;
+            padding: 0 0 5px 0;
+        }
+        .web-sidebar-bg-im{
+                        }
+    </style>
+
+    <div class="toolbar-panels">
+        <div data-name="ad" class="J-content toolbar-panel tbar-panel-ad" style="visibility: hidden;"><h3
+                class="tbar-panel-header J-panel-header"><a> <i></i> <em class="title"></em> </a> <span
+                class="close-panel J-close"></span></h3>
+            <div class="tbar-panel-main">
+                <div class="tbar-panel-content J-panel-content"></div>
+            </div>
+        </div>
+        <div class="J-content-user toolbar-panel" style="background: #fff">
+            <div class="preson-info">
+                <div class="avatar">
+                    <a href="" class="js-login-center" target="_blank">
+                        <img src="" class="js-login-img" alt="用户头像">
+                    </a></div>
+                <div class="info">
+                    <a class="js-login-name js-login-center" style="display: block;font-size:18px;"></a>
+                    <div class="mg-t-5">
+                        <span class="js-login-sidebar"></span>&#12288;
+                        <a href="" class="js-login-out">退出登录</a>
+                    </div>
+                </div>
+            </div>
+            <a href="" target="_blank" class="js-login-center js-login-text btn primary big mg-rl-20" style="display: block"></a>
+            <div class="panel-title">
+                <span class="text">微信中心</span>
+                <div class="line"></div>
+            </div>
+            <div class="text-center">
+                <img src="https://cdn.jobsys.cn/statics/images/11540/qrcode.jpg" alt="" style="width:150px;margin: 0 auto;">
+                <p>关注服务号</p>
+            </div>
+
+        </div>
+        <div class="J-content-calendar toolbar-panel">
+            <div id="jsContentCalendar" class="J-content-calendar-wrapper" style="display: none;background: #fff;">
+                
+
+
+<div class="calendar-wrapper pd-calendar">
+</div>
+    <link rel="stylesheet" type="text/css" href="https://jy.gduf.edu.cn/public/plugin/calendar/calendar.css"/>
+    <script type="text/javascript" src="https://jy.gduf.edu.cn/public/plugin/calendar/jquery.calendar.js"></script>
+<script>
+    $('.calendar-wrapper').eCalendar({
+        url: ROOT + "web/calender/lists?",
+        title: '活动日历'
+    });
+</script>
+            </div>
+            <div id="jsContentRoleStu" class="J-content-calendar-wrapper" style="display: none;background: #fff;">
+                                <div class="panel-title">
+                    <span class="text">就业手续办理</span>
+                    <div class="line"></div>
+                </div>
+                <div class="row no-gutter pd-tb-20 mg-rl-0">
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="https://jy.gduf.edu.cn/stu/index/stu-info" target="_blank">生源信息核对</a>
+                    </div>
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="https://jy.gduf.edu.cn/stu/index/stu-job" target="_blank">就业信息填报</a>
+                    </div>
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="https://jy.gduf.edu.cn/stu/index/stu-pq" target="_blank">派遣信息填报</a>
+                    </div>
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="/stu/?a=affairs&m=agreement" target="_blank">协议书申请</a>
+                    </div>
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="https://jy.gduf.edu.cn/stu/index/syb-list" target="_blank">项目活动报名</a>
+                    </div>
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="/stu/?a=jobsubsidy&m=edit" target="_blank">求职创业补贴申请</a>
+                    </div>
+                    
+                </div>
+                                <div class="panel-title">
+                    <span class="text">就业信息活动</span>
+                    <div class="line"></div>
+                </div>
+                <div class="row no-gutter pd-tb-20 mg-rl-0">
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="/stu/?a=preach" target="_blank">校园宣讲会</a>
+                    </div>
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="/stu/?a=jobfair" target="_blank">大型招聘会/双选会</a>
+                    </div>
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="https://jy.gduf.edu.cn/web/Index/job-list" target="_blank">招聘职位</a>
+                    </div>
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="https://jy.gduf.edu.cn/web/Index/other-list" target="_blank">招聘简讯</a>
+                    </div>
+                    
+                </div>
+                                <div class="panel-title">
+                    <span class="text">就业创业辅导</span>
+                    <div class="line"></div>
+                </div>
+                <div class="row no-gutter pd-tb-20 mg-rl-0">
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="/stu/?a=activity" target="_blank">就业活动</a>
+                    </div>
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="https://jy.gduf.edu.cn/stu/index/booking-sn" target="_blank">预约咨询</a>
+                    </div>
+                    
+                </div>
+                                <div class="panel-title">
+                    <span class="text">其他服务</span>
+                    <div class="line"></div>
+                </div>
+                <div class="row no-gutter pd-tb-20 mg-rl-0">
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="https://jy.gduf.edu.cn/stu/index/course-lesson" target="_blank">就业课程</a>
+                    </div>
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="https://jy.gduf.edu.cn/stu/index/stu-archive" target="_blank">档案查询</a>
+                    </div>
+                    
+                </div>
+                
+
+            </div>
+            <div id="jsContentRoleCom" class="J-content-calendar-wrapper" style="display: none;background: #fff;">
+                <div class="panel-title">
+                    <span class="text">用人单位服务</span>
+                    <div class="line"></div>
+                </div>
+                <div class="row no-gutter pd-tb-20 mg-rl-0">
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="https://jy.gduf.edu.cn/com/index/jobs-list" target="_blank">发布在线招聘职位</a>
+                    </div>
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="/com/?a=preach" target="_blank">申请宣讲会</a>
+                    </div>
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="/com/?a=jobfair" target="_blank">参加招聘会</a>
+                    </div>
+                    
+                </div>
+            </div>
+            <div id="jsContentRoleUni" class="J-content-calendar-wrapper" style="display: none;background: #fff;">
+                <div class="panel-title">
+                    <span class="text">管理员服务</span>
+                    <div class="line"></div>
+                </div>
+                <div class="row no-gutter pd-tb-20 mg-rl-0">
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="https://jy.gduf.edu.cn/uni/index/stu-job" target="_blank">学生就业信息管理</a>
+                    </div>
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="https://jy.gduf.edu.cn/uni/index/company-list" target="_blank">就业市场管理</a>
+                    </div>
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="https://jy.gduf.edu.cn/uni/index/course-teacher-grade" target="_blank">就业课程管理</a>
+                    </div>
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="https://jy.gduf.edu.cn/uni/index/web-news" target="_blank">就业网管理</a>
+                    </div>
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="https://jy.gduf.edu.cn/uni/index/message-batch" target="_blank">消息通知管理</a>
+                    </div>
+                    
+                </div>
+            </div>
+            <div id="jsContentRoleTq" class="J-content-calendar-wrapper" style="display: none;background: #fff;">
+                <div class="panel-title">
+                    <span class="text">咨询师服务</span>
+                    <div class="line"></div>
+                </div>
+                <div class="row no-gutter pd-tb-20 mg-rl-0">
+                                        <div class="col-xs-6 text-center mg-b-5">
+                        <a href="https://jy.gduf.edu.cn/tq/index/booking-sn" target="_blank">预约咨询管理</a>
+                    </div>
+                    
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="toolbar-tabs">
+        <a href="javascript:;" class="J-trigger js-unlogin toolbar-tab" data-toggle="modal" data-target="#myModal">
+            <i class="tab-ico web-sidebar-bg-im iconfont icon-yonghu"></i>
+            <span class="tab-text">用户信息</span>
+        </a>
+        <a href="javascript:;" class="J-trigger J-user js-login toolbar-tab" style="display: none;">
+            <i class="tab-ico web-sidebar-bg-im iconfont icon-yonghu"></i>
+            <span class="tab-text">用户信息</span>
+        </a>
+
+        <a href="javascript:;" class="J-trigger J-calendar toolbar-tab" data-id="jsContentCalendar">
+            <i class="tab-ico web-sidebar-bg-im iconfont icon-rili"></i>
+            <span class="tab-text">活动日历</span>
+        </a>
+
+                <a href="javascript:;" class="J-trigger J-calendar toolbar-tab" data-id="jsContentRoleStu" style="height:70px;">
+            <i class="tab-ico web-sidebar-bg-im iconfont icon-xueli"></i>
+            <i class="tab-ico web-sidebar-bg-im my-tab-ico">学生</i>
+        </a>
+        <a href="javascript:;" class="J-trigger J-calendar toolbar-tab" data-id="jsContentRoleCom" style="height:70px;">
+            <i class="tab-ico web-sidebar-bg-im iconfont icon-kuajingzhifuiconqiye"></i>
+            <i class="tab-ico web-sidebar-bg-im my-tab-ico">单位</i>
+        </a>
+        <a href="javascript:;" class="J-trigger J-calendar toolbar-tab" data-id="jsContentRoleUni" style="height:85px;">
+            <i class="tab-ico web-sidebar-bg-im iconfont icon-zhidao"></i>
+            <i class="tab-ico web-sidebar-bg-im my-tab-ico" style="height: 50px;">管理员</i>
+        </a>
+        <a href="javascript:;" class="J-trigger J-calendar toolbar-tab" data-id="jsContentRoleTq" style="height:85px;">
+            <i class="tab-ico web-sidebar-bg-im iconfont icon-tianxiexinxi"></i>
+            <i class="tab-ico web-sidebar-bg-im my-tab-ico" style="height: 50px;">咨询师</i>
+        </a>
+            </div>
+        <div class="toolbar-footer">
+        <a href="javascript:;" onclick="addFavorite()" class="J-trigger toolbar-tab">
+            <i class="tab-ico web-sidebar-bg-im iconfont icon-shoucang"></i>
+            <span class="tab-text">收藏本站</span>
+        </a>
+        <a href="javascript:;" class="J-trigger toolbar-tab sidebar-qrcode">
+            <i class="tab-ico web-sidebar-bg-im iconfont icon-erweima"></i>
+            <div class="sidebar-block-qrcode">
+                <div class="row">
+                    <div class="col-xs-6"><img src="https://cdn.jobsys.cn/statics/images/11540/sub-qrcode.png">
+                        <p style="text-align: center">订阅号</p></div>
+                    <div class="col-xs-6"><img src="https://cdn.jobsys.cn/statics/images/11540/qrcode.jpg">
+                        <p style="text-align: center">服务号</p></div>
+                </div>
+            </div>
+        </a>
+        <a href="javascript:;" onclick="backToTop()" class="J-trigger toolbar-tab sidebar-back-to-top">
+            <i class="tab-ico web-sidebar-bg-im iconfont icon-shang"></i>
+            <span class="tab-text">顶部</span>
+        </a>
+    </div>
+</div>
+</div>
+
+
+<div class="main-footer">
+    <div class="container">
+        <div class="row no-gutter">
+            <div class="col-xs-9">
+                <div class="contact-block">
+                    <div class="contact-info">
+                        <div class="title mg-t-0">
+                            <i class="iconfont icon-dianhua"></i> 服务热线
+                        </div>
+                        <div class="content">
+                            <span class="mg-r-40">电话：020-87053902</span>
+                            <span class="mg-r-40">咨询时间：上午 8:00—12:0 / 下午 14:00—17：00 / 晚上 19:00—22：00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-block pd-t-0">
+                    <div class="contact-info">
+                        <div class="title mg-t-0">
+                            <i class="iconfont icon-icontianping"></i> 联系信息
+                        </div>
+                        <div class="content">
+                            <span class="mg-r-40">电子传真：020-37216086</span>
+                            <span class="mg-r-40">电子邮箱：gdufjy@163.com</span>
+                            <span class="mg-r-40">学校地址：广州市天河区龙洞迎福路527号</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-3 text-right">
+                <img class="mg-t-30" src="https://jy.gduf.edu.cn/web/views/11540/images/logo-white.png" alt="">
+            </div>
+        </div>
+
+    </div>
+    <div class="copyright">
+        <div class="container">
+            <div>Copyright &copy; 2016-2026 广东金融学院大学生就业指导中心 All Rights Reserved</div>
+            <div>
+                <a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=44049102496217" target="_blank">粤公网安备 44010602001127号</a>
+                &#12288;<a href="https://beian.miit.gov.cn/" target="_blank">粤ICP备05008840号</a>
+                &nbsp;
+                <script type="text/javascript">var cnzz_protocol = (("https:" === document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1281416959'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s4.cnzz.com/z.js%3Fid%3D1281416959%26show%3Dpic' type='text/javascript'%3E%3C/script%3E"));</script>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://jy.gduf.edu.cn/public/plugin/bootstrap/js/bootstrap.min.js"></script>
+<script src="https://jy.gduf.edu.cn/public/plugin/qrcode/qrcode.min.js"></script>
+
+    <script src="https://jy.gduf.edu.cn/web/json/cache_classify.js"></script>
+    <script src="https://jy.gduf.edu.cn/web/json/cache_mulselect_classify.js"></script>
+    <script src="https://jy.gduf.edu.cn/public/plugin/job-list.js"></script>
+
+
+<script src="https://jy.gduf.edu.cn/public/plugin/idangerous/idangerous.swiper.min.js"></script>
+<script src="https://jy.gduf.edu.cn/web/views/11540/js/main.js?v=20210121"></script>
+
+</body>
+</html>

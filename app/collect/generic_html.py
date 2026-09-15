@@ -58,9 +58,10 @@ def parse_list(html: str, cfg: dict) -> list[dict]:
     items, seen = [], set()
     for node in tree.css(cfg["item_sel"]):
         link = node if link_sel == "self" else node.css_first(link_sel)
-        if link is None or not link.attributes.get("href"):
-            continue
-        url = urljoin(cfg["list_url"], link.attributes["href"])
+        href = (link.attributes.get("href") or "") if link is not None else ""
+        if link is None or not href or href.startswith(("javascript", "#")):
+            continue  # 占位链接（javascript:void(0)/锚点）不是条目
+        url = urljoin(cfg["list_url"], href)
         url = apply_url_scheme(url, cfg)
         if url in seen:
             continue  # 嵌套表格会让同一条目被多个 tr 命中，按 URL 去重
@@ -79,11 +80,14 @@ def parse_list(html: str, cfg: dict) -> list[dict]:
 
         seen.add(url)
         date_node = node.css_first(cfg["date_sel"]) if cfg.get("date_sel") else None
+        dl_node = node.css_first(cfg["deadline_sel"]) if cfg.get("deadline_sel") else None
         org_node = node.css_first(cfg["org_sel"]) if cfg.get("org_sel") else None
         items.append({
             "title": title,
             "url": url,
             "publish_date": parse_date_text(_text(date_node)) if date_node else None,
+            # 部分协会站（深圳律协）列表里就带截止日列，比从正文猜更可靠
+            "deadline": parse_date_text(_text(dl_node)) if dl_node else None,
             "org": _text(org_node) or cfg.get("org"),
         })
     return items
@@ -157,7 +161,8 @@ def extract_text(html: str, sel: str | None) -> str:
 
 def enrich(item: dict, body: str, cfg: dict) -> dict:
     item["body"] = body
-    item["deadline"] = guess_deadline(body)
+    # 正文里推断出的截止日优先；列表页直接给的（如深圳律协的截止日列）作兜底
+    item["deadline"] = guess_deadline(body) or item.get("deadline")
     item["job_type"] = cfg.get("job_type") or infer_job_type(item["title"])
     # 城市在标题里往往不出现（"2026年公开招聘工作人员公告"），单位名和正文
     # 开头才是它最常出现的地方 —— 三处一起查，实测空值率从 55% 降到 ~25%

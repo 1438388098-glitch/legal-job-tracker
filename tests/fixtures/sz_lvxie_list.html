@@ -1,0 +1,1139 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?3af9fa12e086f0a265f57ad71639aa41";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+    <title>人才交流</title>
+
+        <link rel="stylesheet" type="text/css" href="/static/css/cn/catalog.css" />
+        <link rel="stylesheet" type="text/css" href="/static/css/cn/luntan.css" />
+        <script src="/js/jquery.min.js"></script>
+        <script src="/js/jquery-ui.custom.min.js"></script>
+        <script src="/js/i18n/jquery.ui.datepicker-zh-CN.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/smoothness/jquery-ui-1.8.6.custom.css" />
+    <link rel="shortcut icon" href="/static/images/cn/logo.ico" type="image/x-icon" />
+    <script type='text/javascript' src='https://webchat.7moor.com/javascripts/7moorInit.js?accessId=27c252a0-c0aa-11e8-a90d-9d1e547c2986&autoShow=false&language=ZHCN' async='async'>
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="top">
+            <div class="date" id="localtime">
+                <script type="text/javascript">
+                    function showLocale(todayTime)
+                    {
+                        var yy = todayTime.getYear();
+                        if(yy<1900) yy = yy+1900;
+                        var MM = todayTime.getMonth()+1;
+                        var dd = todayTime.getDate();
+                        var hh = todayTime.getHours();
+                        if(hh<10) hh = '0' + hh;
+                        var amOrPm = "上午";
+                        if (hh > 11) amOrPm = "下午";
+                        if (hh > 12) hh = hh - 12;
+                        if (hh == 0) hh = 12;
+                        var mm = todayTime.getMinutes();
+                        if(mm<10) mm = '0' + mm;
+                        var ss = todayTime.getSeconds();
+                        if(ss<10) ss = '0' + ss;
+                        var ww = todayTime.getDay();
+
+                        if  (ww==0)  ww="星期日";
+                        if  (ww==1)  ww="星期一";
+                        if  (ww==2)  ww="星期二";
+                        if  (ww==3)  ww="星期三";
+                        if  (ww==4)  ww="星期四";
+                        if  (ww==5)  ww="星期五";
+                        if  (ww==6)  ww="星期六";
+
+                        str = yy + "年" + MM + "月" + dd + "日"  + "　" + amOrPm + hh + ":" + mm + ":" + ss + "　" + ww;
+                        return(str);
+                    }
+
+                    function tick()
+                    {
+                        var today;
+                        today = new Date();
+                        document.getElementById("localtime").innerHTML = showLocale(today);
+                        window.setTimeout("tick()", 1000);
+                    }
+                    tick();
+                </script>
+            </div>
+
+            <div class="login">
+<script>
+var $openidServer = 'http://passport.szlawyers.com';
+var $returnUrl = "http://www.szlawyers.com:80/j_spring_security_check?openid_identifier=http://passport.szlawyers.com/openid&select=allow";
+</script>
+<div style="color:#ccc;padding-left:15px;">
+<form method="post" action="https://passport.szlawyers.com/openid/website-login.jsp" onsubmit="return true;" id="loginform">
+<table width="" border="0" cellspacing="0" cellpadding="0">
+<tr>
+<td>用户名：</td>
+<td><input name="j_username" id="login-id" type="text" class="inp" value=""></td>
+<td>密码：</td>
+<td><input name="j_password" id="login-pwd" type="password" class="inp"></td>
+<td><input alt="login" id="searchSubmit" src="/static/images/cn/btn_login.gif" type="image" class="logbtn"></td>
+<td>
+<a href="javascript:showQrImgPassport();" style="color:red;padding: 0 10px 0 5px;">手机扫码登录</a>
+<div class="modal fade m-qrimg" id="QrimgPassport" backdrop="true" tabindex="-1" aria-hidden="true" style="display:none;width:520px;left: 47%">
+<h4 class="modal-title">扫码登录</h4>
+<a class="close" data-dismiss="modal" href="javascript:hideQrImgPassport();">&times;</a>
+<div class="modal-content">
+<div>
+<p style="color:red;text-align:left;">律师登录中国律师身份核验微信小程序后，使用扫一扫功能，扫描下方二维码自动登录网站。</p>
+<p style="color:red;text-align:left;">律师事务所可由负责人通过中国律师身份核验小程序，授权给管理员进行扫码登录。</p>
+<div id="qrcode_img" style="text-align:center"><img alt="扫一扫" src="about:blank" width="280px"></div>
+<div id="red_font" >
+<font color=red>请在&nbsp;<span id="lefttime">60</span>&nbsp;秒内完成扫描登录，超时后，将需要重新更换二维码。<span></span></font>
+</div>
+<div style="margin-top:10px;">
+<button onclick="btnClick();" style="display:none;" id="changeQrcodeBtn">刷新二维码</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+function showQrImgPassport(){
+$('#QrimgPassport').show();
+startCount();
+}
+function hideQrImgPassport(){
+$('#QrimgPassport').hide();
+clearTimeout(timer);
+clearTimeout(checkTimer);
+}
+var time = 60;
+var timer;
+var checkTimer;
+function startCount(){
+var imgURL='/service/rest/lenchybar.ThirdOauth/collection/generateQRcode?v='+new Date().getTime();
+$("#qrcode_img").find("img").attr("src",imgURL);
+document.getElementById('lefttime').innerText = time;
+time = 60;
+timer = setTimeout(timing,1000);
+checkTimer = setTimeout(function(){check();},1000);
+}
+function timing() {
+if(time>0) {
+time--;
+document.getElementById('lefttime').innerText = time;
+timer = setTimeout(timing,1000);
+} else {
+document.getElementById('changeQrcodeBtn').style.display="block";
+}
+}
+var localUrl = window.location.protocol + '//' + window.location.host;
+function btnClick() {
+document.getElementById('red_font').style.display="block";
+document.getElementById('changeQrcodeBtn').style.display="none";
+startCount();
+}
+function check() {
+$.get('/service/rest/lenchybar.ThirdOauth/collection/thirdCheck',
+function (result) {
+console.log(result);
+if (result.code == 1) {
+location.href = 'http://passport.szlawyers.com/openid/third-proxy-autologin.jsp?_qrcodeTokenId=' + result.result.tokenId + "&referer=" + localUrl + "&cipherText=" + result.result.cipherText;
+} else if (result.code == -1) {
+alert("用户信息无法匹配,请联系管理员");
+$("#changeQrcodeBtn").attr("style","display:block;");
+clearTimeout(timer);
+document.getElementById('red_font').style.display="none";
+return;
+} else {
+checkTimer = setTimeout(function(){check();},1000);
+}
+});
+}
+</script>
+<a style="padding:0 5px" href="http://passport.szlawyers.com/notice.jsp" target="_blank"><u>登录须知</u></a>
+</td>
+</tr>
+</table>
+</form>
+</div>    <script type="text/javascript" src="/js/jsencrypt.min.js"></script>
+    <script type="text/javascript" src="/js/pbkdf2.js"></script>
+    <script type="text/javascript" src="/js/aes.js"></script>
+    <script type="text/javascript" src="/js/encrypt.js.jsp"></script>
+    <script>
+        $(function(){
+            $('#loginform').submit(function(){
+                debugger;
+                var username = $('#login-id').val();
+                var pass = $('#login-pwd').val();
+                if (username == '' || pass == '') {
+                    alert('请输入用户名,密码.');
+                    return false;
+                }
+                var encryptedPass = keyEncrypt(pass);
+                $('#login-pwd').val(encryptedPass);
+                return true;
+            });
+        });
+    </script>
+            </div>
+
+            <div class="qlink">
+                <a style="margin: 0 5px;" href="http://new.szlawyers.com/">切换新版</a> |
+                <a style="    margin: 0 5px;" href="/wztg" target="_blank">我要投稿</a> |
+                <a style="    margin: 0 5px;" href="/catalog/b5b64b47216a4a3eb89d37217df854c3" target="_blank">联系我们</a> |
+                <a style="    margin: 0 5px;" href="/en/">English</a>
+            </div>
+        </div>
+        <div class="clear"></div>
+        <div class="logo">		
+				<a href="/"><img src="http://szlawyer.lsxh.homolo.net/file/upload/20130822/image/20130822104829_fd1017425301451ea812319a34ab77de.jpg?thumb=300x300" border=0 /></a>
+</div>
+        <div class="nav">
+            <ul>
+                <li><a href = "/">首　　页</a></li>
+                            <li><a href = "/aboutus">协会介绍</a></li>
+                            <li><a href = "/notices">通知公告</a></li>
+                            <li><a href = "/lawyernews">会员风采</a></li>
+                            <li><a href = "/lms">警示台</a></li>
+                            <li><a href = "/e37b689dec7445eab114cd6ef4f71917">联系我们</a></li>
+                            <li><a href = "/71c5a81051e84e9c9483da6e780db87b">律师学院</a></li>
+                            <li><a href = "/party" target="_blank">律师党建</a></li>
+                            <li><a href = "/news">律协动态</a></li>
+                            <li><a href = "/lawnews">网络资源</a></li>
+                            <li><a href = "/training">律师培训</a></li>
+                            <li><a href = "/research">法律资讯</a></li>
+                            <li><a href = "http://www.szlawyers.com/aboutus/rules" target="_blank">行业规范</a></li>
+                            <li><a href = "https://www.jufaanli.com" target="_blank">法律检索</a></li>
+                            <li><a href = "/recruitment">人才交流</a></li>
+                            <li><a href = "https://im1c5366d.7x24cc.com/phone_webChat.html?accountId=N000000036681&chatId=db60a237-1cd0-4af9-a75a-a3fc79084aab" target="_blank">在线咨询</a></li>
+                            <li><a href = "/lawyer-list">律师名录</a></li>
+            </ul>
+
+            <script src="/static/js/login_box/jquery.login.js" type="text/javascript"></script>
+            <div id="bg" style="background-color:#666;position:absolute;z-index:99;left:0;top:0;display:none;width:100%;height:100%;opacity:0.5;filter: alpha(opacity=50);-moz-opacity: 0.5;"></div>
+            <div id="_tanchuang" style="position:absolute;z-index:20000;width:600px;height:300px;display:none;font-size:12px;background-image:url(/static/images/cn/bj_bdfb.jpg)">
+                <div style="height:50px;">
+                    <a id="close" href="javascript:void(0)" title="关闭" tabindex="9" style="float:right;outline:none;*hide-focus:expression(this.hideFocus=true);"><img src="/static/images/cn/btn_close.gif"</a>
+                </div>
+                <div style="height:200px" margin-top:100px;>
+                    <a href="/plugins/bdfb-lnk.jsp">
+                        <div style="padding: 70px 0px 50px 70px;float:left;">
+                            <img src="/static/images/cn/btn_bdfb.jpg">
+                        </div>
+                    </a>
+
+                    <a id="xialadan">
+                        <div style="padding: 70px 70px 50px 0px;float:right;">
+                            <img src="/static/images/cn/btn_zgzw.jpg" >
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <script type="text/javascript">
+                $(function () {
+                    $("#tanchuang").click(function () {
+                        $("#bg").css({
+                            display: "block", height: $(document).height()
+                        });
+                        var $box = $('#_tanchuang');
+                        $box.css({
+                            //设置弹出层距离左边的位置
+                            left: ($("body").width() - $box.width()) / 2 - 20 + "px",
+                            //设置弹出层距离上面的位置
+                            top: ($(window).height() - $box.height()) / 2 + $(window).scrollTop() + "px",
+                            display: "block"
+                        });
+                    });
+                    //点击关闭按钮的时候，遮罩层关闭
+                    $("#close").click(function () {
+                        $("#bg,#_tanchuang").css("display", "none");
+                    });
+                });
+
+
+            </script>
+
+            <table border='0'>
+                <form name="loginform" method=post action="">
+                    <tr>
+                        <td>
+                            <input type="hidden" name="username" value="szlawyers">
+                            <input type="hidden" name="password" value="szlsxh">
+                        </td>
+                    </tr>
+                </form>
+            </table>
+
+            <script type="text/javascript">
+                $("#xialadan").click(function(){
+                    var	myhost	=	"http://epub.cnki.net/kns";
+                    autosubmit(document.loginform);
+                    function autosubmit(obj)
+                    {
+                        debugger;
+                        var user	=	obj.username.value;
+                        var pass	=	obj.password.value;
+                        obj.action = myhost + "/loginid.aspx?p=" + encodeURI("http://law.cnki.net/szlsxh/");
+                        obj.submit();
+                    }
+                })
+            </script>
+        </div>
+        <div class="clear"></div>
+    </div>
+		   
+				<div  class="banner">
+							<a href="http://www.szlawyers.com/involve_foreign" target="_blank"><img src="http://sitemgr.szlawyers.com/file/upload/20241224/image/20241224133705_18f3fb43fd54434c832893a232112c5f.png" alt="" /></a>
+				</div>
+  		  
+		  <div class="mainboxs">
+				  <div class="leftboxs">
+    <div class="box menu">
+        <div class="top">人才交流</div>
+            <ul>
+                    <li ><a href="/recruitment/1f7f2d78997b40a288289f71c150e28c">招聘信息</a></li>
+            </ul>
+    </div>
+					      
+    <div class="box gaoji">
+        <div class="top">招聘信息查询</div>
+        <form id="search" action="/recruitment/1f7f2d78997b40a288289f71c150e28c" method="get">
+            <div class="content">
+                <span>事务所名称：</span>
+                <input name="lawfirm" type="text" id="lawfirm" class="input3" size="20" maxlength="30" value="">
+
+                <span>职位：</span>
+                <input name="title" type="text" id="title" class="input3" size="20" maxlength="20" value="">
+
+                <span>发布日期：</span>
+                <input name="datePublishedBegin" type="text" id="datePublishedBegin" class="input3" size="20" maxlength="20" value="">
+
+                <span>到：</span>
+                <input name="datePublishedEnd" type="text" id="datePublishedEnd" class="input3" size="20" maxlength="20" value="">
+
+                <span>截止日期：</span>
+                <input name="dateExpiredBegin" type="text" id="dateExpiredBegin"  class="input3" size="20" maxlength="20" value="">
+
+                <span>到：</span>
+                <input name="dateExpiredEnd" type="text" id="dateExpiredEnd"  class="input3" size="20" maxlength="20" value="">
+
+                <div class="tijiao">
+                    <input alt="login" id="searchSubmit" name="searchSubmit" src="/static/images/cn/btn_search3.gif" type="image" class="btn"/>
+                </div>
+            </div>
+        </form>
+        <script>
+            $(document).ready(function() {
+                $("#datePublishedBegin").datepicker({
+                    changeYear: true,
+                    minDate:'-100y',
+                    dateFormat:'yy-mm-dd',
+                    monthNames: ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月']
+                });
+                $("#datePublishedEnd").datepicker({
+                    changeYear: true,
+                    minDate:'-100y',
+                    dateFormat:'yy-mm-dd',
+                    monthNames: ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月']
+                });
+                $("#dateExpiredBegin").datepicker({
+                    changeYear: true,
+                    minDate:'-100y',
+                    dateFormat:'yy-mm-dd',
+                    monthNames: ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月']
+                });
+                $("#dateExpiredEnd").datepicker({
+                    changeYear: true,
+                    minDate:'-100y',
+                    dateFormat:'yy-mm-dd',
+                    monthNames: ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月']
+                });
+            });
+        </script>
+    </div>
+				 </div>
+				    
+			    <div class="rightboxs">
+			      		  <div class="location">
+							  
+							  您现在所处的位置：	
+							  <a href="/">首页</a>  
+							  		<a href="/recruitment"> > 人才交流</a>
+							  		<a href="/recruitment/1f7f2d78997b40a288289f71c150e28c"> > 招聘信息</a>
+							  
+							  
+							  	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="javascript:alert('请先登录');" style="color:red;">发布招聘信息</a>
+									&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="javascript:alert('请先登录');"  style="color:red;">管理招聘信息</a>
+				  	      </div>
+					
+						  <div class="list">
+					        		<table width="99%" border="0" align="center" cellpadding="3" cellspacing="1" bgcolor="#D4D0C8" class="zhaopin">
+								          <tbody>
+								            <tr>
+								              <td width="260" height="25" align="center" bgcolor="#FFFFFF" class="kuan5"><strong class="zi2">&nbsp;&nbsp;律所名称</strong></td>
+								              <td width="197" align="center" bgcolor="#FFFFFF" class="kuan5"><strong class="zi2">职位</strong></td>
+								              <td width="100"  align="center" bgcolor="#FFFFFF" class="kuan5"><strong class="zi2">发布日期</strong></td>
+								              <td width="100" align="center" bgcolor="#FFFFFF" class="kuan5"><strong class="zi2">截止日期</strong></td>
+								            </tr>
+								            
+											
+											
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/6c8afed9fc0e4c95ab0144b2f4d5e273" class="la3" target="_blank" >北京市华泰（深圳）律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/62d0fc0653754f7eb6a3f82418585403" target="_blank">
+											              			财务
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/2c5b1f824d66485a9679cf489a39e529" class="la3" target="_blank" >广东格祥（龙岗）律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/84826bad4c6941fa80f6f58e117ce431" target="_blank">
+											              			律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/b6234ce8f0714a459e6e67fb01f04319" class="la3" target="_blank" >广东德荣律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/0758809b30554fcc895b243ce3a71b39" target="_blank">
+											              			律师助理、授薪律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/ce1a058679234e3c847a74c14246736f" class="la3" target="_blank" >广东恩典律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/5d792525da7d4605ae57b9debb108bd2" target="_blank">
+											              			律师助理、授薪律师、提成律师、...
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/9b85193e8b304c64a0de50fa53d30645" class="la3" target="_blank" >广东广泰律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/eded2b71a26b450fbae9333d6abfce0d" target="_blank">
+											              			提成律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-31</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/6b86276ee0f14baca9f8f27a393a457b" class="la3" target="_blank" >广东平威律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/df6efec740bf444cad07cf3a27edd981" target="_blank">
+											              			授薪律师、实习人员、律师、实习...
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-30</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/dba2e83820c0415d9236a92fb3df3825" class="la3" target="_blank" >北京观韬（深圳）律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/5bd2b9b234f946a39c55fce18b6b46f4" target="_blank">
+											              			律师助理、实习人员、律师助理、...
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/017fce815ae14a928aff1989ae0d8a40" class="la3" target="_blank" >广东格祥律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/c6116d010f054e10b38da1e4da49ae2a" target="_blank">
+											              			律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-30</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/f702d8f531fc407b9f412e30d59e9257" class="la3" target="_blank" >广东瑞师律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/43c49711812a465d9fa10f5477d7df31" target="_blank">
+											              			律师、提成律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-12-31</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/937277f1c4344bf99dad13c1bfb3155b" class="la3" target="_blank" >泰和泰（深圳）律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/8ce1f4c28345423fb869fa3fe7d454bb" target="_blank">
+											              			实习人员、实习人员、实习人员、...
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-30</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/67c7f7c07c194db6a808cc0e0954599f" class="la3" target="_blank" >北京大成（深圳）律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/90e99864dcf5418a8ad6593bd548c994" target="_blank">
+											              			律师助理、授薪律师、律师助理、...
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/e08965eca3ab4a288d464e15a39856a8" class="la3" target="_blank" >广东执一律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/ff94b05f416e480095bd6e5db574cdb0" target="_blank">
+											              			授薪律师、律师、律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/ca8d655c0b0f407b955e9b141a3feba3" class="la3" target="_blank" >广东鹏曜律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/17a9d43c7a3241c284dda62d14e168e1" target="_blank">
+											              			合伙人、律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-31</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/7449c0b6726b445d9b66a4fbec5b3894" class="la3" target="_blank" >北京海润天睿（深圳）律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/fdaac8db4fd0467ca67bc740090de33d" target="_blank">
+											              			授薪律师、实习人员、合伙人、律...
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/aa9c06d884c643a0afd1c9853560ee2c" class="la3" target="_blank" >北京浩天（深圳）律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/133fe29e720b416f8cc24028d6d8eaaf" target="_blank">
+											              			实习人员、实习人员、律师助理、...
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-30</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/62206a3d8d07486ba07557abc778f834" class="la3" target="_blank" >广东百郡律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/9ec229b1e8ef4018988c0aa77f63d82f" target="_blank">
+											              			律师、合伙人
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-14</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/aeedcbe8555346f48020255d93b0f636" class="la3" target="_blank" >广东仁皓律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/061269be509f4cd6a7df08dc1813b8ce" target="_blank">
+											              			提成律师、律师助理
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-12-31</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/63159e320c574a83b80d9edcff716ac8" class="la3" target="_blank" >广东讼宁律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/c8b1c4ebb6a14dd38e3c4ccb7fdc424a" target="_blank">
+											              			授薪律师、律师、律师助理
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-30</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/6cc97a93ffee44afb0aedd0d1fea7824" class="la3" target="_blank" >广东卓建（龙岗）律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/8ee21e7c8edb48ad93d1a05fef1be4b3" target="_blank">
+											              			授薪律师、律师助理
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-30</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/75c7abcec69d4f62857a1f52f0ca1897" class="la3" target="_blank" >广东泽钜律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/a37c449106f5415f9c5cc1dde97e1e4b" target="_blank">
+											              			律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2027-01-31</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/fcceee4244704ad1aff370cd6b7c6c80" class="la3" target="_blank" >广东商达（宝安）律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/8d80ac7ac7e3410cb3e4ba1f9c7b64cf" target="_blank">
+											              			合伙人、律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-31</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/6a0429640c584a93a05b9ad00ed478b9" class="la3" target="_blank" >北京市安理（深圳）律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/01af1389838f48d39359f9b8011e2dea" target="_blank">
+											              			授薪律师、律师助理
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-31</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/37777f99aa4d42dca0f223f45b809884" class="la3" target="_blank" >上海和基（深圳）律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/58e3e3daedf745308cc95b3140af2a1c" target="_blank">
+											              			律师、合伙人
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/794bd41b085c4638856782d3fde1e157" class="la3" target="_blank" >广东广悦（深圳）律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/4fe14a8ec5f44ea7a1a0b804241ef73a" target="_blank">
+											              			实习人员
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-12-31</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/b5dc167ce94b47bfb02bad461c0e0be0" class="la3" target="_blank" >广东日之升律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/6eb8e418013849268312fc43ae68b132" target="_blank">
+											              			授薪律师、律师、提成律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/00fa010aab39460490c1aacb06d9466d" class="la3" target="_blank" >广东循则律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/2c1ba9eb901642b9accb29d3c3c64add" target="_blank">
+											              			律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/fb3f22e4d7024d12bdfa34886de94e77" class="la3" target="_blank" >广东嘉国律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/a9277df01e694627938440ccd4e639cf" target="_blank">
+											              			提成律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-31</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/449674b8f965428786761a19c2a48f03" class="la3" target="_blank" >广东广和（罗湖）律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/83e4f8c3b0324166a07891da7efc3066" target="_blank">
+											              			律师助理、律师、合伙人
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-30</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/ce75ae77b15243dcb65b957f4ed54858" class="la3" target="_blank" >广东春霆律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/e60cd5b1d17344949a058c8b41b97b95" target="_blank">
+											              			授薪律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/edcb342dd21245dc9280abe87d8ada0c" class="la3" target="_blank" >广东天梭律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/003f211152a3440c8e368781cc9c5383" target="_blank">
+											              			实习人员、实习人员、律师、合伙...
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/965e1d6f2a274fe18e149d3cf9b62cb1" class="la3" target="_blank" >广东深湾律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/4345714dc1b7458a83fb277ec82116b9" target="_blank">
+											              			律师、律师助理
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/bd43571f65ab4419adbb465688d02ce8" class="la3" target="_blank" >广东知定律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/f54c358aba834bb189098a499eba5831" target="_blank">
+											              			授薪律师、实习人员
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/ebc5c064633a4527a53345a3045bbae0" class="la3" target="_blank" >广东谷泰律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/cc27ca40d8f0462ab66fffd1d0621802" target="_blank">
+											              			提成律师、实习人员
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-12-31</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/43648b66dded4b88acf09a9a1c93153c" class="la3" target="_blank" >广东鹏音律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/694a966970004ba2b3877e67567a739f" target="_blank">
+											              			实习人员
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/2ea23d025f6648d3a5e427eec82edbb9" class="la3" target="_blank" >广东圣南律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/f52e7a11f6744d33a29440957317b7f9" target="_blank">
+											              			合伙人、提成律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2027-01-01</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/96eeecbbdbc24634adcedd400e4372fa" class="la3" target="_blank" >两高萧一峰（罗湖）联营律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/c3f1944c99994931ab9183ca3df15e10" target="_blank">
+											              			律师、合伙人
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/393a87efffa44e40b493b0f12d9915a2" class="la3" target="_blank" >广东泰税律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/c550fec2f42b45a7887b1ec62321aa65" target="_blank">
+											              			提成律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/869216f0e0724af8ac557732dcdc6dcc" class="la3" target="_blank" >广东雅捷律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/2c8d4b34f9bc4cdfaa5734f4918f425c" target="_blank">
+											              			授薪律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-30</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/08dde0a7d7ec4de19fab763ca74357bb" class="la3" target="_blank" >上海蓝白（深圳）律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/8c681a45a8b449378739f3dc4b2b36c8" target="_blank">
+											              			律师助理、其他、授薪律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-30</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/2fdf01b7c55b47849b510afc35688c26" class="la3" target="_blank" >广东道华律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/8eedec1b76ad4017b9f737ecc65f5df2" target="_blank">
+											              			授薪律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/5b1f27414de54136b7019dd16c83707b" class="la3" target="_blank" >广东君孺律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/29a2ed74cb3c4739b187be0321f4e16a" target="_blank">
+											              			律师、授薪律师、律师助理、实习...
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-30</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/3a699c30e2034b23848bf055295f5b67" class="la3" target="_blank" >广东美特律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/7d396d20b9b84c9290810432daab58b4" target="_blank">
+											              			实习人员、律师、授薪律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-30</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/c648ff7ce2a44145aa2b46a8201dc177" class="la3" target="_blank" >广东壹号（深圳）律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/f18d63a2a2fd47f690348c24b502aabd" target="_blank">
+											              			授薪律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/8c4e33d9ebe242c9b393ce4b391de18b" class="la3" target="_blank" >广东品睿律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/1401ae6157bb44aba4ee412d0181cfec" target="_blank">
+											              			律师助理、合伙人、律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/c708fb3fe18842b6891e774651cb750d" class="la3" target="_blank" >广东润鹏律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/baab235955b84746bd505044fb131a4b" target="_blank">
+											              			律师助理
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-30</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/44455ce47a264319a2b8fa0d8c1e70de" class="la3" target="_blank" >广东利人律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/339dfc60cea7480d8e155d85e7e80943" target="_blank">
+											              			授薪律师、律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-30</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/43828563b34e4dac9f330367f5760845" class="la3" target="_blank" >广东深谋律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/a3b958b14c284a3a9afc44b736c71e53" target="_blank">
+											              			律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2027-09-02</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/91f346ac7b5240559cf466be6b62d0f7" class="la3" target="_blank" >广东信达律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/2f139db5422e472d8de19e105cc4b707" target="_blank">
+											              			律师助理、实习人员、实习人员、...
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-30</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/6b790d865ab14c959160377c04ca0962" class="la3" target="_blank" >广东杰律律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/8de372995406458bb8d63715d5178f73" target="_blank">
+											              			律师、授薪律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+													<tr>
+											              <td align="center" height="30" bgcolor="#FFFFFF"><a href="/lawfirm/0ee2349fdd7f4ffd881726e7f681b475" class="la3" target="_blank" >广东金唐（坪山）律师事务所</a></td>
+											              <td align="center" bgcolor="#FFFFFF" style="text-align:left;padding-left:8px">
+											              		<a class="la3" href="/info/3d7621cb598841cdaf0f71ea205a2c09" target="_blank">
+											              			合伙人、律师
+											              		</a>
+											              </td>
+											              <td align="center" bgcolor="#FFFFFF">2026-09-15</td>
+											              <td align="center" bgcolor="#FFFFFF">2026-10-15</td>
+										            </tr>
+								          </tbody>
+								      </table>
+								      
+											<div class="page">
+
+
+
+    <a href="?currentPageNo=0&">上一页</a>
+
+
+            <a href="?currentPageNo=1&" class="active">1</a>
+            <a href="?currentPageNo=2&">2</a>
+            <a href="?currentPageNo=3&">3</a>
+            <a href="?currentPageNo=4&">4</a>
+            <a href="?currentPageNo=5&">5</a>
+
+        <a href="#">...</a>
+
+        <a href="?currentPageNo=2&">下一页</a>
+
+    <script type="text/javascript">
+        function page_jump(){
+            var p = $("#p").val();
+            var pageNumber = $("#pageNumber").val();
+            if(pageNumber>103){
+                alert("超出最大页数");
+            }else if(pageNumber<=0){
+                alert("无效页码");
+            }else{
+                location.href = "?currentPageNo="+pageNumber+"&"+p;
+            }}
+    </script>
+    <input type="number" name="pageNumber" id="pageNumber" value="" style="width:30px;"  onkeydown="if(event.keyCode==13) page_jump()">
+    <a href="javascript:void(0)" onclick="page_jump()">跳转</a>
+    <input type="hidden" value="" id="p">
+
+											</div>
+						</div>
+		   	   </div>
+		   		 
+		       <div class="clear"></div>
+		  </div>
+  		
+  		  <div class="youqing">	<ul class="m-link clearfix">
+
+		<li class="m-link-item z-hover">
+				<a href="javascript:;" class="top">行业协会网站</a>
+				<div class="m-dropdown clearfix">
+					<ul>
+								<li><a href="http://www.acla.org.cn/" target="_blank">中国律师网</a></li> 
+								<li><a href="http://www.gdla.org.cn/" target="_blank">广东律师网</a></li> 
+								<li><a href="http://www.lawyers.org.cn/" target="_blank">东方律师网</a></li> 
+								<li><a href="http://www.xblaw.com/" target="_blank">重庆市律网</a></li> 
+								<li><a href="https://www.beijinglawyers.org.cn/" target="_blank">北京律师网</a></li> 
+								<li><a href="http://www.gzlawyer.org/" target="_blank">广州律师网</a></li> 
+								<li><a href="http://www.zhlawyers.cn/" target="_blank">珠海律师网</a></li> 
+								<li><a href="http://www.dglawyer.cn/" target="_blank">东莞律师网</a></li> 
+								<li><a href="http://gdzslx.com/" target="_blank">中山律师网</a></li> 
+								<li><a href="http://www.xmls.cn/" target="_blank">厦门律师网</a></li> 
+								<li><a href="http://www.china-lawfirm.com/" target="_blank">天津律师网</a></li> 
+								<li><a href="http://www.hnlx.org.cn/" target="_blank">湖南律师网</a></li> 
+								<li><a href="http://www.zjbar.com/" target="_blank">浙江律师网</a></li> 
+								<li><a href="http://www.ctlawyer.cn/" target="_blank">湖北律师网</a></li> 
+								<li><a href="http://www.sdlawyer.org.cn/" target="_blank">山东律师网</a></li> 
+								<li><a href="http://www.sxlsw.org/" target="_blank">山西律师网</a></li> 
+								<li><a href="http://www.fjlawyers.net/" target="_blank">福建律师网</a></li> 
+								<li><a href="http://www.ahlawyer.com.cn/" target="_blank">安徽律师网</a></li> 
+								<li><a href="http://www.jllawyer.com/" target="_blank">吉林律师网</a></li> 
+								<li><a href="http://www.gslawyer.com/" target="_blank">甘肃律师网</a></li> 
+								<li><a href="http://www.hklawsoc.org.hk/pub_e/default.asp" target="_blank">香港律师网</a></li> 
+								<li><a href="http://www.jslsw.org.cn/" target="_blank">江苏律师网</a></li> 
+								<li><a href="http://www.aam.org.mo/" target="_blank">澳门律师网</a></li> 
+					</ul>
+				</div>
+		</li>
+
+		<li class="m-link-item z-hover">
+				<a href="javascript:;" class="top">专业法律网站</a>
+				<div class="m-dropdown clearfix">
+					<ul>
+								<li><a href="http://openlaw.cn/" target="_blank">OpenLaw裁判文书检索</a></li> 
+								<li><a href="http://www.laodongfa.com/" target="_blank">劳动法苑网</a></li> 
+								<li><a href="http://lawyer.ruc.edu.cn/" target="_blank">人民大学律师学院</a></li> 
+								<li><a href="http://www.giltbridge.com/" target="_blank">好博译翻译公司</a></li> 
+								<li><a href="http://www.law-lib.com/" target="_blank">法律图书馆</a></li> 
+								<li><a href="http://www.legalbusinessonline.com/china" target="_blank">Asian Legal Business</a></li> 
+								<li><a href="http://www.lawbase.com.cn/" target="_blank">中国法律资源网</a></li> 
+								<li><a href="http://www.cnki.net/" target="_blank">中国知网</a></li> 
+								<li><a href="http://www.chinacourt.org/index.shtml" target="_blank">中国法院网</a></li> 
+								<li><a href="http://www.court.gov.cn/zgcpwsw/" target="_blank">中国裁判文书网</a></li> 
+								<li><a href="http://www.court.gov.cn/zgcpwsw/" target="_blank">中国审判流程信息公开网</a></li> 
+								<li><a href="http://www.court.gov.cn/tsg/" target="_blank">最高人民法院图书馆</a></li> 
+								<li><a href="3.http://ipr.mofcom.gov.cn/index.shtml" target="_blank">中国保护知识产权网</a></li> 
+								<li><a href="http://www.dffyw.com/" target="_blank">东方法眼网</a></li> 
+								<li><a href="https://flk.npc.gov.cn/index.ht" target="_blank">国家法律法规数据库</a></li> 
+								<li><a href="https://ipc.court.gov.cn/zh-cn/index.html" target="_blank">最高人民法院知识产权法庭</a></li> 
+								<li><a href="https://www.scia.com.cn/" target="_blank">深圳国际仲裁院</a></li> 
+								<li><a href="https://www.chinaeastlaw.com/" target="_blank">东方法律网</a></li> 
+								<li><a href="https://www.scia.org.hk/sc/index" target="_blank">华南（香港）国际仲裁院</a></li> 
+					</ul>
+				</div>
+		</li>
+
+		<li class="m-link-item z-hover">
+				<a href="javascript:;" class="top">司法机关网站</a>
+				<div class="m-dropdown clearfix">
+					<ul>
+								<li><a href="http://www.court.gov.cn/" target="_blank">最高人民法院</a></li> 
+								<li><a href="http://www.spp.gov.cn" target="_blank">最高人民检察院</a></li> 
+								<li><a href="https://www.12309.gov.cn/" target="_blank">中国检察网</a></li> 
+								<li><a href="http://www.gdcourts.gov.cn" target="_blank">广东省高级法院</a></li> 
+								<li><a href="http://www.szcourt.gov.cn" target="_blank">深圳市中级人民法院</a></li> 
+								<li><a href="http://www.gd.jcy.gov.cn" target="_blank">广东省人民检察院</a></li> 
+								<li><a href="http://www.shenzhen.jcy.gov.cn" target="_blank">深圳市检察院</a></li> 
+								<li><a href="http://www.ftcourt.gov.cn/" target="_blank">福田区人民法院</a></li> 
+								<li><a href="http://www.szlhfy.gov.cn" target="_blank">罗湖区人民法院</a></li> 
+								<li><a href="https://gw.nscourt.gov.cn/" target="_blank">南山区人民法院</a></li> 
+								<li><a href="http://www.shenpan.gov.cn/" target="_blank">盐田区人民法院</a></li> 
+								<li><a href="http://fy.lg.gov.cn/lgfy/web/home/" target="_blank">龙岗区人民法院</a></li> 
+								<li><a href="http://www.bafy.gov.cn/" target="_blank">宝安区人民法院</a></li> 
+								<li><a href="http://www.shenzhenba.jcy.gov.cn/" target="_blank">宝安区人民检察院</a></li> 
+								<li><a href="https://www.shenpan.gov.cn/index.html" target="_blank">盐田区人民检察院</a></li> 
+								<li><a href="https://www.nsjc.gov.cn/about.htm" target="_blank">南山区人民检察院</a></li> 
+								<li><a href="https://www.shenzhenlh.jcy.gov.cn/index/index.action?INDEX.TOKEN=dc7c8014bd8014a011f4bea5284c6cd2" target="_blank">罗湖区人民检察院</a></li> 
+								<li><a href="http://ftjcy.szft.gov.cn" target="_blank">福田区人民检察院</a></li> 
+								<li><a href="https://www.lg.gov.cn/bmzz/rmjcy/" target="_blank">龙岗区人民检察院</a></li> 
+					</ul>
+				</div>
+		</li>
+
+		<li class="m-link-item z-hover">
+				<a href="javascript:;" class="top">政府部门网站</a>
+				<div class="m-dropdown clearfix">
+					<ul>
+								<li><a href="http://www.gov.cn/" target="_blank">中央人民政府</a></li> 
+								<li><a href="http://www.moj.gov.cn/" target="_blank">中华人民共和国司法部</a></li> 
+								<li><a href="https://www.mps.gov.cn/index.html" target="_blank">中华人民共和国公安部</a></li> 
+								<li><a href="http://sft.gd.gov.cn/" target="_blank">广东司法厅</a></li> 
+								<li><a href="http://www.szcourt.gov.cn/" target="_blank">深圳市中级人民法院</a></li> 
+								<li><a href="https://fgw.sz.gov.cn/" target="_blank">深圳市发展和改革委员会</a></li> 
+								<li><a href="https://meeb.sz.gov.cn/" target="_blank">深圳市生态环境局</a></li> 
+								<li><a href="https://szfb.sz.gov.cn/" target="_blank">深圳市财政局</a></li> 
+								<li><a href="https://szeb.sz.gov.cn/" target="_blank">深圳市教育局</a></li> 
+								<li><a href="https://ga.sz.gov.cn/" target="_blank">深圳市公安局</a></li> 
+								<li><a href="https://jtys.sz.gov.cn/" target="_blank">深圳市交通运输局</a></li> 
+								<li><a href="https://mzj.sz.gov.cn/szmz/pc/index.html" target="_blank">深圳市民政局</a></li> 
+								<li><a href="http://sf.sz.gov.cn/" target="_blank">深圳市司法局</a></li> 
+								<li><a href="https://cgj.sz.gov.cn/" target="_blank">深圳市城市管理和综合执法局</a></li> 
+								<li><a href="http://www.szdag.gov.cn/" target="_blank">深圳市档案馆</a></li> 
+								<li><a href="http://wtl.sz.gov.cn/" target="_blank">深圳市文化广电旅游体育局</a></li> 
+								<li><a href="https://audit.sz.gov.cn/" target="_blank">深圳市审计局</a></li> 
+								<li><a href="https://tjj.sz.gov.cn/" target="_blank">深圳市统计局</a></li> 
+								<li><a href="https://zjj.sz.gov.cn/" target="_blank">深圳市住房和建设局</a></li> 
+								<li><a href="https://swj.sz.gov.cn/" target="_blank">深圳市水务局</a></li> 
+								<li><a href="https://shenzhen.chinatax.gov.cn/sztax/index.shtml" target="_blank">国家税务总局深圳市税务局</a></li> 
+								<li><a href="https://qh.sz.gov.cn/#topsy" target="_blank">深圳市前海深港现代服务业合作区管理局</a></li> 
+								<li><a href="http://www.npc.gov.cn/" target="_blank">中国人大网</a></li> 
+								<li><a href="http://www.szrd.gov.cn/" target="_blank">深圳市人大</a></li> 
+								<li><a href="http://www.sz.gov.cn/cn/" target="_blank">深圳市政府</a></li> 
+								<li><a href="http://www.szzgh.org/" target="_blank">深圳市总工会</a></li> 
+					</ul>
+				</div>
+		</li>
+
+		<li class="m-link-item z-hover">
+				<a href="javascript:;" class="top">新闻媒体网站</a>
+				<div class="m-dropdown clearfix">
+					<ul>
+								<li><a href="http://www.xinhuanet.com/" target="_blank">新华网</a></li> 
+								<li><a href="http://www.legaldaily.com.cn/" target="_blank">法制网</a></li> 
+								<li><a href="http://www.jcrb.com/" target="_blank">正义网</a></li> 
+								<li><a href="http://www.legalweekly.cn/" target="_blank">法治周末</a></li> 
+								<li><a href="http://www.legalinfo.gov.cn/" target="_blank">中国普法网</a></li> 
+								<li><a href="http://www.mzyfz.com/" target="_blank">民主与法制网</a></li> 
+					</ul>
+				</div>
+		</li>
+	</ul>
+	
+	<script type="text/javascript">
+	(function($){
+		$.fn.dropdown = function(settings){
+			var defaults = {
+				dropdownEl: '.dropdown-menu',
+				openedClass: 'dropdown-open',
+				delayTime: 100
+			}
+			var opts = $.extend(defaults, settings);
+			return this.each(function(){
+				var curObj = null;
+				var preObj = null;
+				var openedTimer = null;
+				var closedTimer = null;
+				$(this).hover(function(){
+					if(openedTimer)
+					clearTimeout(openedTimer);
+					curObj = $(this);
+					openedTimer = setTimeout(function(){
+						curObj.addClass(opts.openedClass).find(opts.dropdownEl).show();
+					},opts.delayTime);
+					preObj = curObj;
+				},function(){
+					if(openedTimer)
+					clearTimeout(openedTimer);
+					openedTimer = setTimeout(function(){
+						preObj.removeClass(opts.openedClass).find(opts.dropdownEl).hide();
+					},opts.delayTime);
+				});
+				//点击事件关闭菜单
+				$(this).bind('click', function(){
+					if(openedTimer)
+					clearTimeout(openedTimer);
+					openedTimer = setTimeout(function(){
+						preObj.removeClass(opts.openedClass).find(opts.dropdownEl).hide();
+					},opts.delayTime);
+				});
+			});
+		};
+	})(jQuery);
+
+	//下拉菜单
+	$(document).ready(function(){
+		$('.m-link .m-link-item').dropdown({
+			dropdownEl:'.m-dropdown',
+			openedClass:'hover'
+		});
+	});
+	</script>
+</div>
+  		  
+ 		  <div class="footer">    <script type='text/javascript' src='https://webchat.7moor.com/javascripts/7moorInit.js?accessId=27c252a0-c0aa-11e8-a90d-9d1e547c2986&autoShow=false&language=ZHCN' async='async'></script>
+    <div class="wechat" style="margin: 0px 0px 0 160px;">
+        <a href="javascript:void(0);" onclick="qimoChatClick();"><img src="/static/images/QQ.jpg" width="80" border="0" class="wechat"></a>
+    </div>
+    <span style="margin: 0 30px 0 30px;">CopyRight(C) 深圳市律师协会 版权所有 <br />　
+		技术支持：<a href="http://www.homolo.com/" target="_blank">上海同道</a>&nbsp;&nbsp;电话：400-052-9602<br />
+    	地址：深圳市深南大道4001号时代金融中心20层 邮编：518048<br />
+    	备案序号：<a href="http://www.beian.miit.gov.cn" target="_blank" style="color:#ffffff;">粤ICP备14091717号</a><br />
+    	<a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=44030402000057" style="color:#ffffff;"><img src="/static/images/cn/gongan.png" >粤公网安备 44030402000057号</a>
+    </span>
+    <div style="display:none">
+    </div>
+
+    <div class="wechat">
+        <img src="/static/images/cn/App3w.png" width="80" border="0" class="wechat">
+    </div>
+    <div class="clear"></div>
+</div>
+</div>
+</body>
+</html>

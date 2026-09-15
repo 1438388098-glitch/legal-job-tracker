@@ -27,9 +27,19 @@ def _source_cfg(row) -> dict:
 
 def _adapter_for(row):
     cfg = _source_cfg(row)
-    if row["kind"] == "zuel":
+    kind = row["kind"]
+    if kind == "zuel":
         from . import zuel
         return zuel.Adapter(cfg)
+    if kind == "ggfw":
+        from . import ggfw
+        return ggfw.Adapter(cfg)
+    if kind == "hotjob":
+        from . import hotjob
+        return hotjob.Adapter(cfg)
+    if kind == "swupl":
+        from . import swupl
+        return swupl.Adapter(cfg)
     return HtmlAdapter(cfg)
 
 
