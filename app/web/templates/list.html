@@ -1,43 +1,75 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card">
- <form method="get" action="/" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-  <select name="job_type">
-   <option value="">全部类型</option>
-   {% for val, label in job_types %}
-   <option value="{{ val }}" {% if q.get('job_type')==val %}selected{% endif %}>{{ label }}</option>
-   {% endfor %}
-  </select>
-  <select name="city">
-   <option value="">全部城市</option>
-   {% for c in cities %}
-   <option value="{{ c }}" {% if q.get('city')==c %}selected{% endif %}>{{ c }}</option>
-   {% endfor %}
-  </select>
-  <select name="status">
-   <option value="">全部状态</option>
-   {% for s in ['new','read','pending'] %}
-   <option value="{{ s }}" {% if q.get('status')==s %}selected{% endif %}>{{ {'new':'新','read':'已读','pending':'待确认'}[s] }}</option>
-   {% endfor %}
-  </select>
-  <select name="notice_kind">
-   <option value="">只看可投递岗位</option>
-   <option value="all" {% if q.get('notice_kind')=='all' %}selected{% endif %}>全部稿件</option>
-   {% for val, label in notice_kinds %}
-   {% if val != 'opening' %}
-   <option value="{{ val }}" {% if q.get('notice_kind')==val %}selected{% endif %}>只看{{ label }}</option>
-   {% endif %}
-   {% endfor %}
-  </select>
-  <input type="text" name="q" value="{{ q.get('q','') }}" placeholder="关键词搜索（标题/单位/正文）" style="flex:1;min-width:180px">
-  <button class="primary" type="submit">筛选</button>
-  <a href="/">重置</a>
- </form>
+<div class="page-head">
+  <h1>岗位</h1>
+  <span class="meta">
+    {{ jobs|length }} 条{% if q.get('q') or q.get('job_type') or q.get('city') or q.get('status') or q.get('notice_kind') %}（已筛选）{% endif %}
+  </span>
+  <span class="spacer"></span>
+  <span class="meta">
+    {% if q.get('notice_kind') == 'all' %}全部稿件
+    {% elif q.get('notice_kind') == 'result' %}结果公示
+    {% elif q.get('notice_kind') == 'info' %}其他信息
+    {% else %}仅可投递{% endif %}
+    · 按{{ '发布' if q.get('sort') == 'pub' else '截止' }}排序
+  </span>
 </div>
+
+<form class="filters" method="get" action="/">
+  <select name="notice_kind" aria-label="公告性质">
+    <option value="">仅可投递</option>
+    <option value="all" {% if q.get('notice_kind') == 'all' %}selected{% endif %}>全部稿件</option>
+    {% for val, label in notice_kinds %}
+    {% if val != 'opening' %}
+    <option value="{{ val }}" {% if q.get('notice_kind') == val %}selected{% endif %}>只看{{ label }}</option>
+    {% endif %}
+    {% endfor %}
+  </select>
+  <select name="job_type" aria-label="岗位类型">
+    <option value="">全部类型</option>
+    {% for val, label in job_types %}
+    <option value="{{ val }}" {% if q.get('job_type') == val %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <select name="city" aria-label="城市">
+    <option value="">全部城市</option>
+    {% for c in cities %}
+    <option value="{{ c }}" {% if q.get('city') == c %}selected{% endif %}>{{ c }}</option>
+    {% endfor %}
+  </select>
+  <select name="status" aria-label="状态">
+    <option value="">全部状态</option>
+    {% for s, label in [('new', '未读'), ('read', '已读'), ('pending', '待确认')] %}
+    <option value="{{ s }}" {% if q.get('status') == s %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <select name="sort" aria-label="排序">
+    <option value="">按截止日</option>
+    <option value="pub" {% if q.get('sort') == 'pub' %}selected{% endif %}>按发布日</option>
+  </select>
+  <input type="text" name="q" value="{{ q.get('q', '') }}" placeholder="搜索标题 / 单位 / 正文">
+  <button class="primary" type="submit">筛选</button>
+  {% if q.get('q') or q.get('job_type') or q.get('city') or q.get('status') or q.get('notice_kind') or q.get('sort') %}
+  <a class="nav-a" href="/">清除</a>
+  {% endif %}
+</form>
+
 {% if jobs|length == 0 %}
-<div class="card muted">暂无岗位。去「源健康」页点「立即采集」，或在「粘贴箱」粘入公众号文章链接。</div>
+<div class="empty">
+  没有匹配的岗位。
+  {% if not q %}
+  先去 <a href="/health">源健康</a> 点「立即采集」，或在 <a href="/paste">粘贴箱</a> 粘入公众号链接。
+  {% endif %}
+</div>
+{% else %}
+<div class="list">
+  <div class="list-head">
+    <span>截止</span><span>类型</span><span>城市</span><span>标题</span>
+    <span>单位</span><span>来源</span><span></span>
+  </div>
+  {% for job in jobs %}
+  {% include "partials/job_row.html" %}
+  {% endfor %}
+</div>
 {% endif %}
-{% for job in jobs %}
-{% include "partials/job_row.html" %}
-{% endfor %}
 {% endblock %}

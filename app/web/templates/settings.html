@@ -1,14 +1,39 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card" style="max-width:520px">
- <h2 style="margin-top:0">⚙️ 设置</h2>
- <form method="post" action="/settings">
-  <label>
-   <input type="checkbox" name="toast_enabled" value="1" {% if toast_enabled == '1' %}checked{% endif %}>
-   采集完成后弹 Windows 桌面通知（需 <code>pip install win11toast</code>）
-  </label>
-  <p><button class="primary" type="submit">保存</button></p>
- </form>
- <p class="muted">每日采集：每天 08:05 自动运行（服务保持开启时）。也可在「源健康」页手动触发。</p>
+<div class="page-head">
+  <h1>设置</h1>
+</div>
+
+<div class="section" style="margin-top:0">
+  <h2>采集</h2>
+  <form method="post" action="/settings" class="stack">
+    <label style="display:flex;align-items:center;gap:0">
+      <input type="checkbox" name="toast_enabled" value="1" {% if toast_enabled == '1' %}checked{% endif %}>
+      <span style="margin:0">采集完成后弹 Windows 桌面通知</span>
+    </label>
+    <p class="hint" style="margin:0">需要先 <code>pip install win11toast</code>。</p>
+    <div><button class="primary" type="submit">保存</button></div>
+  </form>
+  <dl class="kv" style="margin-top:12px">
+    <dt>定时</dt><dd>每天 08:05 自动增量采集（服务保持开启时生效）</dd>
+    <dt>手动</dt><dd><a href="/health">源健康</a> 页可单源或全部立即采集</dd>
+  </dl>
+</div>
+
+<div class="section">
+  <h2>导出</h2>
+  <dl class="kv">
+    <dt>可投递岗位</dt><dd><a href="/export.xlsx">下载 xlsx</a>（与列表默认视图一致）</dd>
+    <dt>全部稿件</dt><dd><a href="/export.xlsx?notice_kind=all">下载 xlsx</a>（含结果公示与信息类）</dd>
+  </dl>
+</div>
+
+<div class="section">
+  <h2>数据</h2>
+  <dl class="kv">
+    <dt>位置</dt><dd><code>data/job.db</code>（本机 SQLite，全部数据不上传任何服务器）</dd>
+    <dt>快照</dt><dd><code>data/snapshots/</code>（详情页正文存档，官网删稿也能回看）</dd>
+    <dt>源配置</dt><dd><code>scripts/seed_sources.py</code>，改后重跑该脚本即可</dd>
+  </dl>
 </div>
 {% endblock %}

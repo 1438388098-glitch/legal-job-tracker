@@ -1,15 +1,19 @@
-<div class="card">
- <form class="inline" method="post" action="/jobs/{{ job['id'] }}/status">
-  <input type="hidden" name="status" value="{{ 'new' if job['status']=='archived' else 'archived' }}">
-  <button title="{{ '恢复' if job['status']=='archived' else '归档' }}">{{ '♻️' if job['status']=='archived' else '🗄️' }}</button>
- </form>
- {% if job['deadline'] %}<span class="{{ job['deadline']|dcolor }}">{{ job['deadline'] }} 截止</span> ·{% endif %}
- <span class="tag">{{ dict(job_types)[job['job_type']] if job['job_type'] in dict(job_types) else job['job_type'] }}</span>
- {% if job['city'] %}<span class="tag">{{ job['city'] }}</span>{% endif %}
- {% if job['notice_kind'] == 'result' %}<span class="tag" style="background:#e5e7eb;color:#4b5563">结果公示</span>{% endif %}
- {% if job['notice_kind'] == 'info' %}<span class="tag" style="background:#e5e7eb;color:#4b5563">其他</span>{% endif %}
- {% if job['merge_count'] > 1 %}<span class="tag">{{ job['merge_count'] }} 个来源</span>{% endif %}
- {% if job['status'] == 'pending' %}<span class="tag" style="background:#fef3c7;color:#92400e">待确认</span>{% endif %}
- <a href="/jobs/{{ job['id'] }}"><strong>{{ job['title'] }}</strong></a>
- <div class="muted">{{ job['org'] or '' }}{% if job['publish_date'] %} · {{ job['publish_date'] }}{% endif %}</div>
+<div class="row{% if job['status'] == 'read' %} is-read{% endif %}{% if job['notice_kind'] != 'opening' %} kind-result{% endif %}{% if job['deadline']|urgency %} {{ job['deadline']|urgency }}{% endif %}">
+  {% if job['deadline'] %}
+  <span class="deadline {{ job['deadline']|dcolor }}">{{ job['deadline'][5:] }}</span>
+  {% else %}
+  <span class="deadline none">—</span>
+  {% endif %}
+  <span class="type">{{ dict(job_types)[job['job_type']] if job['job_type'] in dict(job_types) else job['job_type'] }}</span>
+  <span class="city">{{ job['city'] or '' }}</span>
+  <a class="t" href="/jobs/{{ job['id'] }}">{{ job['title'] }}</a>
+  <span class="org">{{ job['org'] or '' }}</span>
+  <span class="src">{{ job['source_slug'] }}</span>
+  <span class="meta-m">{% if job['city'] %}{{ job['city'] }} · {% endif %}{{ dict(job_types)[job['job_type']] if job['job_type'] in dict(job_types) else job['job_type'] }}{% if job['org'] %} · {{ job['org'] }}{% endif %}</span>
+  <span class="acts">
+    <form class="inline" method="post" action="/jobs/{{ job['id'] }}/status">
+      <input type="hidden" name="status" value="{{ 'new' if job['status'] == 'archived' else 'archived' }}">
+      <button class="icon" title="{{ '恢复' if job['status'] == 'archived' else '归档' }}">{{ '↺' if job['status'] == 'archived' else '×' }}</button>
+    </form>
+  </span>
 </div>

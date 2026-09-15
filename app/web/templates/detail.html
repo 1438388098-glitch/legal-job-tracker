@@ -1,41 +1,69 @@
 {% extends "base.html" %}
+{% block title %}{{ job['title'] }} · 法学招聘信息中台{% endblock %}
 {% block content %}
-<div class="card">
- <div style="margin-bottom:8px">
-  {% if job['deadline'] %}<span class="{{ job['deadline']|dcolor }}">{{ job['deadline'] }} 截止</span> ·{% endif %}
-  <span class="tag">{{ dict(job_types)[job['job_type']] if job['job_type'] in dict(job_types) else job['job_type'] }}</span>
-  {% if job['city'] %}<span class="tag">{{ job['city'] }}</span>{% endif %}
-  <span class="tag">来源: {{ job['source_slug'] }}</span>
-  {% if job['needs_review'] %}<span class="tag" style="background:#fef3c7;color:#92400e">字段需人工核对</span>{% endif %}
- </div>
- <h2 style="margin:6px 0">{{ job['title'] }}</h2>
- <div class="muted">{{ job['org'] or '' }}{% if job['publish_date'] %} · 发布 {{ job['publish_date'] }}{% endif %} · 收录 {{ job['created_at'] }}</div>
- {% if job['notes'] %}<div class="muted">备注：{{ job['notes'] }}</div>{% endif %}
- <p>
-  {% for s in sources %}<a href="{{ s['url'] }}" target="_blank" rel="noopener">原文{{ loop.index }}（{{ s['source_slug'] }}）</a>{% if not loop.last %} · {% endif %}{% endfor %}
- </p>
- <p>
-  {% if app_row %}
-   <span class="tag" style="background:#dcfce7;color:#166534">投递状态：{{ app_row['status'] }}</span>
-   <a href="/board">去看板管理 →</a>
-  {% else %}
-  <form class="inline" method="post" action="/jobs/{{ job['id'] }}/apply">
-   <button class="primary">📌 我要投（加入投递跟踪）</button>
-  </form>
+<div class="page-head">
+  <a class="nav-a" href="/">← 岗位列表</a>
+  <span class="spacer"></span>
+  <span class="meta">#{{ job['id'] }}</span>
+</div>
+
+<div class="detail-head">
+  <h1>{{ job['title'] }}</h1>
+  <div class="detail-meta">
+    {% if job['deadline'] %}
+    <span class="{{ job['deadline']|dcolor }}"><span class="k">截止</span> {{ job['deadline'] }}</span>
+    {% endif %}
+    <span><span class="k">类型</span> {{ dict(job_types)[job['job_type']] if job['job_type'] in dict(job_types) else job['job_type'] }}</span>
+    {% if job['city'] %}<span><span class="k">城市</span> {{ job['city'] }}</span>{% endif %}
+    {% if job['org'] %}<span><span class="k">单位</span> {{ job['org'] }}</span>{% endif %}
+    {% if job['publish_date'] %}<span><span class="k">发布</span> {{ job['publish_date'] }}</span>{% endif %}
+    <span><span class="k">性质</span> {{ dict(notice_kinds)[job['notice_kind']] if job['notice_kind'] in dict(notice_kinds) else job['notice_kind'] }}</span>
+    <span><span class="k">状态</span> {{ job['status'] }}</span>
+    {% if job['merge_count'] > 1 %}<span><span class="k">合并</span> {{ job['merge_count'] }} 个来源</span>{% endif %}
+    <span><span class="k">收录</span> {{ job['created_at'] }}</span>
+  </div>
+  <div class="detail-actions">
+    {% if app_row %}
+    <span class="meta"><span class="k">投递状态</span> {{ app_row['status'] }}</span>
+    <a class="btn" href="/board">去看板管理</a>
+    {% else %}
+    <form class="inline" method="post" action="/jobs/{{ job['id'] }}/apply">
+      <button class="primary" type="submit">加入投递跟踪</button>
+    </form>
+    {% endif %}
+    {% if job['status'] != 'read' %}
+    <form class="inline" method="post" action="/jobs/{{ job['id'] }}/status">
+      <input type="hidden" name="status" value="read"><button type="submit">标记已读</button>
+    </form>
+    {% endif %}
+    <a class="btn" href="/jobs/{{ job['id'] }}/edit">修改字段</a>
+    <form class="inline" method="post" action="/jobs/{{ job['id'] }}/status">
+      <input type="hidden" name="status" value="{{ 'new' if job['status'] == 'archived' else 'archived' }}">
+      <button type="submit">{{ '恢复' if job['status'] == 'archived' else '归档' }}</button>
+    </form>
+  </div>
+</div>
+
+<dl class="kv">
+  <dt>原文</dt>
+  <dd>
+    {% for s in sources %}
+    <a href="{{ s['url'] }}" target="_blank" rel="noopener">{{ s['url'] }}</a>{% if not loop.last %}<br>{% endif %}
+    {% endfor %}
+  </dd>
+  <dt>来源</dt>
+  <dd>{% for s in sources %}{{ s['source_slug'] }}{% if not loop.last %} · {% endif %}{% endfor %}</dd>
+  {% if job['notes'] %}
+  <dt>备注</dt><dd>{{ job['notes'] }}</dd>
   {% endif %}
-  <form class="inline" method="post" action="/jobs/{{ job['id'] }}/status">
-   <input type="hidden" name="status" value="read"><button>✅ 标记已读</button>
-  </form>
-  <form class="inline" method="post" action="/jobs/{{ job['id'] }}/status">
-   <input type="hidden" name="status" value="archived"><button>🗄️ 归档</button>
-  </form>
-  <a href="/jobs/{{ job['id'] }}/edit"><button>✏️ 修改字段</button></a>
- </p>
-</div>
+</dl>
+
 {% if snapshot_text %}
-<div class="card">
- <h3 style="margin-top:0">正文快照（本地存档）</h3>
- <pre class="snap">{{ snapshot_text[:20000] }}</pre>
+<div class="section">
+  <h2>正文快照（本地存档）</h2>
+  <pre class="snap">{{ snapshot_text[:20000] }}</pre>
 </div>
+{% else %}
+<p class="muted">没有正文快照（该源未抓详情，或抓取时失败）。原文链接见上。</p>
 {% endif %}
 {% endblock %}

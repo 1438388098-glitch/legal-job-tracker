@@ -1,26 +1,48 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card">
- <h2 style="margin-top:0">确认 / 修改岗位信息</h2>
- <p class="muted">自动提取的字段可能有误，请核对后保存。保存后岗位进入正式列表。</p>
- <form method="post" action="/jobs/{{ job['id'] }}/confirm" style="display:grid;gap:10px;max-width:640px">
-  <label>标题<br><input name="title" value="{{ job['title'] }}" style="width:100%"></label>
-  <label>城市
-   <select name="city">
-    <option value="">不限</option>
-    {% for c in cities %}
-    <option value="{{ c }}" {% if job['city']==c %}selected{% endif %}>{{ c }}</option>
-    {% endfor %}
-   </select></label>
-  <label>截止日期（如公告未注明可留空）<br><input name="deadline" value="{{ job['deadline'] or '' }}" placeholder="YYYY-MM-DD"></label>
-  <label>岗位类型
-   <select name="job_type">
-    {% for val, label in job_types %}
-    <option value="{{ val }}" {% if job['job_type']==val %}selected{% endif %}>{{ label }}</option>
-    {% endfor %}
-   </select></label>
-  <label>备注<br><textarea name="notes" rows="3" style="width:100%">{{ job['notes'] or '' }}</textarea></label>
-  <button class="primary" type="submit">✔ 确认入库</button>
- </form>
+<div class="page-head">
+  <a class="nav-a" href="/jobs/{{ job['id'] }}">← 返回岗位</a>
+  <span class="spacer"></span>
+  <span class="meta">自动提取的字段可能有误，核对后保存</span>
 </div>
+
+<form method="post" action="/jobs/{{ job['id'] }}/confirm" class="stack">
+  <label>
+    <span>标题</span>
+    <input name="title" value="{{ job['title'] }}" required>
+  </label>
+  <label>
+    <span>单位</span>
+    <input value="{{ job['org'] or '' }}" disabled>
+  </label>
+  <label>
+    <span>城市</span>
+    <select name="city">
+      <option value="">不限</option>
+      {% for c in cities %}
+      <option value="{{ c }}" {% if job['city'] == c %}selected{% endif %}>{{ c }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>
+    <span>岗位类型</span>
+    <select name="job_type">
+      {% for val, label in job_types %}
+      <option value="{{ val }}" {% if job['job_type'] == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>
+    <span>截止日期</span>
+    <input name="deadline" value="{{ job['deadline'] or '' }}" placeholder="YYYY-MM-DD，公告未注明可留空">
+  </label>
+  <label>
+    <span>备注</span>
+    <textarea name="notes" rows="3" placeholder="例如：需 A 证 / 已联系学长 / 笔试在 10 月">{{ job['notes'] or '' }}</textarea>
+  </label>
+  <div>
+    <button class="primary" type="submit">保存</button>
+    <a class="btn" href="/jobs/{{ job['id'] }}">取消</a>
+  </div>
+</form>
 {% endblock %}

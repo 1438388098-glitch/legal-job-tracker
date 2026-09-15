@@ -24,6 +24,14 @@ NOTICE_KINDS = [("opening", "可投递"), ("result", "结果公示"), ("info", "
 def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
     templates = Jinja2Templates(directory=tpl_dir)
     router = APIRouter()
+    # 样式文件版本号取 mtime：改完 CSS 刷新页面即生效，不会被浏览器缓存卡住
+    style_path = Path(tpl_dir).parent / "static" / "style.css"
+
+    def asset_version() -> str:
+        try:
+            return str(int(style_path.stat().st_mtime))
+        except OSError:
+            return "1"
 
     def render(name: str, request: Request, **ctx):
         ctx.setdefault("request", request)
@@ -31,6 +39,7 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
         ctx.setdefault("cities", CITIES)
         ctx.setdefault("app_statuses", APP_STATUSES)
         ctx.setdefault("notice_kinds", NOTICE_KINDS)
+        ctx.setdefault("asset_v", asset_version())
         ctx["urgent"] = request.app.state.conn.execute(
             "SELECT COUNT(*) c FROM jobs WHERE deadline IS NOT NULL "
             "AND deadline BETWEEN date('now') AND date('now','+3 day') "
@@ -72,10 +81,15 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
     @router.get("/", response_class=HTMLResponse)
     def home(request: Request):
         join, where, params, q = list_query(request)
-        order = ("ORDER BY CASE WHEN j.deadline IS NULL THEN 1 ELSE 0 END, "
-                 "j.deadline ASC, j.publish_date DESC, j.id DESC")
+        if q.get("sort") == "pub":
+            order = ("ORDER BY j.publish_date IS NULL, j.publish_date DESC, "
+                     "j.deadline IS NULL, j.deadline, j.id DESC")
+        else:
+            # 默认：临期在前（有截止日的按日期升序），无截止日的沉底
+            order = ("ORDER BY CASE WHEN j.deadline IS NULL THEN 1 ELSE 0 END, "
+                     "j.deadline ASC, j.publish_date DESC, j.id DESC")
         rows = request.app.state.conn.execute(
-            f"SELECT j.* FROM jobs j {join} WHERE {' AND '.join(where)} {order} LIMIT 200",
+            f"SELECT j.* FROM jobs j {join} WHERE {' AND '.join(where)} {order} LIMIT 300",
             params).fetchall()
         return render("list.html", request, jobs=rows, q=q)
 
