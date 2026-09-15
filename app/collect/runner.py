@@ -30,8 +30,9 @@ class Runner:
             params = slugs
         targets = [r["slug"] for r in self.conn.execute(sql, params).fetchall()]
         total = {"inserted": 0, "merged": 0, "failed": 0}
+        known = {r[0] for r in self.conn.execute("SELECT url_fingerprint FROM jobs")}
         for slug in targets:
-            r = self.run_source(slug)
+            r = self.run_source(slug, known)
             if r.get("error"):
                 total["failed"] += 1
             total["inserted"] += r.get("inserted", 0)
@@ -40,14 +41,14 @@ class Runner:
         self._notify(total)
         return total
 
-    def run_source(self, slug: str) -> dict:
+    def run_source(self, slug: str, known_fps: set[str] | None = None) -> dict:
         row = self.conn.execute("SELECT * FROM sources WHERE slug=?", (slug,)).fetchone()
         if row is None:
             return {"error": f"unknown source {slug}"}
         result: dict = {"inserted": 0, "merged": 0}
         try:
             adapter = _adapter_for(row)
-            for item in adapter.collect():
+            for item in adapter.collect(known_fps):
                 item.setdefault("source_slug", slug)
                 if row["city"] and not item.get("city"):
                     item["city"] = row["city"]

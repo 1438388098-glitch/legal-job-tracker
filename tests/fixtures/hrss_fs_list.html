@@ -1,0 +1,455 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+<!--meta-->
+<meta charset="utf-8">
+<meta name="SiteName" content="佛山市人力资源和社会保障局网站">
+<meta name="SiteDomain" content="hrss.foshan.gov.cn">
+<meta name="SiteIDCode" content="4406000020">
+<meta name="ColumnName" content='机关事业单位招录'>
+<meta name="ColumnDescription" content='机关事业单位招录'>
+<meta name="ColumnKeywords" content='机关事业单位招录'>
+<meta name="ColumnType" content='政务公开'>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="ArticleTitle" content=''>
+<meta name="PubDate" content='2026-08-27 17:38:07'>
+<meta name="ContentSource" content=''>
+
+<script>window.NFCMS_SITE_ID=757013;window.NFCMS_PUB_TYPE="cat";window.NFCMS_CAT_ID="3592";</script><script src="//statistics.gd.gov.cn/scripts/s.js?t=1787823487" async></script>
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+<link rel="stylesheet" href="//g.alicdn.com/de/prismplayer/2.7.4/skins/default/aliplayer-min.css" />
+<script charset="utf-8" type="text/javascript" src="//g.alicdn.com/de/prismplayer/2.7.4/aliplayer-min.js"></script>
+<link rel="stylesheet" type="text/css" href="/css/layer.css">
+<script type="text/javascript" src="/js/layer.js"></script>
+<!--meta-->
+<title>佛山市人力资源和社会保障局网站</title>
+<!--source-->
+<link rel="stylesheet" type="text/css" href="/css/base.css">
+<link rel="stylesheet" type="text/css" href="/css/index.css">
+<script type="text/javascript" src="/js/jquery.min.js"></script>
+<!--source-->
+
+<style>
+.shgs_tle a{ color:#fff;}
+</style>
+<!--分页函数-->
+<script type="text/javascript">
+  function createPageHTML(_nPageCount, _nCurrIndex, _sPageName, _sPageExt){ 
+  //tita 翻页函数
+        var nPageCount=parseInt(_nPageCount);
+         var nCurrIndex=parseInt(_nCurrIndex);
+
+  if(nPageCount<=0){
+  return; 
+  } 
+
+  //tita
+  document.write("　　");
+
+  if(nPageCount==1){
+      document.write("<a href=\""+_sPageName+"."+_sPageExt+"\"  >首页</a> <a href=\""+_sPageName+"."+_sPageExt+"\" >上一页</a> <a href=\""+_sPageName+"."+_sPageExt+"\" >下一页</a> <a href=\""+_sPageName+"."+_sPageExt+"\" >尾页</a>")
+  }else {
+
+      if(nPageCount==2) {
+          if (nCurrIndex==1)
+          document.write("<a href=\""+_sPageName+"."+_sPageExt+"\" >首页</a> <a href=\""+_sPageName+"."+_sPageExt+"\" >上一页</a> <a href=\""+_sPageName+"_" + (nCurrIndex+1) + "."+_sPageExt+"\" >下一页</a> <a href=\""+_sPageName+"_" + nPageCount + "."+_sPageExt+"\" >尾页</a>")
+      else {
+          if (nCurrIndex==2)
+          document.write("<a href=\""+_sPageName+"."+_sPageExt+"\" >首页</a> <a href=\""+_sPageName+"."+_sPageExt+"\" >上一页</a> <a href=\""+_sPageName+"_" + nCurrIndex + "."+_sPageExt+"\" >下一页</a> <a href=\""+_sPageName+"_" + nPageCount + "."+_sPageExt+"\" >尾页</a>")
+          }
+      }
+      else {
+          if (nCurrIndex==1)
+              document.write("<a href=\""+_sPageName+"."+_sPageExt+"\" >首页</a> <a href=\""+_sPageName+"."+_sPageExt+"\" >上一页</a> <a href=\""+_sPageName+"_" + (nCurrIndex+1) + "."+_sPageExt+"\" >下一页</a> <a href=\""+_sPageName+"_" + (nPageCount) + "."+_sPageExt+"\" >尾页</a>")
+          else {
+              if (nCurrIndex==2)
+                  document.write("<a href=\""+_sPageName+"."+_sPageExt+"\" >首页</a> <a href=\""+_sPageName+"."+_sPageExt+"\" >上一页</a> <a href=\""+_sPageName+"_" + (nCurrIndex+1) + "."+_sPageExt+"\" >下一页</a> <a href=\""+_sPageName+"_" + (nPageCount) + "."+_sPageExt+"\" >尾页</a>")
+              else {
+                  if (nCurrIndex<nPageCount)
+                      document.write("<a href=\""+_sPageName+"."+_sPageExt+"\" >首页</a> <a href=\""+_sPageName+"_" + (nCurrIndex-1) + "."+_sPageExt+"\" >上一页</a> <a href=\""+_sPageName+"_" +(nCurrIndex+1)+ "."+_sPageExt+"\" >下一页</a> <a href=\""+_sPageName+"_" + (_nPageCount) + "."+_sPageExt+"\" >尾页</a>")
+                  else {
+                      if (nCurrIndex==nPageCount)
+                          document.write("<a href=\""+_sPageName+"."+_sPageExt+"\" >首页</a> <a href=\""+_sPageName+"_" + (nCurrIndex-1) + "."+_sPageExt+"\" >上一页</a> <a href=\""+_sPageName+"_" + nCurrIndex + "."+_sPageExt+"\" >下一页</a> <a href=\""+_sPageName+"_" + (_nPageCount) + "."+_sPageExt+"\" >尾页</a>")
+                      }
+                  }
+              }
+          }
+      }
+          document.write("　页数（" + (nCurrIndex) + "/" + nPageCount + "页）　");
+      document.write("转到第<INPUT id='CP' src size='3' value='1' name='CP' />页<input name='button' type='button' value='GO' onClick='goto()' />") 
+  //tita 
+  } //WCM置标
+
+  //tita
+  function goto(){
+      toPage(CP.value);
+  }
+
+  function toPage(_pageNo){
+      if(!(IsAllNumeric(_pageNo))){
+          alert("请填写数字。");
+          return(false);
+      } 
+      else{
+          if(_pageNo>nPageCount||_pageNo==0){
+              alert("请填写在总页数范围内的数字。");
+              return(false);
+          }       
+          else{
+              if (_pageNo==1){
+                  window.location="index.html";
+              }
+              else{
+                  window.location="index_" + (_pageNo) + ".html";
+              }
+          }
+      }  
+  }
+
+  function IsAllNumeric(str) {
+      var l=str.length;
+      var i,s;
+      for(i=0;i<l;i++){ 
+          s=str.charAt(i);
+          if(!(s>='0'&&s<='9')) return(false);
+      }
+      return(true);
+  }
+ </script>
+</head>
+<body>
+<!--  head  -->
+<div class="top">
+		<div class="main clearfix">
+			<div class="wel">欢迎访问佛山市人力资源和社会保障局网站！</div>
+			<div class="lxwm">
+				<a href="https://hrss.foshan.gov.cn/wzdh/lxwm/index.html" target="_blank">联系我们</a>			</div>
+			<div style="float: right; margin-right:50px;">
+				<a id="wza" class="wza" style="float:left;      margin-right: 23px;  color: #107dd2;top:12px;right:48px;display:block;width:120px;height:35px;background:url(/images/wzalogo.png) no-repeat 5px;text-indent:32px;font-size:14px;line-height:35px;">无障碍浏览</a>
+				今天是：<span id="timebox"></span>
+			</div>
+		</div>			
+	</div>
+	<div class="main">
+		<div class="banner">
+			<div class="search clearfix">
+<form action="http://search.gd.gov.cn/search/local_msg/757013" method="get" name="searchform_top"  target="_blank">
+
+				<input type="text" value="" placeholder="请输入您要搜索的关键字" onfocus="" name="keywords" id="searchword" />
+				<input type="submit" value="" class="btn" onClick="document.searchform_top.submit();document.charset='utf-8';" />
+</from>
+			</div>
+		</div>
+		<ul class="nav clearfix">
+			<li><a href="/">首&nbsp;&nbsp;&nbsp;&nbsp;页</a></li>
+			<li><a href="/zwgk">政务公开</a></li>
+			<li><a href="/ztzl">专题专栏</a></li>
+			<li><a href="/zxbs">业务办理</a></li>
+			<li><a href="/bmcx">便民查询</a></li>
+			<li><a href="/hdjl">互动交流</a></li>
+		</ul>
+	</div>
+ <style>
+	#wza{
+cursor: pointer;
+}
+	</style>
+
+	<script src="//service.gd.gov.cn/wza/wza.js?app=hrss.foshan.gov.cn" referrerpolicy="origin"></script>
+	<script>
+$("#wza").on("click",function() {
+    cnillWzaInstance.init();
+})
+// 执行实例的init方法cni11wzaInstance.init();// cni1lwzaInstance为全局变量)
+    </script>
+<!--  head  -->
+	<div class="main">
+		<div class="dqwz">您的位置：<a href="https://hrss.foshan.gov.cn/">首页</a>&nbsp;&gt;&nbsp;<a href="https://hrss.foshan.gov.cn/fssbj/">佛山市人力资源和社会保障局</a>&nbsp;&gt;&nbsp;<a href="https://hrss.foshan.gov.cn/zwgk/">政务公开</a>&nbsp;&gt;&nbsp;<a href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/">机关事业单位招录</a></div>
+		<div class="list_leftbox fl">
+			<ul id="lmn">
+							</ul>
+			<div class="list_wx"><img src="/images/wxgzh.jpg" /></div>
+		</div>
+		<div class="list_rightbox fr">
+			<div class="shgs_tle"><span>机关事业单位招录</span></div>
+			<ul>
+				
+									<li><span class="time">2026-07-29</span><a href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/content/post_7202053.html" target="_blank" title="佛山大学2026年第二批辅导员招聘公告">佛山大学2026年第二批辅导员招聘公告</a></li>
+									<li><span class="time">2026-07-20</span><a href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/content/post_7196492.html" target="_blank" title="佛山市第一人民医院2026年事业单位高层次人才（第二批）公开招聘公告">佛山市第一人民医院2026年事业单位高层次人才（第二批）公开招聘公告</a></li>
+									<li><span class="time">2026-07-01</span><a href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/content/post_7184940.html" target="_blank" title="佛山职业技术学院2026年公开招聘高层次人才公告">佛山职业技术学院2026年公开招聘高层次人才公告</a></li>
+									<li><span class="time">2026-07-01</span><a href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/content/post_7184528.html" target="_blank" title="佛山高新技术产业开发区管理委员会公开招聘佛山市火炬服务中心工作人员公告">佛山高新技术产业开发区管理委员会公开招聘佛山市火炬服务中心工作人员公告</a></li>
+									<li><span class="time">2026-06-30</span><a href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/content/post_7184155.html" target="_blank" title="佛山市中医院2026年度公开招聘事业单位工作人员（第二批）公告">佛山市中医院2026年度公开招聘事业单位工作人员（第二批）公告</a></li>
+									<li><span class="time">2026-06-23</span><a href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/content/post_7179292.html" target="_blank" title="佛山市第四人民医院2026年公开招聘高层次人才公告">佛山市第四人民医院2026年公开招聘高层次人才公告</a></li>
+									<li><span class="time">2026-06-23</span><a href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/content/post_7179288.html" target="_blank" title="佛山市第四人民医院2026年公开招聘事业单位工作人员公告">佛山市第四人民医院2026年公开招聘事业单位工作人员公告</a></li>
+									<li><span class="time">2026-06-22</span><a href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/content/post_7178679.html" target="_blank" title="佛山市中医院2026年度公开招聘事业单位工作人员公告">佛山市中医院2026年度公开招聘事业单位工作人员公告</a></li>
+									<li><span class="time">2026-06-22</span><a href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/content/post_7178667.html" target="_blank" title="佛山市中医院2026年度公开招聘高层次人才（第二批）公告">佛山市中医院2026年度公开招聘高层次人才（第二批）公告</a></li>
+									<li><span class="time">2026-06-11</span><a href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/content/post_7173272.html" target="_blank" title="佛山市第一人民医院2026年上半年公开招聘事业单位工作人员公告">佛山市第一人民医院2026年上半年公开招聘事业单位工作人员公告</a></li>
+									<li><span class="time">2026-06-10</span><a href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/content/post_7172431.html" target="_blank" title="佛山大学2026年面向全球公开招聘学院院长公告">佛山大学2026年面向全球公开招聘学院院长公告</a></li>
+									<li><span class="time">2026-05-27</span><a href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/content/post_7163944.html" target="_blank" title="佛山市第三人民医院（佛山市精神卫生中心）2026年公开招聘工作人员公告">佛山市第三人民医院（佛山市精神卫生中心）2026年公开招聘工作人员公告</a></li>
+									<li><span class="time">2026-05-26</span><a href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/content/post_7162893.html" target="_blank" title="佛山市第二人民医院2026年公开招聘高层次人才（第二批）公告">佛山市第二人民医院2026年公开招聘高层次人才（第二批）公告</a></li>
+									<li><span class="time">2026-05-21</span><a href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/content/post_7160490.html" target="_blank" title="佛山市华英学校2026年上半年公开招聘教师公告">佛山市华英学校2026年上半年公开招聘教师公告</a></li>
+									<li><span class="time">2026-05-15</span><a href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/content/post_7156895.html" target="_blank" title="佛山市中心业余体育学校2026年上半年公开招聘教师公告">佛山市中心业余体育学校2026年上半年公开招聘教师公告</a></li>
+									<li><span class="time">2026-05-15</span><a href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/content/post_7156877.html" target="_blank" title="佛山市第一中学2026年公开招聘教师（第二轮）公告">佛山市第一中学2026年公开招聘教师（第二轮）公告</a></li>
+									<li><span class="time">2026-05-11</span><a href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/content/post_7153592.html" target="_blank" title="佛山市财政投资评审中心公开招聘专业技术雇员公告">佛山市财政投资评审中心公开招聘专业技术雇员公告</a></li>
+									<li><span class="time">2026-04-08</span><a href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/content/post_7132064.html" target="_blank" title="关于广东省事业单位2026年集中公开招聘高校毕业生佛山考区笔试合格分数线的公告">关于广东省事业单位2026年集中公开招聘高校毕业生佛山考区笔试合格分数线的公告</a></li>
+									<li><span class="time">2026-03-11</span><a href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/content/post_7114415.html" target="_blank" title="佛山大学2026年辅导员招聘公告">佛山大学2026年辅导员招聘公告</a></li>
+									<li><span class="time">2026-02-27</span><a href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/content/post_7105488.html" target="_blank" title="佛山市第一人民医院2026年事业单位高层次人才公开招聘公告">佛山市第一人民医院2026年事业单位高层次人才公开招聘公告</a></li>
+							</ul>
+			<div class="fy" id="page_div">
+				<div style="display:none;">
+											<a class="first" href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/index.html">
+							第一页
+						</a>
+											<a class="current" href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/index.html">
+							1
+						</a>
+											<a class="normal" href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/index_2.html">
+							2
+						</a>
+											<a class="normal" href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/index_3.html">
+							3
+						</a>
+											<a class="normal" href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/index_4.html">
+							4
+						</a>
+											<a class="normal" href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/index_5.html">
+							5
+						</a>
+											<a class="next" href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/index_2.html">
+							下一页
+						</a>
+											<a class="last" href="https://hrss.foshan.gov.cn/zwgk/jgsydwzl/index_20.html">
+							最后一页
+						</a>
+									</div>
+				<script>
+				var nPageCount;//总页数
+				var nCurrIndex=$(".current").text();//当前页数
+                  if(Math.ceil(863/20)>20)
+                  {
+                      nPageCount=20;
+
+                  }else
+                  {
+                      nPageCount=Math.ceil(863/20);
+                  }
+				createPageHTML(nPageCount,nCurrIndex, "index", "html");   
+				</script>
+            </div>
+		</div>
+		<div class="clearfix"></div>
+	</div>
+<!--  导航链接  -->
+<style>
+	.dhlj{ height: 25px; border-top: 1px solid #f0f0f0; background: #f7f7f7; padding: 20px 0;width:100%;}
+</style>
+<div class="main">
+		<div class="dhlj clearfix">
+			<span>导航链接</span>
+			<select id="doSome" >
+				<option value="">人力资源保障网站</option>
+				<option value="http://www.mohrss.gov.cn/">人力资源和社会保障部</option>
+				<option value="http://hrss.gd.gov.cn/">广东省人力资源和社会保障厅</option>
+				<option value="http://fssi.foshan.gov.cn/">佛山市社会保险基金管理局</option>
+				<option value="http://www.chancheng.gov.cn/rsj/">禅城区人力资源和社会保障局</option>
+				<option value="http://www.nanhai.gov.cn/fsnhq/bmdh/zfbm/qrsj/xxgkml">南海区人力资源和社会保障局</option>
+				<option value="http://www.shunde.gov.cn/hrss/">顺德区人力资源和社会保障局</option>
+				<option value="http://www.ss.gov.cn/gzjg/ssqrlzyhshbzj/jgzn/">三水区人力资源和社会保障局</option>
+				<option value="http://www.gaoming.gov.cn/gzjg/zfgzbm/qrzsbj/jggk_1105048/">高明区人力资源和社会保障局</option>
+				<option value="http://rsj.gz.gov.cn/">广州市人力资源和社会保障局</option>
+                    
+			</select>
+			<select id="doSome1" >
+				<option value="">政府网站</option>
+				<option value="http://www.chancheng.gov.cn">禅城区政府网</option>
+				<option value="http://www.nanhai.gov.cn/">南海区政府网</option>
+				<option value="http://www.shunde.gov.cn/">顺德区政府网</option>
+				<option value="http://www.ss.gov.cn/">三水区政府网</option>
+				<option value="http://www.gaoming.gov.cn/">高明区政府网</option>
+				<option value="http://www.foshan.gov.cn/">佛山市政府网</option>
+        
+			</select>
+			<select id="doSome2" >
+				<option value="">市直单位政务网站</option>
+				<option value="http://wjj.foshan.gov.cn/">佛山市卫生健康局</option>
+				<option value="http://fskjj.foshan.gov.cn/">佛山市科学技术局</option>
+				<option value="http://edu.foshan.gov.cn/">佛山市教育局</option>
+				<option value="http://fsiit.foshan.gov.cn">佛山市工业和信息化局</option>
+				<option value="http://fscz.foshan.gov.cn/">佛山市财政局</option>
+				<option value="http://fsga.foshan.gov.cn/">佛山市公安局</option>
+				<option value="http://www.fsbb.gov.cn/">佛山市机构编制委员会办公室</option>
+        
+			</select>
+		</div>
+	</div>
+<!--  导航链接  -->
+<!--  foot  -->
+<div class="foot">
+		<div class="foot_con" style="position: relative;">
+                        <div class="f3">
+                            <a href="https://hrss.foshan.gov.cn/wzdh/mzsm/content/post_677997.html" target="_blank">免责声明</a>&nbsp;|&nbsp;
+                            <a href="https://hrss.foshan.gov.cn/wzdh/ysbh/content/post_677880.html" target="_blank">隐私保护</a>&nbsp;|&nbsp;
+                            <a href="https://hrss.foshan.gov.cn/wzdh/lxwm/content/post_677633.html" target="_blank">联系我们</a>&nbsp;|&nbsp;
+                            <a href="https://hrss.foshan.gov.cn/wzdh/wzdt/content/post_615.html" target="_blank">网站地图</a>&nbsp;|&nbsp;
+                            <a href="https://hrss.foshan.gov.cn/wzdh/sybz/content/post_677798.html" target="_blank">使用帮助</a></div>
+                        <div class="f4">地址：佛山市顺德区乐从镇岭南大道南2号佛山市民中心D栋五楼  办公时间：工作日8:30-12:00、14:00-17:30
+<br>网站主办及维护单位：佛山市人力资源和社会保障局 版权所有  <a href="https://beian.miit.gov.cn" style="color: #fff;" target="_blank" >粤ICP备10004488号-5</a><img src="/images/ba_icon.png" />粤公网安备 44060402000410号 网标识码：4406000020
+<!-- <script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1272814822'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s22.cnzz.com/stat.php%3Fid%3D1272814822%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));</script>  -->
+<br>建议使用IE8.0以上版本浏览器</div>
+			<div style="position: absolute; right:10px; top:10px;">
+                <script type="text/javascript">document.write(unescape("%3Cspan id='_ideConac' %3E%3C/span%3E%3Cscript src='https://dcs.conac.cn/js/20/313/0000/40701191/CA203130000407011910001.js' type='text/javascript'%3E%3C/script%3E"));</script>
+                </div>
+                       <div style="position: absolute; left:10px; top:10px;">
+                           <!-- <script id="_jiucuo_" sitecode='4406000020' src='./js/jiucuo.js'></script> -->
+                           <script id="_jiucuo_" sitecode='4406000020' src='https://zfwzgl.www.gov.cn/exposure/jiucuo.js'></script>
+                       </div>
+		</div>
+   
+	</div>
+
+	<ul class="ybtsptb">
+		<li class="ybtspt1"><span><a href="#top">回到顶部</a></span></li>
+	</ul>
+<script type="text/javascript" src="/js/jquery.min.js"></script>
+
+<script type="text/javascript" src="/js/doSome.js"></script>
+<link href="/css/layer.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="/js/jquery.SuperSlide.2.1.js"></script>
+<script type="text/javascript" src="/js/time.js"></script>
+<script type="text/javascript">
+    $(function(){
+        $(".ybtspt > li").hover(function(){
+                    $(".ybtspt > li > span").css('display', 'block');
+                },
+                function() {
+                    $(".ybtspt > li > span").css('display', 'none');
+                });
+        $(".ybtspta > li").hover(function(){
+                    $(".ybtspta > li > span").css('display', 'block');
+                },
+                function() {
+                    $(".ybtspta > li > span").css('display', 'none');
+                });
+        $(".ybtsptb > li").hover(function(){
+                    $(".ybtsptb > li > span").css('display', 'block');
+                },
+                function() {
+                    $(".ybtsptb > li > span").css('display', 'none');
+                });
+    })
+</script>
+
+
+      <!--异步统计-->
+        <div style="display:none;">
+        <script>window.NFCMS_SITE_ID=757013;window.NFCMS_PUB_TYPE="cat";window.NFCMS_CAT_ID="3592";</script><script src="//statistics.gd.gov.cn/scripts/s.js?t=1787823487" async></script>
+<meta name="Keywords" content="" />
+<meta name="description" content="" />
+        <script>window.NFCMS_SITE_ID=757013;window.NFCMS_PUB_TYPE="cat";window.NFCMS_CAT_ID="3592";</script><script src="//statistics.gd.gov.cn/scripts/s.js?t=1787823487" async></script> 
+        </div>
+<!--  foot  -->
+<script type="text/javascript">
+	jQuery(".tpxw").slide({mainCell:".bd ul",autoPlay:true});
+	jQuery(".tpxw").slide({mainCell:".text ul",autoPlay:true});
+    $(function(){
+        $(".tab_tle > div").hover(function(){
+            var idx= $(this).index();
+            $(this).siblings().removeClass("on").end().addClass("on");
+            //$(this).addClass("hover");
+
+
+            $(this).parent().siblings().find("a").eq(idx).show().siblings().hide();
+            //$(this).siblings().find('.tab_more div').eq(idx).show().siblings().hide();
+
+
+            $(this).parents(".tab").find(".tab_con > .qh").eq(idx).show().siblings().hide();
+        })
+    })
+	$.ajax({
+		url : 'http://app.gd.gov.cn/xxts/pushinfo_json.php',
+		dataType : "jsonp",
+		jsonp : "pushInfoJsonpCallBack",
+		jsonpCallback:"pushInfoJsonpCallBack",
+		success : function(data) {
+			$.each(data,function(i,json){
+			    var str1= json.pubDate;
+				str1=str1.substr(7,5);
+				$(".zscd").append("<li style='line-height:32px; height:32px;'><span>["+str1+"]</span><a href='"+json.link+"'  title='"+json.title+"' taget='_blank'>"+json.title+"</a></li>")
+			})
+		},
+		 error:function(){
+			//alert('fail');
+	    }
+	});
+</script>
+<script>
+	var currentChnl = "<TRS_CHANNEL id='OWNER' field='CHNLDESC' autolink='FALSE'></TRS_CHANNEL>";
+	var $Element = $(".list_leftbox ul").find(".list3").size() != 0?$(".list_leftbox ul").find(".list3"):$(".list_leftbox ul").first().find("li");
+	$.each($Element,function(i){
+		if($(this).find("a").attr("title") == currentChnl || $(this).find("a").text() == currentChnl){
+			$(this).find("a").css("color","#ffffff").end().css("background","url(${root_path}images/list_channel_on_bg.png) no-repeat");
+		}
+	});
+</script>
+
+<script>
+/*获取栏目*/
+	$(function(){
+		if("zwgk/jgsydwzl"=="fssbj/zwgk"||"3556"=="3556"){
+			$.ajax({
+				url: '/postmeta/i/3592.json',
+				async: false,
+				success: function(res){
+					if(res.children.length==0){
+							parentCategory();
+					}else{
+					var cat= "<ul>";
+					$.each(res.children,function(n,value){
+						cat += '<li class="list3"><a href="/'+ value.pub_point+ '" title="value.name">'+value.name+'</a></li>';
+					});
+					cat+="</ul>";
+					$("#lmn").html(cat);
+					}
+				}
+			});
+		}
+		else{
+			parentCategory();
+		}
+	});
+	function parentCategory(){
+			$.ajax({
+				url: '/postmeta/i/3556.json',
+				async: false,
+				success: function(res){
+					var cat="";
+					$.each(res.children,function(n,value){
+						var url="";
+						if(value.jump_url=="")
+						{
+							url="/"+value.pub_point;
+						}else
+						{
+							url=value.jump_url;
+						}
+
+
+						if(3592==value.id){
+
+							cat += '<li class="list3" style="background:url(/images/list_channel_on_bg.png) no-repeat;" ><a href="'+url+'" title="'+value.name+'" style="color: rgb(255, 255, 255);">'+value.name+'</a></li>';
+						console.log(cat);
+						}else{
+							 
+							cat += '<li class="list3"><a href="'+ url + '" title="'+value.name+'">'+value.name+'</a></li>';
+						}
+					});
+					//console.log(cat);
+					$("#lmn").append(cat);
+				}
+			});
+	}
+</script>
+<script src="/js/common.js"></script>
+</body>
+</html>

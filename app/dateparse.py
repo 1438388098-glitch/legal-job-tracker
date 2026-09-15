@@ -4,6 +4,9 @@ from datetime import date, timedelta
 _FULL = re.compile(r"(20\d{2})[年\-/.](\d{1,2})[月\-/.](\d{1,2})日?")
 _SHORT = re.compile(r"(?<![\d年\-/.])(\d{1,2})月(\d{1,2})日")
 _MD = re.compile(r"(?<![\d年\-/.])(\d{1,2})-(\d{1,2})(?![\d\-/.年])")
+# 校园职位板常见 "09/03 发布" 这类省略年份的写法；要求两侧均为两位数字，
+# 避免把 "1/2" 之类的比例误判成日期。
+_MD_SLASH = re.compile(r"(?<![\d/\-.年])(\d{2})/(\d{2})(?![\d/\-.])")
 
 
 def _valid(y, m, d):
@@ -21,7 +24,7 @@ def extract_dates(text: str, today: date | None = None) -> list[str]:
         y, mo, d = int(m[1]), int(m[2]), int(m[3])
         if _valid(y, mo, d):
             out.append(date(y, mo, d).isoformat())
-    for pat in (_SHORT, _MD):
+    for pat in (_SHORT, _MD, _MD_SLASH):
         for m in pat.finditer(text or ""):
             mo, d = int(m[1]), int(m[2])
             if not _valid(today.year, mo, d):

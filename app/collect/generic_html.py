@@ -1,34 +1,135 @@
 import json
+from datetime import date, timedelta
 from urllib.parse import urljoin
 
 from selectolax.parser import HTMLParser
 
 from ..classify import infer_city, infer_job_type
 from ..dateparse import guess_deadline, parse_date_text
+from ..dedup import url_fingerprint
 from .http import fetch
+
+# 列表页配置字段（全部可选，除 list_url/item_sel）：
+#   item_sel    条目容器选择器
+#   link_sel    条目内提供 href 的元素，默认 "a"；填 "self" 表示条目本身即 <a>
+#   title_sel   条目内提供标题文本的元素，默认取 link_sel 的文本
+#   title_attr  优先取该属性作为标题（如 "title"，可避免"…"截断与附属文案）
+#   date_sel    条目内提供发布日期的元素
+#   org_sel     条目内提供单位名的元素
+#   detail_sel  详情页正文容器，留空则取 <body> 全文
+#   max_items   单次抓取条数上限，默认 30
+#   encoding / verify  编码与证书校验（政务站常见 gb2312 / 自签证书）
+
+
+def _text(node) -> str:
+    if node is None:
+        return ""
+    for sep in ("\n", " "):
+        t = node.text(separator=sep, strip=True)
+        if t:
+            return t
+    return ""
 
 
 def parse_list(html: str, cfg: dict) -> list[dict]:
     tree = HTMLParser(html)
-    items = []
+    link_sel = cfg.get("link_sel", "a")
+    items, seen = [], set()
     for node in tree.css(cfg["item_sel"]):
-        a = node.css_first(cfg.get("title_sel", "a"))
-        if a is None or not a.attributes.get("href"):
+        link = node if link_sel == "self" else node.css_first(link_sel)
+        if link is None or not link.attributes.get("href"):
             continue
+        url = urljoin(cfg["list_url"], link.attributes["href"])
+        if url in seen:
+            continue  # 嵌套表格会让同一条目被多个 tr 命中，按 URL 去重
+
+        title = ""
+        if cfg.get("title_attr"):
+            title = (link.attributes.get(cfg["title_attr"]) or "").strip()
+            if not title:
+                title = (node.attributes.get(cfg["title_attr"]) or "").strip()
+        if not title:
+            tsel = cfg.get("title_sel")
+            title = _text(node.css_first(tsel) if tsel else link)
+        title = " ".join(title.split())
+        if not title:
+            continue
+
+        seen.add(url)
         date_node = node.css_first(cfg["date_sel"]) if cfg.get("date_sel") else None
+        org_node = node.css_first(cfg["org_sel"]) if cfg.get("org_sel") else None
         items.append({
-            "title": a.text(strip=True),
-            "url": urljoin(cfg["list_url"], a.attributes["href"]),
-            "publish_date": parse_date_text(date_node.text(strip=True)) if date_node else None,
+            "title": title,
+            "url": url,
+            "publish_date": parse_date_text(_text(date_node)) if date_node else None,
+            "org": _text(org_node) or cfg.get("org"),
         })
     return items
 
 
+def matches_keywords(text: str, keywords) -> bool:
+    """任一关键词命中即通过（大小写不敏感）。keywords 为空视为全部通过。"""
+    if not keywords:
+        return True
+    t = (text or "").lower()
+    return any(k.lower() in t for k in keywords)
+
+
+def apply_noise_filters(items: list[dict], cfg: dict,
+                        today: date | None = None) -> list[dict]:
+    """过滤列表页噪音，避免为无用条目抓详情。
+
+    max_age_days  发布超过该天数的条目丢弃（政务站"归档/须知"栏目常见陈年条目），
+                  默认 540 天；填 0 关闭。无发布日期的条目一律保留。
+    exclude_url   URL 含任一子串则丢弃（用于排除站内与招聘无关的子栏目）。
+    title_keywords 标题或单位含任一关键词才保留。用于栏目混杂、但"是不是招聘稿件"
+                  看标题就能判断的源（如韶关人社栏目里大量法院送达公告）。
+    """
+    max_age = cfg.get("max_age_days", 540)
+    if max_age:
+        cutoff = ((today or date.today()) - timedelta(days=max_age)).isoformat()
+        items = [i for i in items
+                 if not i["publish_date"] or i["publish_date"] >= cutoff]
+    pats = cfg.get("exclude_url")
+    if pats:
+        items = [i for i in items if not any(p in i["url"] for p in pats)]
+    kw = cfg.get("title_keywords")
+    if kw:
+        items = [i for i in items if matches_keywords(
+            f"{i['title']} {i.get('org') or ''}", kw)]
+    return items
+
+
+def densest_block(tree, min_len: int = 200):
+    """挑出正文最可能的容器：文本最多、且链接占比最低的块。
+
+    导航栏/页脚这类块虽然文本量不小，但几乎全是链接，用链接文本量加权压低其得分。
+    多家政务站与律协站的正文容器没有稳定的 class，靠这个兜底比取整页 <body> 干净得多。
+    """
+    best, best_score = None, 0.0
+    for n in tree.css("div, article, section, main, td"):
+        txt = n.text(separator="\n", strip=True)
+        if len(txt) < min_len:
+            continue
+        link_len = sum(len(a.text(strip=True) or "") for a in n.css("a"))
+        score = len(txt) - 2 * link_len
+        if score > best_score:
+            best, best_score = n, score
+    return best
+
+
 def extract_text(html: str, sel: str | None) -> str:
     tree = HTMLParser(html)
-    node = tree.css_first(sel) if sel else None
+    node = None
+    if sel:
+        for part in sel.split("|"):
+            cand = tree.css_first(part.strip())
+            # 命中但内容过少说明选择器指到了壳子（如只剩导航），交给兜底重挑
+            if cand is not None and len(cand.text(strip=True)) >= 80:
+                node = cand
+                break
     if node is None:
-        node = tree.body
+        node = densest_block(tree) or tree.body
     return node.text(separator="\n", strip=True) if node else ""
 
 
@@ -37,7 +138,8 @@ def enrich(item: dict, body: str, cfg: dict) -> dict:
     item["deadline"] = guess_deadline(body)
     item["job_type"] = cfg.get("job_type") or infer_job_type(item["title"])
     item["city"] = cfg.get("city") or infer_city(item["title"])
-    item["org"] = cfg.get("org")
+    if not item.get("org"):
+        item["org"] = cfg.get("org")
     return item
 
 
@@ -47,13 +149,30 @@ class Adapter:
     def __init__(self, cfg: dict):
         self.cfg = cfg
 
-    def collect(self) -> list[dict]:
+    def collect(self, known_fps: set[str] | None = None) -> list[dict]:
+        """抓取列表并补全详情。known_fps 为已知 URL 指纹，命中则跳过详情抓取
+        （增量采集：日常运行只处理新条目）。"""
         cfg = self.cfg
-        r = fetch(cfg["list_url"], encoding=cfg.get("encoding"),
-                  verify=cfg.get("verify", True))
-        items = parse_list(r.text, cfg)[: cfg.get("max_items", 30)]
+        known = known_fps or set()
+        items, seen = [], set()
+        for url in cfg.get("list_urls") or [cfg["list_url"]]:
+            r = fetch(url, encoding=cfg.get("encoding"),
+                      verify=cfg.get("verify", True))
+            for it in parse_list(r.text, {**cfg, "list_url": url}):
+                if it["url"] in seen:
+                    continue
+                seen.add(it["url"])
+                items.append(it)
+            if len(items) >= cfg.get("max_items", 30):
+                break
+        items = items[: cfg.get("max_items", 30)]
+        items = apply_noise_filters(items, cfg)
+        if cfg.get("no_detail"):
+            return [enrich(it, "", cfg) for it in items]
         out = []
         for it in items:
+            if url_fingerprint(it["url"]) in known:
+                continue
             try:
                 d = fetch(it["url"], encoding=cfg.get("encoding"),
                           verify=cfg.get("verify", True))
@@ -61,6 +180,12 @@ class Adapter:
             except Exception:  # noqa: BLE001 详情抓取失败不放弃该条
                 body = ""
             out.append(enrich(it, body, cfg))
+        kw = cfg.get("keep_keywords")
+        if kw:
+            # 取并集语义：列表标题、单位或详情正文任一命中法学关键词即保留
+            # （校园职位板标题多是"管培生"之类，法学岗信息只在正文专业要求里）
+            out = [x for x in out if matches_keywords(
+                f"{x['title']} {x.get('org') or ''} {x.get('body') or ''}", kw)]
         return out
 
 
