@@ -38,6 +38,10 @@ _RESULT = re.compile(
     r"成绩(公告|查询|公布|排名)|合格分数线|笔试合格|面试成绩|总成绩|"
     r"体检(公告|通知|结果)|考察(公告|对象)|拟任|任前公示|公示名单|"
     r"人员名单公示|资格审核(公告|结果)|拟确定|招聘结果")
+# 采购/招标类稿件常带"招聘活动"字样但是给供应商看的（如招聘会项目询价），对求职者无用
+_NON_JOB = re.compile(
+    r"询价|招标|中标|成交(公告|结果)|采购(公告|项目|意向)|比选|竞谈|"
+    r"征求意见|意见征集|论文征集|征文|问卷|调查")
 _OPENING = re.compile(
     r"招聘|招录|招考|选聘|选调|引进|招募|诚聘|广纳英才|招贤|岗位(表|信息)|公开招聘|公开遴选")
 
@@ -48,6 +52,8 @@ def infer_notice_kind(title: str, body: str = "") -> str:
     t = title or ""
     if _RESULT.search(t):
         return NOTICE_RESULT
+    if _NON_JOB.search(t):
+        return NOTICE_INFO
     if _OPENING.search(t):
         return NOTICE_OPENING
     # 标题看不出性质时看正文前半段（正文常常大段复述历史流程，只看开头更准）

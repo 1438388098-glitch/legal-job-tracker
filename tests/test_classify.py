@@ -41,3 +41,11 @@ def test_result_wins_over_recruit_in_body():
 def test_notice_kind_info():
     assert infer_notice_kind("关于电子诉讼服务整合升级的公告") == NOTICE_INFO
     assert infer_notice_kind("关于征集2026年专题研讨会论文的通知") == NOTICE_INFO
+
+
+def test_procurement_notice_is_not_a_job():
+    """采购/询价类稿件常带"招聘活动"字样，但是给供应商看的，不是岗位。"""
+    assert infer_notice_kind(
+        "关于落实省“百万英才汇南粤”2026年N城联动秋季招聘活动发动及参展项目公开询价公告"
+    ) == NOTICE_INFO
+    assert infer_notice_kind("某单位招聘会服务项目中标公告") == NOTICE_INFO
