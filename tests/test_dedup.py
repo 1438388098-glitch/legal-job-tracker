@@ -57,3 +57,41 @@ def test_same_job_from_two_sources_merges_by_title():
     assert is_same_job(
         title_fingerprint("广东省高级人民法院", "2026年公开招聘劳动合同制书记员公告"),
         title_fingerprint("广东省高级人民法院", "2026年公开招聘劳动合同制书记员公告"))
+
+
+def test_short_title_merges_when_org_present():
+    """同一岗位挂在不同高校就业网：标题短但单位齐全，必须能合并。
+
+    曾经"标题<10 字一律不合并"，导致跨源合并从未生效过（merge_count>1 恒为 0），
+    用户会看到两张一模一样的卡片，进而不再信任整个列表。
+    修法：合并键 = 单位|标题。单位不同则键必然不同，泛岗位名保护仍然有效。
+    """
+    a = title_fingerprint("广州瑞丰投资控股", "法务助理")
+    b = title_fingerprint("广州瑞丰投资控股", "法务助理")
+    assert merge_key(a), "单位明确时短标题也应可合并"
+    assert is_same_job(a, b)
+    # 单位不同 → 不合并（泛岗位名保护）
+    c = title_fingerprint("另一家律师事务所", "法务助理")
+    assert not is_same_job(a, c)
+    # 单位为空且标题短 → 信息太少，放弃合并
+    d = title_fingerprint("", "法务助理")
+    assert merge_key(d) is None
+
+
+def test_short_title_merges_when_org_present():
+    """同一岗位挂在不同高校就业网：标题短但单位齐全，必须能合并。
+
+    曾经"标题<10 字一律不合并"，导致跨源合并从未生效过（merge_count>1 恒为 0），
+    用户会看到两张一模一样的卡片，进而不再信任整个列表。
+    修法：合并键 = 单位|标题。单位不同则键必然不同，泛岗位名保护仍然有效。
+    """
+    a = title_fingerprint("广州瑞丰投资控股", "法务助理")
+    b = title_fingerprint("广州瑞丰投资控股", "法务助理")
+    assert merge_key(a), "单位明确时短标题也应可合并"
+    assert is_same_job(a, b)
+    # 单位不同 → 不合并（泛岗位名保护）
+    c = title_fingerprint("另一家律师事务所", "法务助理")
+    assert not is_same_job(a, c)
+    # 单位为空且标题短 → 信息太少，放弃合并
+    d = title_fingerprint("", "法务助理")
+    assert merge_key(d) is None

@@ -1,6 +1,6 @@
 import contextlib
 import os
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -84,6 +84,42 @@ def _ts_filter():
     return ts
 
 
+def _toast(conn, text: str) -> None:
+    """发 Windows 桌面通知；未装 win11toast 或未开启时静默跳过。"""
+    if db.get_setting(conn, "toast_enabled", "0") != "1":
+        return
+    try:
+        from win11toast import toast
+        toast("法学招聘中台", text)
+    except Exception:  # noqa: BLE001 未安装通知依赖则跳过
+        pass
+
+
+def _collect_summary(conn, total: dict) -> str:
+    """通知正文：让用户不开网页就知道"今天有没有必要打开看"。"""
+    row = conn.execute(
+        "SELECT"
+        "  SUM(deadline IS NOT NULL AND deadline BETWEEN date('now') AND date('now')) AS d0,"
+        "  SUM(deadline IS NOT NULL AND deadline BETWEEN date('now') AND date('now','+3 day')) AS d3"
+        " FROM jobs WHERE notice_kind='opening' AND status != 'archived'").fetchone()
+    parts = [f"新增 {total.get('inserted', 0)} 条"]
+    if row["d0"]:
+        parts.append(f"今天截止 {row['d0']} 条")
+    if row["d3"]:
+        parts.append(f"3 天内截止 {row['d3']} 条")
+    if total.get("failed"):
+        parts.append(f"{total['failed']} 个源采集失败")
+    return "，".join(parts)
+
+
+def _needs_catchup(conn) -> bool:
+    """上次采集是不是在今天之前（服务不是天天开着，错过 08:05 要补）。"""
+    row = conn.execute("SELECT MAX(ran_at) m FROM collect_logs").fetchone()
+    if not row or not row["m"]:
+        return True
+    return str(row["m"])[:10] < date.today().isoformat()
+
+
 def create_app(db_path: str | None = None) -> FastAPI:
     db_path = db_path or str(Path(__file__).resolve().parent.parent.parent / "data" / "job.db")
     conn = db.connect(db_path)
@@ -92,13 +128,20 @@ def create_app(db_path: str | None = None) -> FastAPI:
     scheduler = BackgroundScheduler(timezone="Asia/Shanghai")
 
     def daily():
-        Runner(conn).run_all()
+        total = Runner(conn).run_all()
+        _toast(conn, _collect_summary(conn, total))
 
     @contextlib.asynccontextmanager
     async def lifespan(_app: FastAPI):
         db.auto_archive(conn)
         if os.environ.get("APP_DISABLE_SCHEDULER") != "1":
             scheduler.add_job(daily, "cron", hour=8, minute=5, id="daily_collect")
+            # 晚间第二轮：当天下午发布的公告，不用等到第二天早上才能看到
+            scheduler.add_job(daily, "cron", hour=20, minute=5, id="evening_collect")
+            # 错过当天采集（电脑晚开机）就立即补一轮：增量采集靠 URL 指纹，不会重复
+            if _needs_catchup(conn):
+                scheduler.add_job(daily, id="catchup_collect",
+                                  next_run_time=datetime.now())
             scheduler.start()
         yield
         if scheduler.running:

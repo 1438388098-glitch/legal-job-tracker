@@ -13,7 +13,9 @@ MERGE_SCAN_LIMIT = 800
 
 
 def _search_text(item: dict) -> str:
-    raw = f"{item['title']} {item.get('org') or ''} {item.get('body') or ''}"
+    # notes 也进搜索文本：用户自己写的备注（"已联系学长""需 A 证"）必须搜得到
+    raw = (f"{item['title']} {item.get('org') or ''} {item.get('body') or ''} "
+           f"{item.get('notes') or ''}")
     text = _TAGS.sub(" ", raw)
     return _SPACES.sub(" ", text).strip()
 
@@ -62,12 +64,14 @@ def save_item(conn: sqlite3.Connection, item: dict) -> tuple[str, int | None]:
         return "merged", jid
     cur = conn.execute(
         "INSERT INTO jobs(title,org,job_type,city,publish_date,deadline,source_slug,url,"
-        "url_fingerprint,title_fingerprint,search_text,status,needs_review,notice_kind) "
-        "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        "url_fingerprint,title_fingerprint,search_text,status,needs_review,notice_kind,"
+        "employment_type,rolling) "
+        "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (item["title"], item.get("org"), item.get("job_type") or "unknown", item.get("city"),
          item.get("publish_date"), item.get("deadline"), slug, item["url"], urlfp, tfp,
          _search_text(item), item.get("status") or "new", 1 if item.get("needs_review") else 0,
-         item.get("notice_kind") or NOTICE_OPENING))
+         item.get("notice_kind") or NOTICE_OPENING,
+         item.get("employment_type"), 1 if item.get("rolling") else 0))
     job_id = cur.lastrowid
     conn.execute("INSERT INTO job_sources(job_id,source_slug,url) VALUES(?,?,?)",
                  (job_id, slug, item["url"]))

@@ -53,7 +53,8 @@ class Runner:
             total["inserted"] += r.get("inserted", 0)
             total["merged"] += r.get("merged", 0)
         db.auto_archive(self.conn)
-        self._notify(total)
+        # 桌面通知由调用方（app.web.main.daily）在采集后按汇总数据决定是否发送，
+        # 这里不再发，避免定时采集与手动采集重复弹窗。
         return total
 
     def run_source(self, slug: str, known_fps: set[str] | None = None) -> dict:
@@ -91,14 +92,3 @@ class Runner:
             self.conn.commit()
             log.exception("source %s failed", slug)
         return result
-
-    def _notify(self, total: dict) -> None:
-        if total.get("inserted", 0) <= 0:
-            return
-        if db.get_setting(self.conn, "toast_enabled", "0") != "1":
-            return
-        try:
-            from win11toast import toast
-            toast("招聘采集完成", f"新增 {total['inserted']} 条，合并 {total['merged']} 条")
-        except Exception:  # noqa: BLE001 未安装 toast 附加依赖则跳过
-            pass

@@ -2,7 +2,7 @@
 {% block title %}{{ job['title'] }} · 法学招聘信息中台{% endblock %}
 {% block content %}
 <div class="page-head">
-  <a class="nav-a" href="/">← 岗位列表</a>
+  <a class="nav-a" href="{{ back_url or '/' }}">← 岗位列表</a>
   <span class="spacer"></span>
   <span class="meta">#{{ job['id'] }}</span>
 </div>

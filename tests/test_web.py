@@ -108,12 +108,111 @@ def test_paste_flow(client, monkeypatch):
     assert r.status_code in (200, 303)
     st = client.app.state.conn.execute(
         "SELECT status FROM jobs WHERE id=?", (jid,)).fetchone()["status"]
-    assert st == "new"
+    # confirm 把状态重置为 new；TestClient 会跟随重定向进详情页，
+    # 而"看过即已读"会把它标成 read —— 这正是新交互的预期结果
+    assert st == "read"
 
 
 def test_health_page(client):
     r = client.get("/health")
     assert r.status_code == 200 and "演示" in r.text
+
+
+def test_detail_auto_marks_read(client):
+    """看过详情就算已读，不用再点一次"标记已读"。"""
+    assert client.app.state.conn.execute(
+        "SELECT status FROM jobs WHERE id=1").fetchone()["status"] == "new"
+    client.get("/jobs/1")
+    assert client.app.state.conn.execute(
+        "SELECT status FROM jobs WHERE id=1").fetchone()["status"] == "read"
+
+
+def test_actions_return_to_filtered_list(client):
+    """操作完必须带着筛选参数回来，不能把用户的视图归零。"""
+    url = "/?job_type=public&city=%E6%B7%B1%E5%9C%B3"      # 类型/城市筛选
+    client.get(url)
+    r = client.post("/jobs/1/status", data={"status": "read"},
+                    headers={"referer": "http://testserver" + url},
+                    follow_redirects=False)
+    assert r.status_code == 303
+    assert r.headers["location"].startswith("/?")          # 保留了 query
+    assert "job_type=public" in r.headers["location"]
+    # 没有来源页时退回默认
+    r2 = client.post("/jobs/1/status", data={"status": "new"}, follow_redirects=False)
+    assert r2.headers["location"] == "/"
+
+
+def test_apply_from_list_row(client):
+    """列表行直接加跟踪：不用进详情页。"""
+    r = client.post("/jobs/1/apply", headers={"referer": "http://testserver/"},
+                    follow_redirects=False)
+    assert r.status_code == 303
+    assert client.app.state.conn.execute(
+        "SELECT COUNT(*) c FROM applications").fetchone()["c"] == 1
+    # 再点一次不会重复
+    client.post("/jobs/1/apply", headers={"referer": "http://testserver/"})
+    assert client.app.state.conn.execute(
+        "SELECT COUNT(*) c FROM applications").fetchone()["c"] == 1
+
+
+def test_list_row_shows_apply_state(client):
+    r = client.get("/")
+    assert "跟踪" in r.text        # 未跟踪 → 显示"跟踪"按钮
+    client.post("/jobs/1/apply")
+    r = client.get("/")
+    assert "跟踪中" in r.text      # 已跟踪 → 显示状态而不是按钮
+
+
+def test_batch_operations(client):
+    conn = client.app.state.conn
+    _add(conn, "某某公司招聘法务专员公告", "b1", "opening")
+    _add(conn, "某某公司招聘法律顾问公告", "b2", "opening")
+    ids = ",".join(str(r["id"]) for r in conn.execute("SELECT id FROM jobs"))
+    r = client.post("/jobs/batch", data={"action": "read", "ids": ids},
+                    follow_redirects=False)
+    assert r.status_code == 303
+    left = conn.execute(
+        "SELECT COUNT(*) c FROM jobs WHERE status='read'").fetchone()["c"]
+    assert left == 3
+    # 空 ids 不应报错也不应改动
+    client.post("/jobs/batch", data={"action": "archive", "ids": ""})
+    assert conn.execute(
+        "SELECT COUNT(*) c FROM jobs WHERE status='archived'").fetchone()["c"] == 0
+
+
+def test_synonym_search_widens_recall(client):
+    """搜"律所"必须也能命中写了"律师事务所"的记录（同义词组展开）。
+
+    "律所"是 2 字，走 LIKE 分支；同组的"律师事务所"出现在另一条记录里。
+    """
+    _add(client.app.state.conn, "广东华某律师事务所招聘授薪律师公告", "s1", "opening")
+    r = client.get("/", params={"q": "律所"})
+    assert "广东华某律师事务所招聘授薪律师公告" in r.text
+
+
+def test_sort_by_created(client):
+    r = client.get("/", params={"sort": "new"})
+    assert r.status_code == 200 and "书记员招聘" in r.text
+
+
+def test_fresh_and_nodeadline_entries(client):
+    """概览条上的"今日新增 / 无截止日"必须是入口，不是摆设。"""
+    conn = client.app.state.conn
+    conn.execute("UPDATE jobs SET created_at='2020-01-01 08:00:00' WHERE id=1")
+    conn.commit()
+    assert "书记员招聘" not in client.get("/", params={"fresh": "1"}).text
+    conn.execute("UPDATE jobs SET deadline=NULL, rolling=1 WHERE id=1")
+    conn.commit()
+    assert "书记员招聘" in client.get("/", params={"nodeadline": "1"}).text
+
+
+def test_rolling_shown_as_long_term(client):
+    """长期有效岗位没有截止日，但要显示"长期"而不是"—"，否则像缺数据。"""
+    conn = client.app.state.conn
+    conn.execute("UPDATE jobs SET deadline=NULL, rolling=1 WHERE id=1")
+    conn.commit()
+    r = client.get("/")
+    assert "长期" in r.text and "deadline none" not in r.text
 
 
 def test_export_xlsx(client):

@@ -34,12 +34,15 @@ CREATE TABLE IF NOT EXISTS jobs(
   status TEXT NOT NULL DEFAULT 'new',
   needs_review INTEGER NOT NULL DEFAULT 0,
   notice_kind TEXT NOT NULL DEFAULT 'opening',
+  employment_type TEXT,
+  rolling INTEGER NOT NULL DEFAULT 0,
   merge_count INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_jobs_urlfp ON jobs(url_fingerprint);
 CREATE INDEX IF NOT EXISTS idx_jobs_deadline ON jobs(deadline);
 CREATE INDEX IF NOT EXISTS idx_jobs_kind ON jobs(notice_kind);
+CREATE INDEX IF NOT EXISTS idx_jobs_created ON jobs(created_at);
 CREATE TABLE IF NOT EXISTS job_sources(
   job_id INTEGER NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
   source_slug TEXT NOT NULL,
@@ -77,6 +80,8 @@ def connect(path) -> sqlite3.Connection:
 # 用户手上的库要能平滑升级，所以这里显式补。
 _MIGRATIONS = [
     ("jobs", "notice_kind", "TEXT NOT NULL DEFAULT 'opening'"),
+    ("jobs", "employment_type", "TEXT"),
+    ("jobs", "rolling", "INTEGER NOT NULL DEFAULT 0"),
 ]
 
 

@@ -42,6 +42,45 @@ def infer_city(text: str, default: str | None = None):
     return default
 
 
+# ── 用工性质 ────────────────────────────────────────────────────────────
+# 法学求职者第一关心的是"有没有编制"，其次是"是不是长期有效岗"。
+# 这两类信息正文里几乎一定写了，但此前没有结构化成字段，导致搜不了、筛不了。
+EMP_BIANZHI = "编制"
+EMP_CONTRACT = "合同制"
+EMP_DISPATCH = "派遣"
+EMP_ROLLING = "长期有效"
+
+_EMP_RULES = [
+    (EMP_DISPATCH, re.compile(
+        r"劳务派遣|派遣用工|劳动派遣|人才派遣|外包")),
+    (EMP_BIANZHI, re.compile(
+        r"事业编制|在编|入编|解决编制|带编制|编制内|公务员(编制|身份)?|"
+        r"纳入编制|实名编制|员额制|备案制管理")),
+    (EMP_CONTRACT, re.compile(
+        r"劳动合同制|聘用制|合同制|编外|政府购买服务|聘员|劳动合同聘用|"
+        r"签订劳动合同|非在编")),
+]
+
+# "长期有效/招满即止/邮箱投递"：这类岗位没有（也不需要）截止日期，
+# 之前因为没有 deadline 被排到列表最底部，等于永远看不到。
+_ROLLING = re.compile(
+    r"长期(有效|招聘|招录)|招满即止|常年招聘|滚动招聘|"
+    r"简历(发送|投递).{0,12}(邮箱|邮件)|邮箱.{0,8}(投递|报名)|"
+    r"招聘(信息)?长期有效|不设截止|roll")
+
+
+def infer_employment_type(text: str) -> str | None:
+    t = text or ""
+    for key, pat in _EMP_RULES:
+        if pat.search(t):
+            return key
+    return None
+
+
+def is_rolling(text: str) -> bool:
+    return bool(_ROLLING.search(text or ""))
+
+
 # ── 单位名抽取 ──────────────────────────────────────────────────────────
 # 政务站的列表页只有"标题 + 日期"，没有单位字段，但单位名几乎都在标题开头：
 #   "广东省高级人民法院2026年度选调优秀大学毕业生拟录用人员名单公示" → 广东省高级人民法院

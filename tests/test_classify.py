@@ -96,3 +96,31 @@ def test_procurement_notice_is_not_a_job():
         "关于落实省“百万英才汇南粤”2026年N城联动秋季招聘活动发动及参展项目公开询价公告"
     ) == NOTICE_INFO
     assert infer_notice_kind("某单位招聘会服务项目中标公告") == NOTICE_INFO
+
+
+def test_employment_type_and_rolling():
+    """用工性质（编制/合同制/派遣）与"长期有效"：法学求职者最关心的两个字段。"""
+    from app.classify import (EMP_BIANZHI, EMP_CONTRACT, EMP_DISPATCH,
+                              infer_employment_type, is_rolling)
+    assert infer_employment_type("招聘劳动合同制书记员") == EMP_CONTRACT
+    assert infer_employment_type("聘用制司法辅助人员") == EMP_CONTRACT
+    assert infer_employment_type("纳入事业编制管理，解决编制") == EMP_BIANZHI
+    assert infer_employment_type("劳务派遣用工，与派遣公司签合同") == EMP_DISPATCH
+    assert infer_employment_type("普通岗位描述") is None
+    assert is_rolling("简历投递邮箱：hr@example.com")
+    assert is_rolling("招聘岗位长期有效，招满即止")
+    assert not is_rolling("报名截止2026年10月1日")
+
+
+def test_employment_type_and_rolling():
+    """用工性质（编制/合同制/派遣）与"长期有效"：法学求职者最关心的两个字段。"""
+    from app.classify import (EMP_BIANZHI, EMP_CONTRACT, EMP_DISPATCH,
+                              infer_employment_type, is_rolling)
+    assert infer_employment_type("招聘劳动合同制书记员") == EMP_CONTRACT
+    assert infer_employment_type("聘用制司法辅助人员") == EMP_CONTRACT
+    assert infer_employment_type("纳入事业编制管理，解决编制") == EMP_BIANZHI
+    assert infer_employment_type("劳务派遣用工，与派遣公司签合同") == EMP_DISPATCH
+    assert infer_employment_type("普通岗位描述") is None
+    assert is_rolling("简历投递邮箱：hr@example.com")
+    assert is_rolling("招聘岗位长期有效，招满即止")
+    assert not is_rolling("报名截止2026年10月1日")

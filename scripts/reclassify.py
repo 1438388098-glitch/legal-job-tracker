@@ -21,7 +21,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 sys.stdout.reconfigure(encoding="utf-8")
 
 from app import db  # noqa: E402
-from app.classify import extract_org, infer_city, infer_job_type, infer_notice_kind  # noqa: E402
+from app.classify import (extract_org, infer_city, infer_employment_type,  # noqa: E402
+                          infer_job_type, infer_notice_kind, is_rolling)
 from app.collect.runner import _source_cfg  # noqa: E402 与采集时同一套源级注入逻辑
 from app.collect.store import _search_text, reindex_fts  # noqa: E402
 from app.dateparse import guess_deadline  # noqa: E402
@@ -39,8 +40,8 @@ def main(db_path: str = "data/job.db", kind_only: bool = False,
         src[s["slug"]] = _source_cfg(s)
 
     rows = conn.execute(
-        "SELECT id, title, org, city, deadline, job_type, snapshot_path, "
-        "notice_kind, source_slug FROM jobs").fetchall()
+        "SELECT id, title, org, city, deadline, job_type, employment_type, rolling, "
+        "snapshot_path, notice_kind, source_slug FROM jobs").fetchall()
     n = Counter()
     for r in rows:
         cfg = src.get(r["source_slug"], {})
@@ -57,7 +58,13 @@ def main(db_path: str = "data/job.db", kind_only: bool = False,
             org = r["org"] or cfg.get("org") or extract_org(r["title"])
         jt = (cfg.get("job_type")
               or infer_job_type(f"{r['title']} {org or ''}"))
-        city = r["city"] or cfg.get("city") or infer_city(f"{r['title']} {org or ''}")
+        # 与 generic_html.enrich 同一表达式：标题+单位+正文开头一起看。
+        # 城市保持粘性：用户在详情页手动改过的城市不能被规则覆盖
+        city = (r["city"] or cfg.get("city")
+                or infer_city(f"{r['title']} {org or ''} {body[:300]}"))
+        emp_text = f"{r['title']} {body[:3000]}"
+        emp = infer_employment_type(emp_text)
+        rolling = 1 if is_rolling(emp_text) else 0
         deadline = r["deadline"] if kind_only else guess_deadline(body)
 
         if kind != r["notice_kind"]:
@@ -68,14 +75,19 @@ def main(db_path: str = "data/job.db", kind_only: bool = False,
             n["岗位类型"] += 1
         if city != r["city"]:
             n["城市"] += 1
+        if emp != r["employment_type"]:
+            n["用工性质"] += 1
+        if rolling != r["rolling"]:
+            n["长期有效"] += 1
         if not kind_only and deadline != r["deadline"]:
             n["截止日期"] += 1
 
         conn.execute(
             "UPDATE jobs SET notice_kind=?, deadline=?, org=?, job_type=?, city=?, "
-            "search_text=? WHERE id=?",
-            (kind, deadline, org, jt, city,
-             _search_text({"title": r["title"], "org": org, "body": body}), r["id"]))
+            "employment_type=?, rolling=?, search_text=? WHERE id=?",
+            (kind, deadline, org, jt, city, emp, rolling,
+             _search_text({"title": r["title"], "org": org, "body": body,
+                           "notes": None}), r["id"]))
         reindex_fts(conn, r["id"], r["title"], org, body)
     conn.commit()
 
@@ -89,6 +101,11 @@ def main(db_path: str = "data/job.db", kind_only: bool = False,
     for r in conn.execute("SELECT notice_kind k, COUNT(*) c FROM jobs "
                           "GROUP BY notice_kind ORDER BY c DESC"):
         print(f"   {r['k']:<10} {r['c']}")
+    print("用工性质分布：")
+    for r in conn.execute("SELECT COALESCE(employment_type,'(未识别)') k, COUNT(*) c "
+                          "FROM jobs GROUP BY employment_type ORDER BY c DESC"):
+        print(f"   {r['k']:<10} {r['c']}")
+    print(f"长期有效岗位：{conn.execute('SELECT COUNT(*) c FROM jobs WHERE rolling=1').fetchone()['c']}")
 
 
 if __name__ == "__main__":

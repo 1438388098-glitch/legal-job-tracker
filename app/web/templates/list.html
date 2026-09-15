@@ -1,9 +1,10 @@
 {% extends "base.html" %}
+{% set bulk_mode = q.get('bulk') %}
 {% block content %}
 <div class="page-head">
   <h1>岗位</h1>
   <span class="meta">
-    {{ jobs|length }} 条{% if q.get('q') or q.get('job_type') or q.get('city') or q.get('status') or q.get('notice_kind') %}（已筛选）{% endif %}
+    {{ jobs|length }} 条{% if q.get('q') or q.get('job_type') or q.get('city') or q.get('status') or q.get('notice_kind') or q.get('fresh') or q.get('nodeadline') or q.get('employment_type') or q.get('rolling') %}（已筛选）{% endif %}
   </span>
   <span class="spacer"></span>
   <span class="meta">
@@ -11,31 +12,38 @@
     {% elif q.get('notice_kind') == 'result' %}结果公示
     {% elif q.get('notice_kind') == 'info' %}其他信息
     {% else %}仅可投递{% endif %}
-    · 按{{ '发布' if q.get('sort') == 'pub' else '截止' }}排序
+    · 按{{ '发布' if q.get('sort') == 'pub' else ('收录' if q.get('sort') == 'new' else '截止') }}排序
   </span>
+  <a class="meta" href="{% if q.get('bulk') %}?{% else %}?bulk=1{% endif %}">{{ '退出批量' if q.get('bulk') else '批量' }}</a>
 </div>
 
 <div class="stats">
-  <span class="stat">
+  <a class="stat" href="/{{ '' if not q.get('fresh') else '' }}" title="全部可投递岗位">
     <span class="stat-n">{{ stats.opening }}</span>
     <span class="stat-l">可投递岗位</span>
-  </span>
-  <span class="stat {% if stats.d3 %}hot{% endif %}">
+  </a>
+  <a class="stat {% if stats.d3 %}hot{% endif %}" href="/?sort=deadline">
     <span class="stat-n">{{ stats.d3 }}</span>
     <span class="stat-l">3 天内截止</span>
-  </span>
-  <span class="stat {% if stats.d7 and not stats.d3 %}warm{% endif %}">
+  </a>
+  <a class="stat {% if stats.d7 and not stats.d3 %}warm{% endif %}" href="/?sort=deadline">
     <span class="stat-n">{{ stats.d7 }}</span>
     <span class="stat-l">7 天内截止</span>
-  </span>
-  <span class="stat">
+  </a>
+  <a class="stat {% if q.get('fresh') %}on{% endif %}" href="/?sort=new&fresh={% if q.get('fresh') %}0{% else %}1{% endif %}">
     <span class="stat-n">{{ stats.fresh }}</span>
     <span class="stat-l">今日新增</span>
-  </span>
+  </a>
+  <a class="stat {% if q.get('nodeadline') %}on{% endif %}"
+     href="/?nodeadline={% if q.get('nodeadline') %}0{% else %}1{% endif %}"
+     title="未标注截止日期的岗位（多为邮箱投递、长期有效），不会进临期提醒，容易漏看">
+    <span class="stat-n">{{ no_deadline }}</span>
+    <span class="stat-l">无截止日</span>
+  </a>
 </div>
 
 <form class="filters" method="get" action="/">
-  <input type="text" name="q" value="{{ q.get('q', '') }}" placeholder="搜索标题 / 单位 / 正文">
+  <input type="text" name="q" value="{{ q.get('q', '') }}" placeholder="搜索标题 / 单位 / 正文 / 备注">
   <select name="job_type" aria-label="岗位类型">
     <option value="">全部类型</option>
     {% for val, label in job_types %}
@@ -46,6 +54,12 @@
     <option value="">全部城市</option>
     {% for c in cities %}
     <option value="{{ c }}" {% if q.get('city') == c %}selected{% endif %}>{{ c }}</option>
+    {% endfor %}
+  </select>
+  <select name="employment_type" aria-label="用工性质">
+    <option value="">全部用工</option>
+    {% for val, label in employment_types %}
+    <option value="{{ val }}" {% if q.get('employment_type') == val %}selected{% endif %}>{{ label }}</option>
     {% endfor %}
   </select>
   <select name="notice_kind" aria-label="公告性质">
@@ -66,12 +80,26 @@
   <select name="sort" aria-label="排序">
     <option value="">按截止日</option>
     <option value="pub" {% if q.get('sort') == 'pub' %}selected{% endif %}>按发布日</option>
+    <option value="new" {% if q.get('sort') == 'new' %}selected{% endif %}>按收录时间</option>
   </select>
   <button class="primary" type="submit">筛选</button>
-  {% if q.get('q') or q.get('job_type') or q.get('city') or q.get('status') or q.get('notice_kind') or q.get('sort') %}
+  {% if q.get('q') or q.get('job_type') or q.get('city') or q.get('status') or q.get('notice_kind') or q.get('sort') or q.get('fresh') or q.get('nodeadline') or q.get('employment_type') or q.get('rolling') %}
   <a class="reset" href="/">清除</a>
   {% endif %}
 </form>
+
+{% if q.get('bulk') %}
+{# 批量模式：勾选框不在任何表单里（HTML 不允许 form 套 form），提交时由 app.js 汇总 #}
+<form class="bulkbar" method="post" action="/jobs/batch">
+  <input type="hidden" name="ids" data-bulk-ids>
+  <label class="check"><input type="checkbox" data-select-all> <span>全选</span></label>
+  <span class="meta">已选 <b data-selected-count>0</b> 条</span>
+  <button type="submit" name="action" value="read">标为已读</button>
+  <button type="submit" name="action" value="archive">归档</button>
+  <span class="spacer"></span>
+  <span class="meta">操作完回到当前筛选视图</span>
+</form>
+{% endif %}
 
 {% if jobs|length == 0 %}
 <div class="empty">
@@ -81,8 +109,9 @@
   {% endif %}
 </div>
 {% else %}
-<div class="list">
+<div class="list{% if q.get('bulk') %} bulk{% endif %}">
   <div class="list-head">
+    {% if q.get('bulk') %}<span class="cb"></span>{% endif %}
     <span>截止</span><span>类型</span><span>城市</span><span>标题</span>
     <span>单位</span><span>来源</span><span></span>
   </div>

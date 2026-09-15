@@ -40,8 +40,9 @@ def is_same_title(fp_a: str, fp_b: str, threshold: float = 0.95) -> bool:
 # 但"标题像"就合并会误伤，实测踩到三类坑：
 #   1. 同一批公告的不同期次（中山某镇招聘公示 6 期）被合成一条 —— 同源不合并；
 #   2. 不同年份的同名公告（检察院 2023/2024/2025 选调公告）被合成一条 —— 同源不合并；
-#   3. 泛岗位名（"律师助理"、"法务专员"）在不同律所反复出现 —— 短标题不合并。
-# 因此只有：跨源 + 标题够长 + 高度相似 + 发布时间接近，四个条件同时满足才合并。
+#   3. 泛岗位名（"律师助理"、"法务专员"）在不同律所反复出现 —— 不能只看标题。
+# 因此合并键 = 单位|标题：单位不同则键必然不同，泛岗位名天然不会撞在一起；
+# 只有单位为空且标题又短（信息太少）的才放弃合并。
 MIN_MERGE_TITLE_LEN = 10
 DATE_TOLERANCE_DAYS = 45
 
@@ -51,9 +52,19 @@ def _title_part(fp: str) -> str:
 
 
 def merge_key(fp: str) -> str | None:
-    """可用于跨源合并的标题键；标题太短（泛岗位名）返回 None。"""
-    t = _title_part(fp)
-    return t if len(t) >= MIN_MERGE_TITLE_LEN else None
+    """可用于跨源合并的键 = 单位|标题。
+
+    键里带单位后，"不同律所的律师助理"不会再被误合并（单位不同 → 键不同）；
+    真正无法安全合并的只剩"单位也为空、标题又短"——两条信息都凑不齐，
+    合了大概率是错的。曾经标题<10 字一律不合并，结果同一岗位挂在两个高校
+    就业网上（各单位名齐全）永远合不上，用户会看到两张一模一样的卡片。
+    """
+    org, _, t = (fp or "").partition("|")
+    if not t:
+        return None
+    if not org and len(t) < MIN_MERGE_TITLE_LEN:
+        return None
+    return f"{org}|{t}"
 
 
 def date_compatible(a: str | None, b: str | None,

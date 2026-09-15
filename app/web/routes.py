@@ -2,7 +2,7 @@ import io
 import json
 from datetime import date
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 
 from fastapi import APIRouter, FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
@@ -12,7 +12,7 @@ from .. import db
 from ..classify import CITIES
 from ..collect import pastebox
 from ..collect.runner import Runner
-from ..collect.store import save_item
+from ..collect.store import _search_text, reindex_fts, save_item
 from ..dedup import url_fingerprint
 
 # "unknown" 显示成"其他"而不是"未分类"：规则修好后剩下的确实是
@@ -21,6 +21,28 @@ JOB_TYPES = [("lawfirm", "律所"), ("public", "体制内"), ("legal_counsel", "
              ("intern", "实习"), ("unknown", "其他")]
 APP_STATUSES = ["待投", "已投", "笔试", "面试", "Offer", "拒"]
 NOTICE_KINDS = [("opening", "可投递"), ("result", "结果公示"), ("info", "其他信息")]
+EMPLOYMENT_TYPES = [("编制", "编制"), ("合同制", "合同制"), ("派遣", "派遣"),
+                    ("长期有效", "长期有效")]
+
+# 用户口语和公告用词的差异会直接漏召回：搜"律所"命中 28 条，"律师事务所"61 条。
+# 命中任一词时把同组词一起查（OR），分组按首个词识别。
+SYNONYM_GROUPS = [
+    ["律所", "律师事务所"],
+    ["法务", "法律事务", "法务岗"],
+    ["书记员", "聘用制书记员", "劳动合同制书记员"],
+    ["律师", "执业律师", "授薪律师", "专职律师"],
+    ["选调", "选调生"],
+    ["应届", "应届生", "应届毕业生", "2026届", "2027届"],
+    ["编制", "在编", "事业编制", "公务员编制"],
+]
+
+
+def _search_terms(kw: str) -> list[str]:
+    """把用户输入展开成一组同义词；不在任何同义词组里就按原词查。"""
+    for group in SYNONYM_GROUPS:
+        if kw in group:
+            return list(dict.fromkeys(group))
+    return [kw]
 
 
 def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
@@ -38,17 +60,50 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
                 pass
         return f"{max(stamps) if stamps else 1}"
 
+    def _safe_local(url: str | None, request: Request) -> str | None:
+        """只接受站内地址（相对路径，或与本站同 host 的绝对 URL），防 open redirect。"""
+        if not url:
+            return None
+        p = urlsplit(url)
+        if p.scheme and p.netloc:
+            # Referer 是绝对 URL：只放行与本站同 host 的
+            req = urlsplit(str(request.base_url))
+            if p.netloc != req.netloc:
+                return None
+        elif p.scheme or p.netloc:
+            return None
+        if not p.path.startswith("/"):
+            return None
+        return p.path + (f"?{p.query}" if p.query else "")
+
+    def redirect_back(request: Request, fallback: str = "/",
+                      form_back: str | None = None) -> RedirectResponse:
+        """操作完回到来源页（带筛选参数）。
+
+        之前一律 303 回 `/`：用户在"律所+广州"下浏览，点一次"已读"筛选就全丢了。
+        Referer 对同源 POST 一定带，所以列表行/详情页的表单都能正确回跳。
+        """
+        target = (_safe_local(form_back, request)
+                  or _safe_local(request.headers.get("referer"), request))
+        return RedirectResponse(target or fallback, status_code=303)
+
     def render(name: str, request: Request, **ctx):
         ctx.setdefault("request", request)
         ctx.setdefault("job_types", JOB_TYPES)
         ctx.setdefault("cities", CITIES)
         ctx.setdefault("app_statuses", APP_STATUSES)
         ctx.setdefault("notice_kinds", NOTICE_KINDS)
+        ctx.setdefault("employment_types", EMPLOYMENT_TYPES)
         ctx.setdefault("asset_v", asset_version())
-        ctx["urgent"] = request.app.state.conn.execute(
+        conn = request.app.state.conn
+        ctx["urgent"] = conn.execute(
             "SELECT COUNT(*) c FROM jobs WHERE deadline IS NOT NULL "
             "AND deadline BETWEEN date('now') AND date('now','+3 day') "
             "AND status != 'archived'").fetchone()["c"]
+        # 无截止日的可投递岗位不会进临期提醒，是最容易被漏看的一批，得单独报数
+        ctx["no_deadline"] = conn.execute(
+            "SELECT COUNT(*) c FROM jobs WHERE notice_kind='opening' "
+            "AND deadline IS NULL AND status != 'archived'").fetchone()["c"]
         return templates.TemplateResponse(request, name, ctx)
 
     def list_query(request: Request):
@@ -72,15 +127,26 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
         if q.get("status"):
             where.append("j.status=?")
             params.append(q["status"])
+        if q.get("employment_type"):
+            where.append("j.employment_type=?")
+            params.append(q["employment_type"])
+        if q.get("rolling") == "1":
+            where.append("j.rolling=1")
+        if q.get("fresh") == "1":
+            where.append("date(j.created_at)=date('now','localtime')")
+        if q.get("nodeadline") == "1":
+            where.append("j.deadline IS NULL")
         kw = (q.get("q") or "").strip()
         join = ""
         if kw:
+            terms = _search_terms(kw)
             if len(kw) >= 3 and db.has_fts(request.app.state.conn):
                 join = "JOIN jobs_fts f ON f.job_id=j.id AND jobs_fts MATCH ?"
-                params = ['"%s"' % kw.replace('"', " ")] + params
+                params = [" OR ".join(f'"{t}"' for t in terms)] + params
             else:
-                where.append("j.search_text LIKE ?")
-                params.append(f"%{kw}%")
+                likes = " OR ".join(["j.search_text LIKE ?"] * len(terms))
+                where.append(f"({likes})")
+                params.extend(f"%{t}%" for t in terms)
         return join, where, params, q
 
     def overview(request: Request) -> dict:
@@ -103,12 +169,17 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
         if q.get("sort") == "pub":
             order = ("ORDER BY j.publish_date IS NULL, j.publish_date DESC, "
                      "j.deadline IS NULL, j.deadline, j.id DESC")
+        elif q.get("sort") == "new":
+            # "最新收录"：配合首屏"今日新增"数字用，回访时先看刚抓到的
+            order = "ORDER BY j.created_at DESC, j.id DESC"
         else:
             # 默认：临期在前（有截止日的按日期升序），无截止日的沉底
             order = ("ORDER BY CASE WHEN j.deadline IS NULL THEN 1 ELSE 0 END, "
                      "j.deadline ASC, j.publish_date DESC, j.id DESC")
         rows = request.app.state.conn.execute(
-            f"SELECT j.* FROM jobs j {join} WHERE {' AND '.join(where)} {order} LIMIT 300",
+            f"SELECT j.*, a.id AS aid FROM jobs j "
+            f"LEFT JOIN applications a ON a.job_id=j.id "
+            f"{join} WHERE {' AND '.join(where)} {order} LIMIT 300",
             params).fetchall()
         return render("list.html", request, jobs=rows, q=q, stats=overview(request))
 
@@ -118,19 +189,25 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
         job = conn.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
         if job is None:
             return RedirectResponse("/", status_code=303)
+        # 看过就算已读：省掉"看完再点一次标记已读"这一步
+        if job["status"] == "new":
+            conn.execute("UPDATE jobs SET status='read' WHERE id=?", (job_id,))
+            conn.commit()
         app_row = conn.execute("SELECT * FROM applications WHERE job_id=?", (job_id,)).fetchone()
         sources = conn.execute("SELECT * FROM job_sources WHERE job_id=?", (job_id,)).fetchall()
         snapshot_text = None
         if job["snapshot_path"] and Path(job["snapshot_path"]).exists():
             snapshot_text = Path(job["snapshot_path"]).read_text("utf-8", errors="replace")
+        # 返回列表时保住筛选：从 Referer 取站内来源页
+        back = _safe_local(request.headers.get("referer"), request)
         return render("detail.html", request, job=job, app_row=app_row,
-                      sources=sources, snapshot_text=snapshot_text)
+                      sources=sources, snapshot_text=snapshot_text, back_url=back or "/")
 
     @router.post("/jobs/{job_id}/status")
     def set_status(job_id: int, request: Request, status: str = Form(...)):
         request.app.state.conn.execute("UPDATE jobs SET status=? WHERE id=?", (status, job_id))
         request.app.state.conn.commit()
-        return RedirectResponse("/", status_code=303)
+        return redirect_back(request)
 
     @router.get("/jobs/{job_id}/edit", response_class=HTMLResponse)
     def edit(job_id: int, request: Request):
@@ -146,6 +223,12 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
             "UPDATE jobs SET title=?, city=?, deadline=NULLIF(?,''), job_type=?, notes=?, "
             "status='new', needs_review=0 WHERE id=?",
             (title, city or None, deadline, job_type, notes, job_id))
+        # 备注要能搜到：搜索文本里包含 notes，FTS 索引一并重建
+        row = conn.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
+        text = _search_text({"title": row["title"], "org": row["org"],
+                             "body": "", "notes": notes})
+        conn.execute("UPDATE jobs SET search_text=? WHERE id=?", (text, job_id))
+        reindex_fts(conn, job_id, row["title"], row["org"], "")
         conn.commit()
         return RedirectResponse(f"/jobs/{job_id}", status_code=303)
 
@@ -154,7 +237,21 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
         conn = request.app.state.conn
         conn.execute("INSERT OR IGNORE INTO applications(job_id) VALUES(?)", (job_id,))
         conn.commit()
-        return RedirectResponse(f"/jobs/{job_id}", status_code=303)
+        # 从列表行直接加跟踪时回到列表（保筛选）；从详情页加则留在详情页
+        return redirect_back(request, fallback=f"/jobs/{job_id}")
+
+    @router.post("/jobs/batch")
+    def batch(request: Request, action: str = Form(...), ids: str = Form("")):
+        """批量操作：ids 为逗号分隔的岗位 id。"""
+        conn = request.app.state.conn
+        id_list = [int(x) for x in ids.split(",") if x.strip().isdigit()]
+        if id_list and action in ("read", "archive", "unarchive"):
+            marks = ",".join("?" * len(id_list))
+            status = {"read": "read", "archive": "archived", "unarchive": "read"}[action]
+            conn.execute(f"UPDATE jobs SET status=? WHERE id IN ({marks})",
+                         [status, *id_list])
+            conn.commit()
+        return redirect_back(request)
 
     @router.post("/applications/{app_id}/status")
     def app_status(app_id: int, request: Request, status: str = Form(...),
@@ -231,8 +328,8 @@ def export_xlsx(app: FastAPI, notice_kind: str | None = None) -> Response:
     wb = Workbook()
     ws = wb.active
     ws.title = "招聘信息汇总"
-    ws.append(["序号", "标题", "单位", "类型", "城市", "发布日期", "截止日期",
-               "性质", "状态", "链接", "备注"])
+    ws.append(["序号", "标题", "单位", "类型", "城市", "用工性质", "发布日期",
+               "截止日期", "性质", "状态", "链接", "备注"])
     tmap = dict(JOB_TYPES)
     kmap = dict(NOTICE_KINDS)
     where, params = ["status != 'archived'"], []
@@ -247,8 +344,9 @@ def export_xlsx(app: FastAPI, notice_kind: str | None = None) -> Response:
         f"SELECT * FROM jobs WHERE {' AND '.join(where)} "
         "ORDER BY deadline IS NULL, deadline, id", params).fetchall()
     for i, r in enumerate(rows, 1):
+        emp = r["employment_type"] or ("长期有效" if r["rolling"] else "")
         ws.append([i, r["title"], r["org"] or "", tmap.get(r["job_type"], r["job_type"]),
-                   r["city"] or "", r["publish_date"] or "", r["deadline"] or "",
+                   r["city"] or "", emp, r["publish_date"] or "", r["deadline"] or "",
                    kmap.get(r["notice_kind"], r["notice_kind"]),
                    r["status"], r["url"], r["notes"] or ""])
     buf = io.BytesIO()

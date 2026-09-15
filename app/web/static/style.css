@@ -534,6 +534,39 @@ form.inline { display: inline; margin: 0; }
 .ops-next { display: flex; gap: 4px; flex: 1; min-width: 0; }
 .form-narrow { max-width: 640px; }
 
+/* ---------- 批量模式 ---------- */
+.bulkbar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; margin-bottom: 8px;
+  background: var(--accent-soft);
+  border: 1px solid var(--line); border-radius: var(--r);
+}
+.bulkbar .spacer { flex: 1; }
+.list.bulk .list-head, .list.bulk .row {
+  grid-template-columns: 24px 76px 60px 46px minmax(220px, 1fr)
+                         minmax(140px, 250px) 84px 32px;
+}
+.row .cb { display: flex; align-items: center; }
+.row .cb input { accent-color: var(--accent); }
+
+/* 行内小按钮 / 状态标记：列表行上直接加跟踪，不用进详情页 */
+button.mini { height: 22px; padding: 0 8px; font-size: var(--fs-sm); color: var(--accent); }
+button.mini:hover { background: var(--accent-soft); border-color: var(--accent); }
+.tag-ok { font-size: var(--fs-xs); color: var(--ok); white-space: nowrap; }
+a.icon { display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: var(--r-sm);
+  color: var(--fg-3); font-size: var(--fs); }
+a.icon:hover { background: var(--bg-hover); color: var(--accent); text-decoration: none; }
+
+/* "长期有效"岗位没有截止日，但不是"无信息"，给个肯定的说法 */
+.deadline.roll { color: var(--ok); font-weight: 500; }
+
+/* 概览条上的可点项被选中时 */
+a.stat.on .stat-n { color: var(--accent); }
+a.stat { color: inherit; border-radius: var(--r-sm); }
+a.stat:hover { text-decoration: none; background: var(--bg-hover); }
+a.stat:hover .stat-l { color: var(--fg-2); }
+
 /* ---------- 窄屏：列表折成两行，信息不删减 ---------- */
 @media (max-width: 880px) {
   .list-head { display: none; }
@@ -549,6 +582,11 @@ form.inline { display: inline; margin: 0; }
   .row .t { grid-area: title; }
   .row .acts { grid-area: acts; }
   .row .type, .row .city, .row .org, .row .src { display: none; }
+  /* 批量勾选是桌面功能，窄屏隐藏掉，网格不必为它让位 */
+  .row .cb { display: none; }
+  .list.bulk .list-head, .list.bulk .row {
+    grid-template-columns: 76px 1fr 32px;
+  }
   .row .meta-m {
     grid-area: meta; display: flex; gap: 10px;
     font-size: var(--fs-xs); color: var(--fg-3);

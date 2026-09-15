@@ -1,7 +1,8 @@
 import re
 from urllib.parse import urljoin
 
-from ..classify import NOTICE_OPENING, infer_city, infer_job_type
+from ..classify import (NOTICE_OPENING, infer_city, infer_employment_type,
+                        infer_job_type, is_rolling)
 from ..dateparse import parse_date_text
 from .http import fetch
 
@@ -81,6 +82,8 @@ def parse_payload(data: dict, base: str) -> list[dict]:
             "city": infer_city(f"{_s(r.get('holdAddress'))} {_s(r.get('holdSchool'))}"),
             "job_type": infer_job_type(f"{title} {nature}"),
             "notice_kind": NOTICE_OPENING,  # 就业中心职位板上的都是开放岗位
+            "employment_type": infer_employment_type(f"{title} {nature} {body}"),
+            "rolling": 1 if is_rolling(f"{title} {body}") else 0,
             "body": body,
         })
     return out

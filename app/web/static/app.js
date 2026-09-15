@@ -64,4 +64,34 @@
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
   }
+
+  // 批量模式：全选 / 计数 / 提交时把勾选的 id 汇总进隐藏字段。
+  // 勾选框不能放进行内的操作表单里（HTML 禁止 form 嵌套），所以在这里统一收集。
+  var bulkForm = document.querySelector("form.bulkbar");
+  if (bulkForm) {
+    var boxes = Array.prototype.slice.call(document.querySelectorAll("input.bulk-cb"));
+    var idsField = bulkForm.querySelector("[data-bulk-ids]");
+    var count = bulkForm.querySelector("[data-selected-count]");
+    var sync = function () {
+      var picked = boxes.filter(function (b) { return b.checked; })
+                        .map(function (b) { return b.value; });
+      if (idsField) idsField.value = picked.join(",");
+      if (count) count.textContent = String(picked.length);
+      var all = bulkForm.querySelector("[data-select-all]");
+      if (all) all.checked = picked.length > 0 && picked.length === boxes.length;
+    };
+    var allBox = bulkForm.querySelector("[data-select-all]");
+    if (allBox) {
+      allBox.addEventListener("change", function () {
+        boxes.forEach(function (b) { b.checked = allBox.checked; });
+        sync();
+      });
+    }
+    boxes.forEach(function (b) { b.addEventListener("change", sync); });
+    bulkForm.addEventListener("submit", function (e) {
+      var picked = boxes.filter(function (b) { return b.checked; });
+      if (!picked.length) { e.preventDefault(); return; }
+      if (idsField) idsField.value = picked.map(function (b) { return b.value; }).join(",");
+    });
+  }
 })();
