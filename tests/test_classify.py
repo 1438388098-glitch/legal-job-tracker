@@ -1,5 +1,5 @@
-from app.classify import (NOTICE_INFO, NOTICE_OPENING, NOTICE_RESULT, infer_city,
-                          infer_job_type, infer_notice_kind)
+from app.classify import (NOTICE_INFO, NOTICE_OPENING, NOTICE_RESULT, extract_org,
+                          infer_city, infer_job_type, infer_notice_kind)
 
 
 def test_job_type():
@@ -10,10 +10,56 @@ def test_job_type():
     assert infer_job_type("普通岗位") == "unknown"
 
 
+def test_job_type_covers_public_sector_variants():
+    """人社厅栏目里的常见写法都得认出来，否则会成片落进"未分类"。
+
+    这是实测出来的问题：原词表只有"法院|事业单位|…"，而人社厅的标题几乎都是
+    "某某大学/医院 公开招聘工作人员公告"，一个词都命中不了。
+    """
+    for t in ["广州中医药大学第三附属医院2026年第一批公开招聘工作人员公告",
+              "佛山大学2026年第二批辅导员招聘公告",
+              "广州职业技术大学2026年上半年引进急需人才公告",
+              "佛山高新技术产业开发区管理委员会公开招聘工作人员公告",
+              "广东省人民检察院2026年考试录用公务员公告",
+              "深圳市龙岗区平湖街道办事处公开招聘社区工作者公告"]:
+        assert infer_job_type(t) == "public", t
+
+
 def test_city():
     assert infer_city("深圳市福田区人民法院招聘") == "深圳"
     assert infer_city("珠三角某岗位", default="广州") == "广州"
     assert infer_city("无城市信息") is None
+
+
+def test_extract_org_from_title():
+    """政务站列表页没有单位字段，单位名只能从标题抽。"""
+    cases = {
+        "广东省高级人民法院2026年度选调优秀大学毕业生拟录用人员名单公示":
+            "广东省高级人民法院",
+        "广州中医药大学第三附属医院2026年第一批公开招聘工作人员公告":
+            "广州中医药大学第三附属医院",
+        "广东检察官（培训）学院集中公开招聘面试公告":
+            "广东检察官（培训）学院",
+        "广东省高级人民法院劳动合同制书记员招聘公告":
+            "广东省高级人民法院",
+        "市人力资源保障局关于转发深圳科学高中2026年3月公开选聘教师拟聘人员公示":
+            "市人力资源保障局",
+        "佛山高新技术产业开发区管理委员会公开招聘工作人员公告":
+            "佛山高新技术产业开发区管理委员会",
+        "2025年度广东检察官（培训）学院集中公开招聘面试公告":
+            "广东检察官（培训）学院",
+        "厦门国际银行股份有限公司": "厦门国际银行股份有限公司",
+    }
+    for title, want in cases.items():
+        assert extract_org(title) == want, f"{title} → {extract_org(title)!r}，期望 {want!r}"
+
+
+def test_extract_org_refuses_to_guess():
+    """抽不到就返回 None —— 显示半句话当单位名比空着更糟。"""
+    assert extract_org("关于召开公开听证会的公告") is None
+    assert extract_org("关于开展2026年度考核工作的通知") is None
+    assert extract_org("公告") is None
+    assert extract_org("") is None
 
 
 def test_notice_kind_opening():
@@ -28,7 +74,8 @@ def test_notice_kind_result():
     for t in ["中山市人民政府南区街道办事处所属事业单位2025年第二期公开招聘拟聘用人员名单公示",
               "关于广东省事业单位2026年集中公开招聘高校毕业生省直及中央驻粤单位笔试合格分数线的公告",
               "广东省高级人民法院2026年度选调优秀大学毕业生拟录用人员名单公示",
-              "中共珠海市委党校2026年招聘教师拟聘人员公示"]:
+              "中共珠海市委党校2026年招聘教师拟聘人员公示",
+              "广东省高级人民法院劳动合同制书记员招聘有关人选名单公示"]:
         assert infer_notice_kind(t) == NOTICE_RESULT, t
 
 

@@ -4,17 +4,17 @@
   <h1>设置</h1>
 </div>
 
-<div class="section" style="margin-top:0">
+<div class="section first">
   <h2>采集</h2>
   <form method="post" action="/settings" class="stack">
-    <label style="display:flex;align-items:center;gap:0">
+    <label class="check">
       <input type="checkbox" name="toast_enabled" value="1" {% if toast_enabled == '1' %}checked{% endif %}>
-      <span style="margin:0">采集完成后弹 Windows 桌面通知</span>
+      <span>采集完成后弹 Windows 桌面通知</span>
     </label>
-    <p class="hint" style="margin:0">需要先 <code>pip install win11toast</code>。</p>
+    <p class="hint">需要先 <code>pip install win11toast</code>。</p>
     <div><button class="primary" type="submit">保存</button></div>
   </form>
-  <dl class="kv" style="margin-top:12px">
+  <dl class="kv" style="margin-top:14px">
     <dt>定时</dt><dd>每天 08:05 自动增量采集（服务保持开启时生效）</dd>
     <dt>手动</dt><dd><a href="/health">源健康</a> 页可单源或全部立即采集</dd>
   </dl>

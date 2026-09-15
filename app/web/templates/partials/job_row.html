@@ -1,15 +1,17 @@
+{% set jtype = dict(job_types).get(job['job_type'], job['job_type']) %}
 <div class="row{% if job['status'] == 'read' %} is-read{% endif %}{% if job['notice_kind'] != 'opening' %} kind-result{% endif %}{% if job['deadline']|urgency %} {{ job['deadline']|urgency }}{% endif %}">
   {% if job['deadline'] %}
-  <span class="deadline {{ job['deadline']|dcolor }}">{{ job['deadline'][5:] }}</span>
+  <span class="deadline {{ job['deadline']|dcolor }}"
+        title="{{ job['deadline'] }}{{ job['deadline']|dleft }}">{{ job['deadline'][5:] }}</span>
   {% else %}
-  <span class="deadline none">—</span>
+  <span class="deadline none" title="公告未注明截止日期">—</span>
   {% endif %}
-  <span class="type">{{ dict(job_types)[job['job_type']] if job['job_type'] in dict(job_types) else job['job_type'] }}</span>
-  <span class="city">{{ job['city'] or '' }}</span>
-  <a class="t" href="/jobs/{{ job['id'] }}">{{ job['title'] }}</a>
-  <span class="org">{{ job['org'] or '' }}</span>
+  <span class="type t-{{ job['job_type'] }}"><i></i>{{ jtype }}</span>
+  <span class="city" title="{{ job['city'] or '' }}">{{ job['city'] or '' }}</span>
+  <a class="t" href="/jobs/{{ job['id'] }}" title="{{ job['title'] }}">{{ job['title'] }}</a>
+  <span class="org" title="{{ job['org'] or '' }}">{{ job['org'] or '' }}{% if job['merge_count'] > 1 %}<span class="chip">{{ job['merge_count'] }} 源</span>{% endif %}</span>
   <span class="src">{{ job['source_slug'] }}</span>
-  <span class="meta-m">{% if job['city'] %}{{ job['city'] }} · {% endif %}{{ dict(job_types)[job['job_type']] if job['job_type'] in dict(job_types) else job['job_type'] }}{% if job['org'] %} · {{ job['org'] }}{% endif %}</span>
+  <span class="meta-m">{{ jtype }}{% if job['city'] %} · {{ job['city'] }}{% endif %}{% if job['org'] %} · {{ job['org'] }}{% endif %}</span>
   <span class="acts">
     <form class="inline" method="post" action="/jobs/{{ job['id'] }}/status">
       <input type="hidden" name="status" value="{{ 'new' if job['status'] == 'archived' else 'archived' }}">

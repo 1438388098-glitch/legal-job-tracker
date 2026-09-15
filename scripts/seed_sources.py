@@ -130,27 +130,31 @@ SOURCES = [
         max_items=20, city="惠州", job_type="lawfirm", notice_kind="opening")),
 
     # ── 高校就业网（站内关键词检索法学岗）────────────────────────────
-    # 该平台详情页为 JS 渲染，HTML 里拿不到"专业要求"，但站内 ?keyword= 检索可用，
-    # 用法学检索词直接取岗位（实测"法务"→法务专员/法务助理，"律师"→律师助理/仲裁院书记员）。
+    # 该平台详情页为 JS 渲染、HTML 里拿不到"专业要求"，但站内 ?keyword= 检索可用。
+    # 实测站内检索是模糊匹配（搜"法务"会带出会计专员、销售订单管理），
+    # 所以再叠一层本地过滤：标题或单位名必须含法学词。
     dict(slug="gdufs", **_html(
         "广东外语外贸大学·招聘职位",
         _kw("https://career.gdufs.edu.cn/index.php/web/Index/job-list", LAW_QUERY),
         "div.jobs-list div.col-xs-6", link_sel="a.job-block",
         title_sel="div.job-name", date_sel="div.job-time", org_sel="div.job-company",
-        no_detail=True, max_items=60, notice_kind="opening")),
+        no_detail=True, max_items=60, keep_keywords=LAW_KW,
+        notice_kind="opening")),
     dict(slug="gzhu", **_html(
         "广州大学·职位信息",
         _kw("https://jy.gzhu.edu.cn/index.php/web/Index/job-list", LAW_QUERY),
         "div.jobs-list div.col-xs-6", link_sel="a.job-block",
         title_sel="div.job-name", date_sel="div.job-time", org_sel="div.job-company",
-        no_detail=True, max_items=60, notice_kind="opening")),
+        no_detail=True, max_items=60, keep_keywords=LAW_KW,
+        notice_kind="opening")),
 
     # ── 外校就业中心 JSON 接口（免登录，已验证）────────────────────────
+    # 法学过滤在 zuel.py 里按"岗位名含法学角色词"完成：该接口的 majors 字段会把
+    # 企业接受的所有专业列全（一条能列 38 个），拿它当过滤依据会把泛岗位全捞进来。
     dict(slug="zuel", name="中南财经政法大学·就业中心", kind="zuel", city=None,
          job_type=None, config=dict(
              api="https://jyzx.zuel.edu.cn/api/publicly/recruit/list",
-             base="https://jyzx.zuel.edu.cn", type=1, pages=4, limit=20,
-             keep_keywords=LAW_KW)),
+             base="https://jyzx.zuel.edu.cn", type=1, pages=4, limit=20)),
 ]
 
 

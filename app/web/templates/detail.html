@@ -11,20 +11,22 @@
   <h1>{{ job['title'] }}</h1>
   <div class="detail-meta">
     {% if job['deadline'] %}
-    <span class="{{ job['deadline']|dcolor }}"><span class="k">截止</span> {{ job['deadline'] }}</span>
+    <span class="{{ job['deadline']|dcolor }}">
+      <span class="k">截止</span> {{ job['deadline'] }}{{ job['deadline']|dleft }}
+    </span>
     {% endif %}
-    <span><span class="k">类型</span> {{ dict(job_types)[job['job_type']] if job['job_type'] in dict(job_types) else job['job_type'] }}</span>
-    {% if job['city'] %}<span><span class="k">城市</span> {{ job['city'] }}</span>{% endif %}
+    <span class="type t-{{ job['job_type'] }}"><i></i>{{ dict(job_types).get(job['job_type'], job['job_type']) }}</span>
     {% if job['org'] %}<span><span class="k">单位</span> {{ job['org'] }}</span>{% endif %}
+    {% if job['city'] %}<span><span class="k">城市</span> {{ job['city'] }}</span>{% endif %}
     {% if job['publish_date'] %}<span><span class="k">发布</span> {{ job['publish_date'] }}</span>{% endif %}
-    <span><span class="k">性质</span> {{ dict(notice_kinds)[job['notice_kind']] if job['notice_kind'] in dict(notice_kinds) else job['notice_kind'] }}</span>
+    <span><span class="k">性质</span> {{ dict(notice_kinds).get(job['notice_kind'], job['notice_kind']) }}</span>
     <span><span class="k">状态</span> {{ job['status'] }}</span>
     {% if job['merge_count'] > 1 %}<span><span class="k">合并</span> {{ job['merge_count'] }} 个来源</span>{% endif %}
     <span><span class="k">收录</span> {{ job['created_at'] }}</span>
   </div>
   <div class="detail-actions">
     {% if app_row %}
-    <span class="meta"><span class="k">投递状态</span> {{ app_row['status'] }}</span>
+    <span class="muted">投递状态：{{ app_row['status'] }}</span>
     <a class="btn" href="/board">去看板管理</a>
     {% else %}
     <form class="inline" method="post" action="/jobs/{{ job['id'] }}/apply">

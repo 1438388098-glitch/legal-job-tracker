@@ -10,7 +10,7 @@
 <div class="board">
 {% set total = cols.values()|map('length')|sum %}
 {% if total == 0 %}
-<div class="empty" style="grid-column:1/-1;border:1px solid var(--line-soft);border-radius:4px">
+<div class="empty board-empty">
   还没有在跟的投递。打开任意岗位详情页点「加入投递跟踪」，就会出现在这里；
   之后每推进一步（投递 → 笔试 → 面试 → Offer）在这里更新状态并记备注。
 </div>
@@ -36,8 +36,7 @@
           </form>
           {% endif %}
           {% if idx < app_statuses|length - 1 %}
-          <form class="inline" method="post" action="/applications/{{ r['aid'] }}/status"
-                style="display:flex;gap:3px;flex:1;min-width:0">
+          <form class="inline ops-next" method="post" action="/applications/{{ r['aid'] }}/status">
             <input type="hidden" name="status" value="{{ app_statuses[idx+1] }}">
             <input type="text" name="note" placeholder="备注">
             <button class="primary nowrap" type="submit">{{ app_statuses[idx+1] }} →</button>

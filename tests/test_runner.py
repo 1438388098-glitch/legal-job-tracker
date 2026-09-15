@@ -4,6 +4,55 @@ from pathlib import Path
 from app.collect import runner
 
 
+def test_source_row_fields_reach_adapter_config(conn):
+    """源记录上的 city/job_type 必须注入到采集器 config。
+
+    曾经漏了这一步：seed_sources 把这些放在源记录顶层，而 _adapter_for 只把
+    config 传给适配器，于是"源级岗位类型"形同虚设、全部退回按标题猜 ——
+    实测让人社厅栏目的 47% 条目落进"未分类"。
+    """
+    conn.execute(
+        "INSERT INTO sources(slug,name,kind,city,job_type,config) "
+        "VALUES('demo','演示','html','佛山','public',?)",
+        (json.dumps({"list_url": "https://demo/list"}),))
+    row = conn.execute("SELECT * FROM sources WHERE slug='demo'").fetchone()
+    cfg = runner._source_cfg(row)
+    assert cfg["city"] == "佛山"
+    assert cfg["job_type"] == "public"
+    assert cfg["list_url"] == "https://demo/list"   # 原有 config 不能被冲掉
+
+
+def test_notice_kind_from_config(conn):
+    """notice_kind 只在 config 里（sources 表没有这列），要能正常带出来。"""
+    conn.execute(
+        "INSERT INTO sources(slug,name,kind,config) VALUES('demo','演示','html',?)",
+        (json.dumps({"list_url": "https://demo/list", "notice_kind": "opening"}),))
+    row = conn.execute("SELECT * FROM sources WHERE slug='demo'").fetchone()
+    assert runner._source_cfg(row)["notice_kind"] == "opening"
+
+
+def test_source_config_does_not_override_explicit_values(conn):
+    """config 里已经写死的值优先——某些栏目需要单独指定，不能被源级默认覆盖。"""
+    conn.execute(
+        "INSERT INTO sources(slug,name,kind,job_type,config) "
+        "VALUES('demo','演示','html','public',?)",
+        (json.dumps({"list_url": "https://demo/list", "job_type": "lawfirm"}),))
+    row = conn.execute("SELECT * FROM sources WHERE slug='demo'").fetchone()
+    assert runner._source_cfg(row)["job_type"] == "lawfirm"
+
+
+def test_enrich_fills_org_and_type_from_source_config():
+    """源级配置生效后，enrich 不该再去猜标题。"""
+    from app.collect.generic_html import enrich
+
+    cfg = {"city": "佛山", "job_type": "public"}
+    item = enrich({"title": "2026年公开招聘工作人员公告",
+                   "url": "https://x/1", "org": None}, "", cfg)
+    assert item["job_type"] == "public"      # 靠标题猜会是 unknown
+    assert item["city"] == "佛山"
+    assert item["org"] is None               # 标题里确实没有单位名，留空而不是瞎猜
+
+
 def test_run_source_logs_and_health(conn, monkeypatch, tmp_path):
     conn.execute("INSERT INTO sources(slug,name,kind,config) VALUES('demo','演示','html',?)",
                  (json.dumps({"list_url": "https://demo/list", "item_sel": "li a"}),))

@@ -50,6 +50,27 @@ def _urgency_filter():
     return urgency
 
 
+def _deadline_left_filter():
+    """把截止日期折算成"剩余几天"，只用在鼠标悬停提示上。
+
+    列表里的日期是 MM-DD 短格式，光看数字判断不出还剩几天；悬停补一句更直接。
+    """
+    def dleft(deadline: str | None) -> str:
+        if not deadline:
+            return ""
+        try:
+            d = date.fromisoformat(deadline)
+        except ValueError:
+            return ""
+        n = (d - date.today()).days
+        if n < 0:
+            return "（已截止）"
+        if n == 0:
+            return "（今天截止）"
+        return f"（剩余 {n} 天）"
+    return dleft
+
+
 def _ts_filter():
     """把 ISO 时间戳压成 MM-DD HH:MM。
 
@@ -93,6 +114,7 @@ def create_app(db_path: str | None = None) -> FastAPI:
     templates = routes.mount(app, str(Path(__file__).parent / "templates"))
     templates.env.filters["dcolor"] = _deadline_class_filter()
     templates.env.filters["urgency"] = _urgency_filter()
+    templates.env.filters["dleft"] = _deadline_left_filter()
     templates.env.filters["ts"] = _ts_filter()
 
     @app.get("/export.xlsx")

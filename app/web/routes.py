@@ -9,29 +9,34 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 
 from .. import db
+from ..classify import CITIES
 from ..collect import pastebox
 from ..collect.runner import Runner
 from ..collect.store import save_item
 from ..dedup import url_fingerprint
 
+# "unknown" 显示成"其他"而不是"未分类"：规则修好后剩下的确实是
+# 律所/体制内/法务/实习之外的岗位（如企业综合岗），是一个正常分类，不是失败。
 JOB_TYPES = [("lawfirm", "律所"), ("public", "体制内"), ("legal_counsel", "法务"),
-             ("intern", "实习"), ("unknown", "未分类")]
+             ("intern", "实习"), ("unknown", "其他")]
 APP_STATUSES = ["待投", "已投", "笔试", "面试", "Offer", "拒"]
-CITIES = ["广州", "深圳", "珠海", "佛山", "惠州", "东莞", "中山", "江门", "肇庆", "韶关"]
 NOTICE_KINDS = [("opening", "可投递"), ("result", "结果公示"), ("info", "其他信息")]
 
 
 def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
     templates = Jinja2Templates(directory=tpl_dir)
     router = APIRouter()
-    # 样式文件版本号取 mtime：改完 CSS 刷新页面即生效，不会被浏览器缓存卡住
-    style_path = Path(tpl_dir).parent / "static" / "style.css"
+    # 静态资源版本号取 CSS 与 JS 的 mtime：改完刷新页面即生效，不会被浏览器缓存卡住
+    static_dir = Path(tpl_dir).parent / "static"
 
     def asset_version() -> str:
-        try:
-            return str(int(style_path.stat().st_mtime))
-        except OSError:
-            return "1"
+        stamps = []
+        for name in ("style.css", "app.js"):
+            try:
+                stamps.append(int((static_dir / name).stat().st_mtime))
+            except OSError:
+                pass
+        return f"{max(stamps) if stamps else 1}"
 
     def render(name: str, request: Request, **ctx):
         ctx.setdefault("request", request)
@@ -78,6 +83,20 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
                 params.append(f"%{kw}%")
         return join, where, params, q
 
+    def overview(request: Request) -> dict:
+        """首屏概览数字：进页面第一眼就知道"今天该看什么"。"""
+        conn = request.app.state.conn
+        row = conn.execute(
+            "SELECT "
+            "  SUM(notice_kind='opening') AS opening,"
+            "  SUM(notice_kind='opening' AND deadline IS NOT NULL"
+            "      AND deadline BETWEEN date('now') AND date('now','+3 day')) AS d3,"
+            "  SUM(notice_kind='opening' AND deadline IS NOT NULL"
+            "      AND deadline BETWEEN date('now') AND date('now','+7 day')) AS d7,"
+            "  SUM(date(created_at)=date('now','localtime')) AS fresh"
+            " FROM jobs WHERE status != 'archived'").fetchone()
+        return {k: (row[k] or 0) for k in ("opening", "d3", "d7", "fresh")}
+
     @router.get("/", response_class=HTMLResponse)
     def home(request: Request):
         join, where, params, q = list_query(request)
@@ -91,7 +110,7 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
         rows = request.app.state.conn.execute(
             f"SELECT j.* FROM jobs j {join} WHERE {' AND '.join(where)} {order} LIMIT 300",
             params).fetchall()
-        return render("list.html", request, jobs=rows, q=q)
+        return render("list.html", request, jobs=rows, q=q, stats=overview(request))
 
     @router.get("/jobs/{job_id}", response_class=HTMLResponse)
     def detail(job_id: int, request: Request):

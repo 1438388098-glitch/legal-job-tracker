@@ -10,8 +10,23 @@ from .generic_html import Adapter as HtmlAdapter
 log = logging.getLogger("collect")
 
 
-def _adapter_for(row):
+# 源记录上这几个列是"栏目的固有属性"（如"事业单位公开招聘"栏目里全是体制内岗位），
+# 必须注入 config 才能被 enrich 读到。曾经漏掉这一步，导致源级配置形同虚设、
+# 全部退回按标题猜，实测 47% 的条目落进"未分类"。
+_ROW_INTO_CFG = ("city", "job_type", "org", "notice_kind")
+
+
+def _source_cfg(row) -> dict:
     cfg = json.loads(row["config"] or "{}")
+    keys = row.keys()
+    for k in _ROW_INTO_CFG:
+        if k in keys and row[k] and not cfg.get(k):
+            cfg[k] = row[k]
+    return cfg
+
+
+def _adapter_for(row):
+    cfg = _source_cfg(row)
     if row["kind"] == "zuel":
         from . import zuel
         return zuel.Adapter(cfg)
@@ -50,8 +65,11 @@ class Runner:
             adapter = _adapter_for(row)
             for item in adapter.collect(known_fps):
                 item.setdefault("source_slug", slug)
+                # 适配器内部已按 cfg 填过，这里只兜住 pastebox 这类不走 enrich 的条目
                 if row["city"] and not item.get("city"):
                     item["city"] = row["city"]
+                if row["job_type"] and not item.get("job_type"):
+                    item["job_type"] = row["job_type"]
                 res, _ = store.save_item(self.conn, item)
                 if res in ("inserted", "merged"):
                     result[res] += 1

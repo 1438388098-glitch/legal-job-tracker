@@ -15,16 +15,27 @@
   </span>
 </div>
 
+<div class="stats">
+  <span class="stat">
+    <span class="stat-n">{{ stats.opening }}</span>
+    <span class="stat-l">可投递岗位</span>
+  </span>
+  <span class="stat {% if stats.d3 %}hot{% endif %}">
+    <span class="stat-n">{{ stats.d3 }}</span>
+    <span class="stat-l">3 天内截止</span>
+  </span>
+  <span class="stat {% if stats.d7 and not stats.d3 %}warm{% endif %}">
+    <span class="stat-n">{{ stats.d7 }}</span>
+    <span class="stat-l">7 天内截止</span>
+  </span>
+  <span class="stat">
+    <span class="stat-n">{{ stats.fresh }}</span>
+    <span class="stat-l">今日新增</span>
+  </span>
+</div>
+
 <form class="filters" method="get" action="/">
-  <select name="notice_kind" aria-label="公告性质">
-    <option value="">仅可投递</option>
-    <option value="all" {% if q.get('notice_kind') == 'all' %}selected{% endif %}>全部稿件</option>
-    {% for val, label in notice_kinds %}
-    {% if val != 'opening' %}
-    <option value="{{ val }}" {% if q.get('notice_kind') == val %}selected{% endif %}>只看{{ label }}</option>
-    {% endif %}
-    {% endfor %}
-  </select>
+  <input type="text" name="q" value="{{ q.get('q', '') }}" placeholder="搜索标题 / 单位 / 正文">
   <select name="job_type" aria-label="岗位类型">
     <option value="">全部类型</option>
     {% for val, label in job_types %}
@@ -37,6 +48,15 @@
     <option value="{{ c }}" {% if q.get('city') == c %}selected{% endif %}>{{ c }}</option>
     {% endfor %}
   </select>
+  <select name="notice_kind" aria-label="公告性质">
+    <option value="">仅可投递</option>
+    <option value="all" {% if q.get('notice_kind') == 'all' %}selected{% endif %}>全部稿件</option>
+    {% for val, label in notice_kinds %}
+    {% if val != 'opening' %}
+    <option value="{{ val }}" {% if q.get('notice_kind') == val %}selected{% endif %}>只看{{ label }}</option>
+    {% endif %}
+    {% endfor %}
+  </select>
   <select name="status" aria-label="状态">
     <option value="">全部状态</option>
     {% for s, label in [('new', '未读'), ('read', '已读'), ('pending', '待确认')] %}
@@ -47,10 +67,9 @@
     <option value="">按截止日</option>
     <option value="pub" {% if q.get('sort') == 'pub' %}selected{% endif %}>按发布日</option>
   </select>
-  <input type="text" name="q" value="{{ q.get('q', '') }}" placeholder="搜索标题 / 单位 / 正文">
   <button class="primary" type="submit">筛选</button>
   {% if q.get('q') or q.get('job_type') or q.get('city') or q.get('status') or q.get('notice_kind') or q.get('sort') %}
-  <a class="nav-a" href="/">清除</a>
+  <a class="reset" href="/">清除</a>
   {% endif %}
 </form>
 

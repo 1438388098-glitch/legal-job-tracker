@@ -87,13 +87,17 @@ def test_campus_boards_query_by_law_keywords():
     """全专业职位板必须做筛选，否则会把无关岗位灌进来。
 
     广外/广大的详情页是 JS 渲染，拿不到专业字段，只能靠站内 ?keyword= 检索法学岗；
-    中南财接口有 majors 字段，改用 keep_keywords 在本地过滤。
+    但站内检索是模糊匹配（搜「法务」会带出会计专员、销售订单管理），
+    所以必须再叠一层本地关键词过滤。
     """
     for slug in ("gdufs", "gzhu"):
-        urls = BY_SLUG[slug]["config"]["list_urls"]
+        cfg = BY_SLUG[slug]["config"]
+        urls = cfg["list_urls"]
         assert urls and all("keyword=" in u for u in urls), slug
         assert any("%E6%B3%95%E5%8A%A1" in u for u in urls), f"{slug}: 检索词里缺「法务」"
-    assert "法学" in BY_SLUG["zuel"]["config"]["keep_keywords"]
+        assert cfg.get("keep_keywords"), f"{slug}: 缺本地关键词过滤"
+    # 中南财接口的过滤在 zuel.py 内按"岗位名含法学角色词"完成
+    # （该接口的 majors 字段会把企业所有专业列全，不能当过滤依据），覆盖见 tests/test_zuel.py
 
 
 def test_sz_source_forces_http():

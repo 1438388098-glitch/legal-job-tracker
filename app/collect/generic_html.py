@@ -7,7 +7,8 @@ from urllib.parse import urljoin, urlsplit, urlunsplit
 
 from selectolax.parser import HTMLParser
 
-from ..classify import infer_city, infer_job_type, infer_notice_kind
+from ..classify import (extract_org, infer_city, infer_job_type,
+                        infer_notice_kind)
 from ..dateparse import guess_deadline, parse_date_text
 from ..dedup import url_fingerprint
 from .http import fetch
@@ -162,8 +163,10 @@ def enrich(item: dict, body: str, cfg: dict) -> dict:
     # 职位板/律所招聘栏目里的条目本身就是开放岗位，标题常是"法务助理""某某律师事务所"
     # 这类不含"招聘"字样的短名，靠标题判性质会误判成"其他信息"，所以允许源级指定。
     item["notice_kind"] = cfg.get("notice_kind") or infer_notice_kind(item["title"], body)
+    # 单位：列表页给了就用列表页的；没有就从标题抽——政务站列表页根本没有单位字段，
+    # 但单位名就在标题开头（"广东省高级人民法院…"），抽不到则留空，宁缺勿错。
     if not item.get("org"):
-        item["org"] = cfg.get("org")
+        item["org"] = cfg.get("org") or extract_org(item["title"])
     return item
 
 
