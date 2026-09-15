@@ -12,15 +12,18 @@
 所以按关键词分片拉取，不按城市分片（城市从 acb204Name 字段推断）。
 详情页是 hash 路由的 SPA，静态抓不到正文，条目数据全部来自列表接口。
 """
+import logging
 from urllib.parse import urljoin
 
-from ..classify import (infer_city, infer_employment_type, infer_job_type,
-                        is_rolling)
+from ..classify import (LAW_KEYWORDS, infer_city, infer_employment_type,
+                        infer_job_type, is_rolling)
 from ..dateparse import parse_date_text
 from .generic_html import matches_keywords
+
+log = logging.getLogger("collect.ggfw")
 from .http import post_json
 
-DEFAULT_KEYWORDS = ["法务", "法律", "法学", "合规", "知识产权", "风控"]
+DEFAULT_KEYWORDS = list(LAW_KEYWORDS)   # 单一真源：app.classify
 
 
 def _s(v) -> str:
@@ -81,6 +84,7 @@ class Adapter:
 
     def collect(self, known_fps: set[str] | None = None) -> list[dict]:
         out = []
+        errors: list[str] = []
         for kw in self.keywords:
             for page in range(1, self.pages + 1):
                 try:
@@ -89,7 +93,9 @@ class Adapter:
                         json_body={"pageTag": "01", "current": page, "size": self.size,
                                    "aab020": self.unit_kinds, "bce055": kw},
                         headers={"Referer": self.referer})
-                except Exception:  # noqa: BLE001 接口偶发抽风，跳过该关键词剩余页
+                except Exception as e:  # noqa: BLE001 接口偶发抽风，跳过该关键词剩余页
+                    errors.append(f"{kw}#p{page}: {type(e).__name__}: {e}")
+                    log.warning("ggfw %s 第 %s 页失败：%s", kw, page, e)
                     break
                 items = parse_payload(d, self.base)   # parse_payload 吃完整响应
                 if not items:
@@ -102,4 +108,9 @@ class Adapter:
         if kw:
             out = [x for x in out if matches_keywords(
                 f"{x['title']} {x.get('org') or ''} {x.get('body') or ''}", kw)]
+        # 一个关键词都没拿到且次次报错 = 接口挂了。必须抛出去让 runner 记进源健康，
+        # 否则返回空列表会被当成"这次没新岗位"，源健康页一直显示绿灯。
+        if not out and errors and len(errors) >= len(self.keywords):
+            raise RuntimeError(f"接口全部失败（{len(errors)}/{len(self.keywords)} 个关键词）："
+                               f"{errors[0][:160]}")
         return out

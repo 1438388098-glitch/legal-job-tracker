@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% set jtmap = dict(job_types) %}
+{% block title %}推荐岗位 · 法学招聘中台{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>推荐岗位</h1>
+  <span class="meta">按与你的画像匹配度排序</span>
+  <span class="spacer"></span>
+  <a class="meta" href="/profile">调整画像 →</a>
+</div>
+
+<div class="stats">
+  <a class="stat" href="/recommend">
+    <span class="stat-n">{{ items|length }}</span>
+    <span class="stat-l">已评分岗位</span>
+  </a>
+  <a class="stat {% if top_n %}hot{% endif %}" href="#top">
+    <span class="stat-n">{{ top_n }}</span>
+    <span class="stat-l">高度匹配（≥60）</span>
+  </a>
+</div>
+
+<p class="hint" style="margin:0 0 12px">
+  打分依据：意向城市（±26）· 岗位类型（±22）· 技能命中（每项 +8，上限 32）·
+  经历对口（+14）· 学历满足（+8）· 有明确截止日（+6）。
+  每条下面都写明了加分理由，觉得不准就回画像页调整。
+</p>
+
+<div id="top"></div>
+{% if not items %}
+<div class="empty">还没有可推荐的岗位。先去 <a href="/health">源健康</a> 采集一轮。</div>
+{% else %}
+<div class="list">
+  <div class="list-head wide">
+    <span>匹配</span><span>截止</span><span>岗位</span><span>推荐理由</span><span></span>
+  </div>
+  {% for m, job in items %}
+  <div class="row rec">
+    <span class="score {% if m['score'] >= 60 %}hi{% elif m['score'] >= 40 %}mid{% endif %}"
+          title="匹配度 {{ m['score'] }}/100">{{ m['score'] }}</span>
+    {% if job['deadline'] %}
+    <span class="deadline {{ job['deadline']|dcolor }}">{{ job['deadline'][5:] }}</span>
+    {% elif job['rolling'] %}
+    <span class="deadline roll" title="长期有效">长期</span>
+    {% else %}
+    <span class="deadline none">—</span>
+    {% endif %}
+    <span class="t-cell">
+      <a class="t" href="/jobs/{{ job['id'] }}" title="{{ job['title'] }}">{{ job['title'] }}</a>
+      <span class="meta-m">
+        {% if job['org'] %}{{ job['org'] }} · {% endif %}
+        {{ job['city'] or '—' }} · {{ jtmap.get(job['job_type'], job['job_type']) }}
+        {% if job['employment_type'] %} · {{ job['employment_type'] }}{% endif %}
+      </span>
+    </span>
+    <span class="why">
+      {% for r in m['reasons'] %}<span class="chip">{{ r }}</span>{% endfor %}
+      {% if not m['reasons'] %}<span class="dim">仅基础分，画像与岗位关联较弱</span>{% endif %}
+    </span>
+    <span class="acts">
+      {% if job['aid'] %}
+      <span class="tag-ok">跟踪中</span>
+      {% else %}
+      <form class="inline" method="post" action="/jobs/{{ job['id'] }}/apply">
+        <button class="mini" title="加入投递跟踪">跟踪</button>
+      </form>
+      {% endif %}
+      <a class="icon" href="{{ job['url'] }}" target="_blank" rel="noopener" title="打开原文">↗</a>
+    </span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

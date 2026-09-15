@@ -14,14 +14,9 @@ from urllib.parse import urljoin
 
 from selectolax.parser import HTMLParser
 
-from ..classify import infer_city, infer_job_type, is_rolling
 from ..dateparse import parse_date_text
-from .generic_html import matches_keywords
+from .common import apply_keep_keywords, finalize, s as _s
 from .http import fetch
-
-
-def _s(v) -> str:
-    return "" if v is None else str(v).strip()
 
 
 def parse_list(html: str, base: str, cfg: dict | None = None) -> list[dict]:
@@ -41,18 +36,14 @@ def parse_list(html: str, base: str, cfg: dict | None = None) -> list[dict]:
             if not pos or "/job/view/" not in href:
                 continue
             title = f"{org}｜{pos}" if org else pos
-            out.append({
+            # 走通用 finalize：此前这里手写字段，漏掉了用工性质/长期有效的推断
+            out.append(finalize({
                 "title": title,
                 "org": org or None,
                 "url": urljoin(base, href),
                 "publish_date": date,
                 "deadline": None,
-                "city": infer_city(title),
-                "job_type": cfg.get("job_type") or infer_job_type(title),
-                "notice_kind": cfg.get("notice_kind") or "opening",
-                "rolling": 0,
-                "body": "",
-            })
+            }, "", cfg))
     return out
 
 
@@ -71,6 +62,5 @@ class Adapter:
                             if k in ("item_sel", "job_type", "notice_kind")})
         kw = self.cfg.get("keep_keywords")
         if kw:
-            items = [x for x in items if matches_keywords(
-                f"{x['title']} {x.get('org') or ''}", kw)]
+            items = apply_keep_keywords(items, kw)
         return items

@@ -62,6 +62,7 @@ class Runner:
                 total["failed"] += 1
             total["inserted"] += r.get("inserted", 0)
             total["merged"] += r.get("merged", 0)
+        store.flush(self.conn)   # 批量提交的尾巴：最后不足一批的改动在这里落盘
         db.auto_archive(self.conn)
         # 桌面通知由调用方（app.web.main.daily）在采集后按汇总数据决定是否发送，
         # 这里不再发，避免定时采集与手动采集重复弹窗。

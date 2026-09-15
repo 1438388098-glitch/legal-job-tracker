@@ -4,7 +4,8 @@
 <div class="page-head">
   <h1>岗位</h1>
   <span class="meta">
-    {{ jobs|length }} 条{% if q.get('q') or q.get('job_type') or q.get('city') or q.get('status') or q.get('notice_kind') or q.get('fresh') or q.get('nodeadline') or q.get('employment_type') or q.get('rolling') %}（已筛选）{% endif %}
+    {{ total }} 条{% if q.get('q') or q.get('job_type') or q.get('city') or q.get('status') or q.get('notice_kind') or q.get('fresh') or q.get('nodeadline') or q.get('employment_type') or q.get('rolling') or q.get('urgent') %}（已筛选）{% endif %}
+    {% if total > jobs|length %}· 显示前 {{ jobs|length }} 条{% endif %}
   </span>
   <span class="spacer"></span>
   <span class="meta">
@@ -14,28 +15,33 @@
     {% else %}仅可投递{% endif %}
     · 按{{ '发布' if q.get('sort') == 'pub' else ('收录' if q.get('sort') == 'new' else '截止') }}排序
   </span>
-  <a class="meta" href="{% if q.get('bulk') %}?{% else %}?bulk=1{% endif %}">{{ '退出批量' if q.get('bulk') else '批量' }}</a>
+  <a class="meta" href="{{ qs(bulk=None if q.get('bulk') else 1) }}">
+    {{ '退出批量' if q.get('bulk') else '批量' }}</a>
 </div>
 
 <div class="stats">
-  <a class="stat" href="/{{ '' if not q.get('fresh') else '' }}" title="全部可投递岗位">
+  <a class="stat {% if not q.get('urgent') %}on{% endif %}" href="{{ qs(urgent=None) }}"
+     title="全部可投递岗位">
     <span class="stat-n">{{ stats.opening }}</span>
     <span class="stat-l">可投递岗位</span>
   </a>
-  <a class="stat {% if stats.d3 %}hot{% endif %}" href="/?sort=deadline">
+  <a class="stat {% if stats.d3 %}hot{% endif %} {% if q.get('urgent') == '3' %}on{% endif %}"
+     href="{{ qs(urgent=None if q.get('urgent') == '3' else 3) }}">
     <span class="stat-n">{{ stats.d3 }}</span>
     <span class="stat-l">3 天内截止</span>
   </a>
-  <a class="stat {% if stats.d7 and not stats.d3 %}warm{% endif %}" href="/?sort=deadline">
+  <a class="stat {% if stats.d7 and not stats.d3 %}warm{% endif %} {% if q.get('urgent') == '7' %}on{% endif %}"
+     href="{{ qs(urgent=None if q.get('urgent') == '7' else 7) }}">
     <span class="stat-n">{{ stats.d7 }}</span>
     <span class="stat-l">7 天内截止</span>
   </a>
-  <a class="stat {% if q.get('fresh') %}on{% endif %}" href="/?sort=new&fresh={% if q.get('fresh') %}0{% else %}1{% endif %}">
+  <a class="stat {% if q.get('fresh') %}on{% endif %}"
+     href="{{ qs(fresh=None if q.get('fresh') else 1, sort=None if q.get('fresh') else 'new') }}">
     <span class="stat-n">{{ stats.fresh }}</span>
     <span class="stat-l">今日新增</span>
   </a>
   <a class="stat {% if q.get('nodeadline') %}on{% endif %}"
-     href="/?nodeadline={% if q.get('nodeadline') %}0{% else %}1{% endif %}"
+     href="{{ qs(nodeadline=None if q.get('nodeadline') else 1) }}"
      title="未标注截止日期的岗位（多为邮箱投递、长期有效），不会进临期提醒，容易漏看">
     <span class="stat-n">{{ no_deadline }}</span>
     <span class="stat-l">无截止日</span>
@@ -73,7 +79,7 @@
   </select>
   <select name="status" aria-label="状态">
     <option value="">全部状态</option>
-    {% for s, label in [('new', '未读'), ('read', '已读'), ('pending', '待确认')] %}
+    {% for s, label in [('new', '未读'), ('read', '已读'), ('pending', '待确认'), ('archived', '已归档')] %}
     <option value="{{ s }}" {% if q.get('status') == s %}selected{% endif %}>{{ label }}</option>
     {% endfor %}
   </select>
@@ -82,11 +88,28 @@
     <option value="pub" {% if q.get('sort') == 'pub' %}selected{% endif %}>按发布日</option>
     <option value="new" {% if q.get('sort') == 'new' %}selected{% endif %}>按收录时间</option>
   </select>
+  {# 不在表单里的筛选条件要显式带上，否则改一次筛选就把它们清掉了 #}
+  {% for k in ['urgent', 'fresh', 'nodeadline', 'bulk'] %}
+  {% if q.get(k) %}<input type="hidden" name="{{ k }}" value="{{ q[k] }}">{% endif %}
+  {% endfor %}
   <button class="primary" type="submit">筛选</button>
-  {% if q.get('q') or q.get('job_type') or q.get('city') or q.get('status') or q.get('notice_kind') or q.get('sort') or q.get('fresh') or q.get('nodeadline') or q.get('employment_type') or q.get('rolling') %}
+  {% if q.get('q') or q.get('job_type') or q.get('city') or q.get('status') or q.get('notice_kind') or q.get('sort') or q.get('fresh') or q.get('nodeadline') or q.get('employment_type') or q.get('rolling') or q.get('urgent') %}
   <a class="reset" href="/">清除</a>
   {% endif %}
 </form>
+
+{% if flash %}
+<div class="flash" role="status">
+  <span>已{{ '归档' if flash['action'] == 'archive' else '恢复' }} {{ flash['n'] }} 条</span>
+  <form class="inline" method="post" action="/jobs/batch">
+    <input type="hidden" name="ids" value="{{ flash['ids'] }}">
+    <input type="hidden" name="action" value="{{ 'unarchive' if flash['action'] == 'archive' else 'archive' }}">
+    <button type="submit">撤销</button>
+  </form>
+  <span class="spacer"></span>
+  <a class="meta" href="{{ qs(done=None, ids=None) }}">知道了</a>
+</div>
+{% endif %}
 
 {% if q.get('bulk') %}
 {# 批量模式：勾选框不在任何表单里（HTML 不允许 form 套 form），提交时由 app.js 汇总 #}
@@ -96,6 +119,9 @@
   <span class="meta">已选 <b data-selected-count>0</b> 条</span>
   <button type="submit" name="action" value="read">标为已读</button>
   <button type="submit" name="action" value="archive">归档</button>
+  {% if q.get('status') == 'archived' %}
+  <button type="submit" name="action" value="unarchive">恢复</button>
+  {% endif %}
   <span class="spacer"></span>
   <span class="meta">操作完回到当前筛选视图</span>
 </form>

@@ -10,6 +10,7 @@
 不需要再抓详情页；详情页 `/web/jobDetail?postId=N` 是 JS 壳。
 以后遇到其他用 hotjob.cn 的集团，改 cfg 里的 api/detail_base 就能复用。
 """
+import logging
 from urllib.parse import urljoin
 
 from ..classify import (infer_city, infer_employment_type, infer_job_type,
@@ -17,6 +18,8 @@ from ..classify import (infer_city, infer_employment_type, infer_job_type,
 from ..dateparse import parse_date_text
 from .generic_html import matches_keywords
 from .http import fetch
+
+log = logging.getLogger("collect.hotjob")
 
 
 def _s(v) -> str:
@@ -81,6 +84,7 @@ class Adapter:
         # positionName 是服务端精准过滤（实测"法务"把 519 条收敛到 7 条），
         # 比全量翻 52 页再本地过滤省一个数量级的请求
         kws = self.cfg.get("position_keywords") or [None]
+        errors: list[str] = []
         for kw in kws:
             for page in range(1, self.pages + 1):
                 params = {"brandCode": self.brand_code, "recruitPostType": self.post_type,
@@ -89,7 +93,9 @@ class Adapter:
                     params["positionName"] = kw
                 try:
                     d = fetch(self.api, params=params).json()
-                except Exception:  # noqa: BLE001 接口抽风就到此为止，别让整源失败
+                except Exception as e:  # noqa: BLE001
+                    errors.append(f"{kw}#p{page}: {type(e).__name__}: {e}")
+                    log.warning("hotjob %s 第 %s 页失败：%s", kw, page, e)
                     break
                 items = parse_payload(d, self.detail_base)
                 if not items:
@@ -101,4 +107,8 @@ class Adapter:
         if kw2:
             out = [x for x in out if matches_keywords(
                 f"{x['title']} {x.get('org') or ''} {x.get('body') or ''}", kw2)]
+        # 同 ggfw：接口全挂必须抛出去，否则源健康页会一直显示绿灯
+        if not out and errors and len(errors) >= len(kws):
+            raise RuntimeError(f"接口全部失败（{len(errors)}/{len(kws)} 个关键词）："
+                               f"{errors[0][:160]}")
         return out

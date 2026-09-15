@@ -1,7 +1,7 @@
 import re
 from urllib.parse import urljoin
 
-from ..classify import (NOTICE_OPENING, infer_city, infer_employment_type,
+from ..classify import (LAW_ROLE_KW, NOTICE_OPENING, infer_city, infer_employment_type,
                         infer_job_type, is_rolling)
 from ..dateparse import parse_date_text
 from .http import fetch
@@ -10,11 +10,8 @@ from .http import fetch
 # 为什么要卡岗位名而不是专业：该接口的 majors 字段会把企业所有接受的专业列全
 # （实测"厦门国际银行｜银行"一条列了 38 个专业，含法学），只按 majors 过滤会把
 # 银行柜员、供应链、会计专员这类泛岗位全捞进来 —— 正是用户说的"乱七八糟"。
-ROLE_KW = [
-    "法务", "法律", "律师", "合规", "风控", "知识产权", "专利", "商标",
-    "诉讼", "仲裁", "公证", "司法", "检察", "法官", "法规", "合同", "法务顾问",
-]
-_ROLE = re.compile("|".join(ROLE_KW))
+# 岗位角色词取自单一真源 app.classify.LAW_ROLE_KW
+_ROLE = re.compile("|".join(LAW_ROLE_KW))
 
 
 def _s(v) -> str:

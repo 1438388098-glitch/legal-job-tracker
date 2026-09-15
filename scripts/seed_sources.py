@@ -17,10 +17,11 @@ sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app import db  # noqa: E402
+from app.classify import LAW_KEYWORDS, LAW_QUERIES  # noqa: E402
 
-# 校园招聘站是"全校全专业"职位板，噪音极大，只保留法学相关岗位
-LAW_KW = ["法学", "法律", "法务", "律师", "司法", "检察", "法院", "仲裁",
-          "合规", "风控", "知识产权", "专利", "公证", "法制", "诉讼"]
+# 校园招聘站是"全校全专业"职位板，噪音极大，只保留法学相关岗位。
+# 词表统一取自 app.classify（单一真源），这里只做别名，不再各自维护一份
+LAW_KW = LAW_KEYWORDS
 
 
 def _idx(base: str, n: int) -> list[str]:
@@ -43,7 +44,7 @@ def _kw(base: str, keywords, param: str = "keyword") -> list[str]:
 # 校园职位板的站内检索词。这些平台详情页是 JS 渲染、拿不到"专业要求"字段，
 # 只能靠站内检索把法学相关岗位捞出来；检索结果里偶有泛管理岗（其岗位描述提到法务），
 # 属可接受噪音，因此不再叠加本地关键词过滤。
-LAW_QUERY = ["法务", "律师", "法律", "合规", "知识产权", "专利"]
+LAW_QUERY = LAW_QUERIES
 
 
 def _html(name, urls, item_sel, link_sel="a", title_sel=None, title_attr=None,

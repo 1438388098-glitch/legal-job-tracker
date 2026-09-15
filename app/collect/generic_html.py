@@ -7,9 +7,8 @@ from urllib.parse import urljoin, urlsplit, urlunsplit
 
 from selectolax.parser import HTMLParser
 
-from ..classify import (extract_org, infer_city, infer_employment_type,
-                        infer_job_type, infer_notice_kind, is_rolling)
-from ..dateparse import guess_deadline, parse_date_text
+from ..dateparse import parse_date_text
+from .common import finalize, matches_keywords
 from ..dedup import url_fingerprint
 from .http import fetch
 
@@ -160,26 +159,9 @@ def extract_text(html: str, sel: str | None) -> str:
 
 
 def enrich(item: dict, body: str, cfg: dict) -> dict:
-    item["body"] = body
-    # 正文里推断出的截止日优先；列表页直接给的（如深圳律协的截止日列）作兜底
-    item["deadline"] = guess_deadline(body) or item.get("deadline")
-    item["job_type"] = cfg.get("job_type") or infer_job_type(item["title"])
-    # 城市在标题里往往不出现（"2026年公开招聘工作人员公告"），单位名和正文
-    # 开头才是它最常出现的地方 —— 三处一起查，实测空值率从 55% 降到 ~25%
-    item["city"] = (cfg.get("city")
-                    or infer_city(f"{item['title']} {item.get('org') or ''} {body[:300]}"))
-    # 职位板/律所招聘栏目里的条目本身就是开放岗位，标题常是"法务助理""某某律师事务所"
-    # 这类不含"招聘"字样的短名，靠标题判性质会误判成"其他信息"，所以允许源级指定。
-    item["notice_kind"] = cfg.get("notice_kind") or infer_notice_kind(item["title"], body)
-    # 用工性质（编制/合同制/派遣）与"长期有效"：从标题+正文推，抽不到就空着
-    emp_text = f"{item['title']} {body[:3000]}"
-    item["employment_type"] = infer_employment_type(emp_text)
-    item["rolling"] = 1 if is_rolling(emp_text) else 0
-    # 单位：列表页给了就用列表页的；没有就从标题抽——政务站列表页根本没有单位字段，
-    # 但单位名就在标题开头（"广东省高级人民法院…"），抽不到则留空，宁缺勿错。
-    if not item.get("org"):
-        item["org"] = cfg.get("org") or extract_org(item["title"])
-    return item
+    """补全条目字段。实现已收敛到 app/collect/common.finalize —— 采集与
+    scripts/reclassify.py 的重算共用同一条路径，避免两处规则漂移。"""
+    return finalize(item, body, cfg)
 
 
 class Adapter:

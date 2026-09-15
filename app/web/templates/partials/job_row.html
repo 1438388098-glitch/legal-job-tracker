@@ -31,7 +31,7 @@
        title="打开原文（{{ job['source_slug'] }}）">↗</a>
     <form class="inline" method="post" action="/jobs/{{ job['id'] }}/status">
       <input type="hidden" name="status" value="{{ 'new' if job['status'] == 'archived' else 'archived' }}">
-      <button class="icon" title="{{ '恢复' if job['status'] == 'archived' else '归档' }}">{{ '↺' if job['status'] == 'archived' else '×' }}</button>
+      <button class="icon danger" title="{{ '恢复' if job['status'] == 'archived' else '归档（归档后可在筛选「已归档」里找回）' }}">{{ '↺' if job['status'] == 'archived' else '×' }}</button>
     </form>
   </span>
 </div>

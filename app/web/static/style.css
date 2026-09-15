@@ -58,6 +58,13 @@
   --top-h: 46px;
   --row-h: 34px;
 
+  /* 动效时长与缓动：三档足够，多一档就管不住了。
+     dur-1 微交互（hover/按压）· dur-2 小面积变化 · dur-3 整页（主题切换） */
+  --dur-1: .13s;
+  --dur-2: .18s;
+  --dur-3: .22s;
+  --ease:  cubic-bezier(.2, .8, .3, 1);   /* 快起缓收，比 ease 利落 */
+
   color-scheme: light;
 }
 
@@ -372,6 +379,48 @@ button.icon:hover { background: var(--bg-hover); color: var(--fg); }
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .row .acts { position: relative; z-index: 1; display: flex; justify-content: flex-end; }
+/* 归档是"从列表里消失"的操作，且与 ↗ 原链同形同尺寸相邻——默认藏起来，
+   鼠标移到行上或键盘聚焦时才出现，避免手滑点掉一个还没投的岗位。
+   键盘用户靠 :focus-visible 拿到，不会因此不可达。 */
+.row .acts .danger { opacity: 0; transition: opacity var(--dur-1) var(--ease); }
+.row:hover .acts .danger,
+.row:focus-within .acts .danger,
+.row .acts .danger:focus-visible { opacity: 1; }
+.row .acts .danger:hover { color: var(--danger); border-color: var(--danger); }
+
+/* ---------- 推荐页 ---------- */
+/* 推荐页列结构不同：匹配分 / 截止 / 岗位 / 理由 / 操作 */
+.list-head.wide, .row.rec {
+  grid-template-columns: 36px 62px minmax(200px, 1.1fr) minmax(160px, 1fr) 62px;
+}
+.row.rec { align-items: center; }
+.row.rec .score {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 20px; border-radius: var(--r-sm);
+  font-size: var(--fs-sm); font-weight: 600; font-variant-numeric: tabular-nums;
+  color: var(--fg-2); background: var(--bg-inset); border: 1px solid var(--line-soft);
+}
+.row.rec .score.mid { color: var(--warn); background: var(--warn-bg); border-color: transparent; }
+.row.rec .score.hi  { color: #fff; background: var(--ok); border-color: transparent; }
+.row.rec .t-cell { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.row.rec .t-cell .t { position: static; }
+.row.rec .t-cell .t::after { content: none; }   /* 取消整行热区，避免挡住右侧按钮 */
+.row.rec .why { display: flex; flex-wrap: wrap; gap: 3px; align-content: center; }
+.chip {
+  display: inline-block; padding: 0 5px; border-radius: var(--r-sm);
+  background: var(--bg-sub); border: 1px solid var(--line-soft);
+  font-size: var(--fs-xs); color: var(--fg-2); white-space: nowrap;
+}
+.row.rec .chip { font-size: var(--fs-xs); }
+
+/* 写操作回执：操作完必须让用户知道发生了什么，并给一次反悔的机会 */
+.flash {
+  display: flex; align-items: center; gap: 8px;
+  margin: 0 0 10px; padding: 7px 10px;
+  background: var(--bg-sub); border: 1px solid var(--line);
+  border-left: 3px solid var(--accent); border-radius: var(--r-sm);
+  font-size: var(--fs-sm);
+}
 
 /* 类型：一个 6px 圆点 + 文字，比整块彩色标签省空间又保留扫读线索 */
 .type { display: inline-flex; align-items: center; gap: 5px; font-size: var(--fs-sm); color: var(--fg-2); white-space: nowrap; }
@@ -546,7 +595,9 @@ form.inline { display: inline; margin: 0; }
   grid-template-columns: 24px 76px 60px 46px minmax(220px, 1fr)
                          minmax(140px, 250px) 84px 32px;
 }
-.row .cb { display: flex; align-items: center; }
+/* 必须抬到整行链接热区（.row a.t::after inset:0）之上，否则点勾选框会直接
+   跳进详情页——批量模式实际不可用。定位+z-index 缺一不可。 */
+.row .cb { display: flex; align-items: center; position: relative; z-index: 2; }
 .row .cb input { accent-color: var(--accent); }
 
 /* 行内小按钮 / 状态标记：列表行上直接加跟踪，不用进详情页 */

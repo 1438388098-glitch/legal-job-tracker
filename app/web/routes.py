@@ -1,14 +1,16 @@
 import io
 import json
+import re
 from datetime import date
 from pathlib import Path
-from urllib.parse import quote, urlsplit
+from urllib.parse import quote, urlencode, urlsplit
 
-from fastapi import APIRouter, FastAPI, Form, Request
+from fastapi import APIRouter, FastAPI, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 
 from .. import db
+from .. import resume
 from ..classify import CITIES
 from ..collect import pastebox
 from ..collect.runner import Runner
@@ -43,6 +45,36 @@ def _search_terms(kw: str) -> list[str]:
         if kw in group:
             return list(dict.fromkeys(group))
     return [kw]
+
+
+def _with_flash(resp: RedirectResponse, action: str, ids: list[int]) -> RedirectResponse:
+    """给重定向 URL 挂上"刚做了什么"，让下一屏能显示可撤销的提示条。
+
+    用 query 而不是 session：这是单用户本地工具，没有登录态，query 足够且无状态。
+    """
+    loc = resp.headers.get("location", "/")
+    sep = "&" if "?" in loc else "?"
+    idstr = ",".join(str(i) for i in ids[:200])
+    resp.headers["location"] = f"{loc}{sep}done={action}&ids={idstr}"
+    return resp
+
+
+def make_qs(q: dict):
+    """生成"保留当前筛选"的链接。
+
+    没有它之前，模板里每一个链接都是写死的 `?bulk=1`、`/`——用户在「律所+广州」
+    下点一下「批量」，筛选就全丢了，批量操作的对象也跟着变，可能误归档无关岗位。
+    值 None/''/'0' 视为"去掉这个参数"，正好用来做开关的两种状态。
+    """
+    def qs(**overrides):
+        d = {k: v for k, v in q.items() if v not in (None, "", "0")}
+        for k, v in overrides.items():
+            if v in (None, "", "0", False):
+                d.pop(k, None)
+            else:
+                d[k] = v
+        return ("?" + urlencode(d)) if d else "/"
+    return qs
 
 
 def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
@@ -108,10 +140,16 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
 
     def list_query(request: Request):
         q = dict(request.query_params)
-        where, params = ["j.status != 'archived'"], []
+        # 归档默认隐藏，但要能专门看：否则误归档（行内 × 只有 24px，很容易点错）
+        # 就等于永久删除，用户连找回的入口都没有
+        if q.get("status") == "archived":
+            where, params = ["j.status='archived'"], []
+        else:
+            where, params = ["j.status != 'archived'"], []
         # 默认只看"可投递"的岗位；政务渠道里大量事后结果公示对求职者没有价值
         kind = q.get("notice_kind")
-        if kind == "all":
+        # 归档视图不套"仅可投递"：找回误归档的岗位时，不能因为它是结果公示就看不见
+        if kind == "all" or (q.get("status") == "archived" and not kind):
             pass
         elif kind:
             where.append("j.notice_kind=?")
@@ -124,7 +162,7 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
         if q.get("city"):
             where.append("j.city LIKE ?")
             params.append(f"%{q['city']}%")
-        if q.get("status"):
+        if q.get("status") and q["status"] != "archived":
             where.append("j.status=?")
             params.append(q["status"])
         if q.get("employment_type"):
@@ -136,6 +174,12 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
             where.append("date(j.created_at)=date('now','localtime')")
         if q.get("nodeadline") == "1":
             where.append("j.deadline IS NULL")
+        if q.get("urgent") in ("3", "7"):
+            # 概览条上的"3 天内/7 天内截止"必须真能筛出来，否则数字和点进去的
+            # 结果对不上——之前它只是排序，用户会以为筛选坏了
+            where.append("j.deadline IS NOT NULL AND j.deadline BETWEEN date('now') "
+                         "AND date('now',?)")
+            params.append(f"+{q['urgent']} day")
         kw = (q.get("q") or "").strip()
         join = ""
         if kw:
@@ -176,12 +220,24 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
             # 默认：临期在前（有截止日的按日期升序），无截止日的沉底
             order = ("ORDER BY CASE WHEN j.deadline IS NULL THEN 1 ELSE 0 END, "
                      "j.deadline ASC, j.publish_date DESC, j.id DESC")
+        limit = 300
+        where_sql = " AND ".join(where)
         rows = request.app.state.conn.execute(
             f"SELECT j.*, a.id AS aid FROM jobs j "
             f"LEFT JOIN applications a ON a.job_id=j.id "
-            f"{join} WHERE {' AND '.join(where)} {order} LIMIT 300",
+            f"{join} WHERE {where_sql} {order} LIMIT {limit}",
             params).fetchall()
-        return render("list.html", request, jobs=rows, q=q, stats=overview(request))
+        # 命中总数要告诉用户：之前只显示"300 条"，实际可投递 400+，
+        # 用户会以为看完了，剩下的一百多条静默不可见
+        total = request.app.state.conn.execute(
+            f"SELECT COUNT(*) c FROM jobs j {join} WHERE {where_sql}", params).fetchone()["c"]
+        # 上一次写操作的回执（批量归档/恢复后显示"已归档 N 条 · 撤销"）
+        flash = None
+        if q.get("done") in ("archive", "unarchive"):
+            ids = [x for x in (q.get("ids") or "").split(",") if x.strip().isdigit()]
+            flash = {"action": q["done"], "n": len(ids), "ids": ",".join(ids)}
+        return render("list.html", request, jobs=rows, q=q, stats=overview(request),
+                      total=total, limit=limit, qs=make_qs(q), flash=flash)
 
     @router.get("/jobs/{job_id}", response_class=HTMLResponse)
     def detail(job_id: int, request: Request):
@@ -251,6 +307,11 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
             conn.execute(f"UPDATE jobs SET status=? WHERE id IN ({marks})",
                          [status, *id_list])
             conn.commit()
+            # 写操作必须留痕：之前静默回跳，归档后整片行消失，用户不知道是成功了
+            # 还是出错了，更没有反悔的机会。回跳时带上"做了什么 + 影响哪些 id"，
+            # 页面顶部渲染一条可撤销的提示。
+            if action != "read":
+                return _with_flash(redirect_back(request), action, id_list)
         return redirect_back(request)
 
     @router.post("/applications/{app_id}/status")
@@ -314,6 +375,85 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
     def settings_save(request: Request, toast_enabled: str = Form("0")):
         db.set_setting(request.app.state.conn, "toast_enabled", toast_enabled)
         return RedirectResponse("/settings", status_code=303)
+
+    # ── 简历 / 个人画像 ───────────────────────────────────────────────────
+    @router.get("/profile", response_class=HTMLResponse)
+    def profile_page(request: Request):
+        prof = resume.load_profile(request.app.state.conn)
+        return render("profile.html", request, prof=prof, job_types=JOB_TYPES,
+                      err=request.query_params.get("err"))
+
+    @router.post("/profile/upload")
+    async def profile_upload(request: Request, file: UploadFile = File(...)):
+        """上传简历 → 解析 → 写入画像（随后可在页面上改）。"""
+        data = await file.read()
+        if len(data) > 8 * 1024 * 1024:
+            return RedirectResponse("/profile?err=too-big", status_code=303)
+        try:
+            text = resume.extract_text(file.filename or "", data)
+        except ImportError:
+            # pdf/docx 的可选依赖没装：明确告诉用户，而不是静默存一份乱码
+            return RedirectResponse("/profile?err=no-parser", status_code=303)
+        if not text.strip():
+            return RedirectResponse("/profile?err=empty", status_code=303)
+        parsed = resume.parse_resume(text)
+        parsed["raw_text"] = text[:20000]
+        parsed["source_file"] = file.filename or ""
+        resume.save_profile(request.app.state.conn, parsed)
+        return RedirectResponse("/profile", status_code=303)
+
+    @router.post("/profile")
+    def profile_save(request: Request, name: str = Form(""), skills: str = Form(""),
+                     cities: str = Form(""), job_types: str = Form(""),
+                     years: str = Form(""), education: str = Form(""),
+                     experiences: str = Form("")):
+        """手动编辑画像。解析抽错的、想调整的，都在这里改——解析只是起个草稿。
+
+        列表字段按逗号/顿号/分号/换行切分，不要求用户记格式。
+        """
+        conn = request.app.state.conn
+        old = resume.load_profile(conn) or {}
+
+        def split(v: str) -> list[str]:
+            return [x.strip() for x in re.split(r"[,，、;；\n\r]+", v or "") if x.strip()]
+
+        prof = {
+            "name": name.strip(),
+            "skills": split(skills),
+            "cities": split(cities),
+            "job_types": split(job_types),
+            "years": int(years) if years.strip().isdigit() else None,
+            "education": [{"degree": d, "level": 0, "school": "", "major": "",
+                           "year": ""} for d in split(education)],
+            "experiences": [{"kind": k, "detail": ""} for k in split(experiences)],
+            "raw_text": old.get("raw_text", ""),
+            "source_file": old.get("source_file", ""),
+        }
+        resume.save_profile(conn, prof)
+        return RedirectResponse("/profile", status_code=303)
+
+    @router.get("/recommend", response_class=HTMLResponse)
+    def recommend_page(request: Request):
+        conn = request.app.state.conn
+        prof = resume.load_profile(conn)
+        if prof is None:
+            return render("profile.html", request, prof=None,
+                          need_profile=True, job_types=JOB_TYPES)
+        kws = prof.get("keywords") or []
+        rows = conn.execute(
+            "SELECT j.*, a.id AS aid FROM jobs j "
+            "LEFT JOIN applications a ON a.job_id=j.id "
+            "WHERE j.status != 'archived' AND j.notice_kind='opening' "
+            "ORDER BY j.deadline IS NULL, j.deadline LIMIT 400").fetchall()
+        scored = []
+        for r in rows:
+            m = resume.match_job(prof, dict(r), kws)
+            scored.append((m, r))
+        scored.sort(key=lambda x: (-x[0]["score"], x[1]["deadline"] or "9999"))
+        top = scored[:60]
+        return render("recommend.html", request, prof=prof, items=top,
+                      top_n=sum(1 for m, _ in top if m["score"] >= 60),
+                      job_types=JOB_TYPES)
 
     app.include_router(router)
     return templates

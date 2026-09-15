@@ -21,11 +21,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 sys.stdout.reconfigure(encoding="utf-8")
 
 from app import db  # noqa: E402
-from app.classify import (extract_org, infer_city, infer_employment_type,  # noqa: E402
-                          infer_job_type, infer_notice_kind, is_rolling)
+from app.classify import extract_org  # noqa: E402  仅 --refresh-org 重抽单位名时用
+from app.collect.common import finalize  # noqa: E402  与采集同一条字段构建路径
 from app.collect.runner import _source_cfg  # noqa: E402 与采集时同一套源级注入逻辑
 from app.collect.store import _search_text, reindex_fts  # noqa: E402
-from app.dateparse import guess_deadline  # noqa: E402
 
 
 def main(db_path: str = "data/job.db", kind_only: bool = False,
@@ -50,22 +49,24 @@ def main(db_path: str = "data/job.db", kind_only: bool = False,
         if p and Path(p).exists():
             body = Path(p).read_text("utf-8", errors="replace")
 
-        kind = cfg.get("notice_kind") or infer_notice_kind(r["title"], body)
         # 单位名默认粘性（列表页给的值优先）；--refresh-org 时按新规则重抽
         if refresh_org:
             org = extract_org(r["title"]) or cfg.get("org") or r["org"]
         else:
             org = r["org"] or cfg.get("org") or extract_org(r["title"])
-        jt = (cfg.get("job_type")
-              or infer_job_type(f"{r['title']} {org or ''}"))
-        # 与 generic_html.enrich 同一表达式：标题+单位+正文开头一起看。
-        # 城市保持粘性：用户在详情页手动改过的城市不能被规则覆盖
-        city = (r["city"] or cfg.get("city")
-                or infer_city(f"{r['title']} {org or ''} {body[:300]}"))
-        emp_text = f"{r['title']} {body[:3000]}"
-        emp = infer_employment_type(emp_text)
-        rolling = 1 if is_rolling(emp_text) else 0
-        deadline = r["deadline"] if kind_only else guess_deadline(body)
+
+        # 与采集时完全相同的 finalize，避免两处规则漂移（曾经这里无条件用
+        # guess_deadline 覆盖，重算一次就把深圳律协列表页给出的准确截止日冲掉了）
+        new = finalize({
+            "title": r["title"],
+            "org": org,
+            "city": r["city"],                        # 粘性：用户手改过的不覆盖
+            "employment_type": r["employment_type"],  # 同上
+            "deadline": r["deadline"],                # 正文抽不到时作兜底
+        }, body, cfg)
+        kind, jt, city = new["notice_kind"], new["job_type"], new["city"]
+        emp, rolling = new["employment_type"], new["rolling"]
+        deadline = r["deadline"] if kind_only else new["deadline"]
 
         if kind != r["notice_kind"]:
             n["公告性质"] += 1

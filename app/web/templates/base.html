@@ -16,8 +16,10 @@
   <a class="brand" href="/">法学招聘中台</a>
   <a class="nav-a" href="/" {% if path == '/' %}aria-current="page"{% endif %}>岗位</a>
   <a class="nav-a" href="/board" {% if path == '/board' %}aria-current="page"{% endif %}>投递</a>
+  <a class="nav-a" href="/recommend" {% if path == '/recommend' %}aria-current="page"{% endif %}>推荐</a>
   <a class="nav-a" href="/paste" {% if path == '/paste' %}aria-current="page"{% endif %}>粘贴箱</a>
   <a class="nav-a" href="/health" {% if path == '/health' %}aria-current="page"{% endif %}>源健康</a>
+  <a class="nav-a" href="/profile" {% if path == '/profile' %}aria-current="page"{% endif %}>画像</a>
   <a class="nav-a" href="/settings" {% if path == '/settings' %}aria-current="page"{% endif %}>设置</a>
   <span class="top-right">
     <a class="nav-a" href="/export.xlsx">导出</a>
@@ -43,7 +45,7 @@
 {% if urgent and urgent > 0 %}
 <div class="alert">
   <span><b>{{ urgent }}</b> 个岗位 3 天内截止</span>
-  <a href="/?sort=deadline">查看</a>
+  <a href="/?urgent=3">只看这些</a>
 </div>
 {% endif %}
 <div class="wrap">

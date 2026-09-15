@@ -56,6 +56,20 @@ CREATE TABLE IF NOT EXISTS applications(
   timeline TEXT NOT NULL DEFAULT '[]',
   notes TEXT NOT NULL DEFAULT ''
 );
+CREATE TABLE IF NOT EXISTS profile(
+  id INTEGER PRIMARY KEY CHECK(id=1),   -- 单用户本地工具：只有一份画像
+  name TEXT NOT NULL DEFAULT '',
+  education TEXT NOT NULL DEFAULT '[]',  -- [{school, degree, major, year}]
+  skills TEXT NOT NULL DEFAULT '[]',
+  experiences TEXT NOT NULL DEFAULT '[]',-- [{org, role, period, desc}]
+  cities TEXT NOT NULL DEFAULT '[]',
+  job_types TEXT NOT NULL DEFAULT '[]',
+  keywords TEXT NOT NULL DEFAULT '[]',   -- 由上面字段派生的检索词，用于匹配
+  years INTEGER,                          -- 工作年限（应届为 0）
+  raw_text TEXT NOT NULL DEFAULT '',
+  source_file TEXT NOT NULL DEFAULT '',
+  updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
 CREATE TABLE IF NOT EXISTS collect_logs(
   id INTEGER PRIMARY KEY,
   source_slug TEXT NOT NULL,
@@ -69,10 +83,20 @@ CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY, value TEXT NOT NULL);
 
 
 def connect(path) -> sqlite3.Connection:
+    """打开数据库。
+
+    WAL 是必须的：Web 请求（FastAPI 线程池）与定时采集（APScheduler 线程）共用
+    这一个连接，默认的 rollback journal 下写锁会锁死整库——采集一轮要几分钟，
+    期间任何一次「标已读」都会在 5 秒 busy_timeout 后抛 database is locked。
+    WAL 让读不阻塞写、写不阻塞读。busy_timeout 再放宽到 10 秒兜底。
+    """
     Path(path).parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(path), check_same_thread=False)
+    conn = sqlite3.connect(str(path), check_same_thread=False, timeout=10.0)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys=ON")
+    conn.execute("PRAGMA journal_mode=WAL")       # 读写不互相阻塞
+    conn.execute("PRAGMA busy_timeout=10000")     # 真争用时最多等 10 秒
+    conn.execute("PRAGMA synchronous=NORMAL")     # WAL 下 NORMAL 足够且快很多
     return conn
 
 
