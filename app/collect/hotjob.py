@@ -16,7 +16,7 @@ from urllib.parse import urljoin
 from ..classify import (infer_city, infer_employment_type, infer_job_type,
                         is_rolling)
 from ..dateparse import parse_date_text
-from .generic_html import matches_keywords
+from .common import apply_keep_keywords, matches_keywords, s as _s
 from .http import fetch
 
 log = logging.getLogger("collect.hotjob")
@@ -103,10 +103,7 @@ class Adapter:
                 out.extend(items)
                 if page >= int(d.get("pageCount") or 1):
                     break
-        kw2 = self.cfg.get("keep_keywords")
-        if kw2:
-            out = [x for x in out if matches_keywords(
-                f"{x['title']} {x.get('org') or ''} {x.get('body') or ''}", kw2)]
+        out = apply_keep_keywords(out, self.cfg.get("keep_keywords"))
         # 同 ggfw：接口全挂必须抛出去，否则源健康页会一直显示绿灯
         if not out and errors and len(errors) >= len(kws):
             raise RuntimeError(f"接口全部失败（{len(errors)}/{len(kws)} 个关键词）："

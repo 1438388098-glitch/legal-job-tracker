@@ -21,6 +21,8 @@ def _deadline_class_filter():
         except ValueError:
             return ""
         today = date.today()
+        if d < today:
+            return ""   # 已过期：不再红色告警（横幅口径只含今天起的 3 天）
         if d <= today + timedelta(days=3):
             return "red"
         if d <= today + timedelta(days=7):
@@ -42,6 +44,8 @@ def _urgency_filter():
         except ValueError:
             return ""
         today = date.today()
+        if d < today:
+            return ""   # 已过期
         if d <= today + timedelta(days=3):
             return "u3"
         if d <= today + timedelta(days=7):
@@ -146,6 +150,8 @@ def create_app(db_path: str | None = None) -> FastAPI:
         yield
         if scheduler.running:
             scheduler.shutdown(wait=False)
+        from ..collect.http import close_clients
+        close_clients()
 
     app = FastAPI(lifespan=lifespan)
     app.state.conn = conn

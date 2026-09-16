@@ -79,11 +79,16 @@ def make_qs(q: dict):
 
 def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
     templates = Jinja2Templates(directory=tpl_dir)
+    # auto_reload 关掉：这是常驻服务，模板不会中途变，省掉每次渲染的 stat。
+    # 改模板要重启服务（本来改 .py 也要重启，心智负担一致）。
+    templates.env.auto_reload = False
     router = APIRouter()
     # 静态资源版本号取 CSS 与 JS 的 mtime：改完刷新页面即生效，不会被浏览器缓存卡住
     static_dir = Path(tpl_dir).parent / "static"
 
     def asset_version() -> str:
+        # 注意：这里刻意**不缓存**。mtime 每次都取，改 CSS/JS 刷新页面即生效——
+        # 这是已交付的开发体验；两次 stat 的开销（微秒级）远不值得破坏它。
         stamps = []
         for name in ("style.css", "app.js"):
             try:
@@ -256,7 +261,8 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
         sources = conn.execute("SELECT * FROM job_sources WHERE job_id=?", (job_id,)).fetchall()
         snapshot_text = None
         if job["snapshot_path"] and Path(job["snapshot_path"]).exists():
-            snapshot_text = Path(job["snapshot_path"]).read_text("utf-8", errors="replace")
+            with open(job["snapshot_path"], "rb") as fh:
+                snapshot_text = fh.read(60000).decode("utf-8", errors="replace")
         # 返回列表时保住筛选：从 Referer 取站内来源页
         back = _safe_local(request.headers.get("referer"), request)
         return render("detail.html", request, job=job, app_row=app_row,
@@ -329,6 +335,18 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
                          (status, json.dumps(tl, ensure_ascii=False), app_id))
             conn.commit()
         return RedirectResponse("/board", status_code=303)
+
+    @router.post("/applications/{app_id}/remove")
+    def app_remove(app_id: int, request: Request):
+        """取消跟踪：误点「跟踪」要能撤销。原来只能加不能删，用户只能干看着。"""
+        conn = request.app.state.conn
+        row = conn.execute("SELECT job_id FROM applications WHERE id=?",
+                           (app_id,)).fetchone()
+        if row:
+            conn.execute("DELETE FROM applications WHERE id=?", (app_id,))
+            conn.commit()
+        back = request.headers.get("referer") or "/board"
+        return RedirectResponse(back, status_code=303)
 
     @router.get("/board", response_class=HTMLResponse)
     def board(request: Request):

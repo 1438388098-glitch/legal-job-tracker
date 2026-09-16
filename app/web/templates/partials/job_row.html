@@ -23,7 +23,10 @@
     {% if bulk_mode %}
     {# 批量模式：acts 位留给勾选提示，避免误触行内操作 #}
     {% elif job['aid'] %}
-    <span class="tag-ok" title="已在投递看板中跟踪">跟踪中</span>
+    <form class="inline" method="post" action="/applications/{{ job['aid'] }}/remove"
+          title="取消跟踪（岗位回到未跟踪状态）">
+      <button class="mini plain">取消跟踪</button>
+    </form>
     {% else %}
     <form class="inline" method="post" action="/jobs/{{ job['id'] }}/apply">
       <button class="mini" title="加入投递跟踪（不用进详情页）">跟踪</button>

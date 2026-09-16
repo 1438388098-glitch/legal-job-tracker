@@ -160,7 +160,7 @@ def test_list_row_shows_apply_state(client):
     assert "跟踪" in r.text        # 未跟踪 → 显示"跟踪"按钮
     client.post("/jobs/1/apply")
     r = client.get("/")
-    assert "跟踪中" in r.text      # 已跟踪 → 显示状态而不是按钮
+    assert "取消跟踪" in r.text    # 已跟踪 → 可撤销（原来只能加不能删）
 
 
 def test_batch_operations(client):
@@ -220,3 +220,33 @@ def test_export_xlsx(client):
     assert r.status_code == 200
     assert r.headers["content-type"].startswith(
         "application/vnd.openxmlformats-officedocument.spreadsheetml")
+
+
+def test_unapply(client):
+    """误点「跟踪」要能撤销：取消后岗位回到未跟踪状态，可重新加入。"""
+    client.post("/jobs/1/apply")
+    aid = client.app.state.conn.execute(
+        "SELECT id FROM applications WHERE job_id=1").fetchone()["id"]
+    r = client.post(f"/applications/{aid}/remove", follow_redirects=False)
+    assert r.status_code == 303
+    assert client.app.state.conn.execute(
+        "SELECT COUNT(*) c FROM applications").fetchone()["c"] == 0
+    # 撤销后可以重新跟踪
+    client.post("/jobs/1/apply")
+    assert client.app.state.conn.execute(
+        "SELECT COUNT(*) c FROM applications").fetchone()["c"] == 1
+
+
+def test_unapply(client):
+    """误点「跟踪」要能撤销：取消后岗位回到未跟踪状态，可重新加入。"""
+    client.post("/jobs/1/apply")
+    aid = client.app.state.conn.execute(
+        "SELECT id FROM applications WHERE job_id=1").fetchone()["id"]
+    r = client.post(f"/applications/{aid}/remove", follow_redirects=False)
+    assert r.status_code == 303
+    assert client.app.state.conn.execute(
+        "SELECT COUNT(*) c FROM applications").fetchone()["c"] == 0
+    # 撤销后可以重新跟踪
+    client.post("/jobs/1/apply")
+    assert client.app.state.conn.execute(
+        "SELECT COUNT(*) c FROM applications").fetchone()["c"] == 1

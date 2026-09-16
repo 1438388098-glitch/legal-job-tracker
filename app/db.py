@@ -45,6 +45,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_jobs_urlfp ON jobs(url_fingerprint);
 CREATE INDEX IF NOT EXISTS idx_jobs_deadline ON jobs(deadline);
 CREATE INDEX IF NOT EXISTS idx_jobs_kind ON jobs(notice_kind);
 CREATE INDEX IF NOT EXISTS idx_jobs_created ON jobs(created_at);
+CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
+CREATE INDEX IF NOT EXISTS idx_jobs_tfp ON jobs(title_fingerprint);  -- 跨源合并预筛
 CREATE TABLE IF NOT EXISTS job_sources(
   job_id INTEGER NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
   source_slug TEXT NOT NULL,

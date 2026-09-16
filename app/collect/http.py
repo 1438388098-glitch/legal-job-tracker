@@ -48,6 +48,16 @@ def _retryable(e: Exception) -> bool:
     return True
 
 
+def close_clients() -> None:
+    """进程退出时关闭连接池。httpx.Client 持有 socket，不关是资源泄漏（审计 16）。"""
+    for c in _clients.values():
+        try:
+            c.close()
+        except Exception:  # noqa: BLE001 退出路径的清理，失败就失败
+            pass
+    _clients.clear()
+
+
 def fetch(url: str, *, encoding: str | None = None, verify: bool = True,
           params: dict | None = None, tries: int = 3,
           timeout: float = DEFAULT_TIMEOUT,

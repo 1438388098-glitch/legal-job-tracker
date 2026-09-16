@@ -18,7 +18,7 @@ from urllib.parse import urljoin
 from ..classify import (LAW_KEYWORDS, infer_city, infer_employment_type,
                         infer_job_type, is_rolling)
 from ..dateparse import parse_date_text
-from .generic_html import matches_keywords
+from .common import apply_keep_keywords, matches_keywords, s as _s
 
 log = logging.getLogger("collect.ggfw")
 from .http import post_json
@@ -104,10 +104,7 @@ class Adapter:
                 data = d.get("data") or {}
                 if page >= int(data.get("pages") or 1):
                     break
-        kw = self.cfg.get("keep_keywords")
-        if kw:
-            out = [x for x in out if matches_keywords(
-                f"{x['title']} {x.get('org') or ''} {x.get('body') or ''}", kw)]
+        out = apply_keep_keywords(out, self.cfg.get("keep_keywords"))
         # 一个关键词都没拿到且次次报错 = 接口挂了。必须抛出去让 runner 记进源健康，
         # 否则返回空列表会被当成"这次没新岗位"，源健康页一直显示绿灯。
         if not out and errors and len(errors) >= len(self.keywords):

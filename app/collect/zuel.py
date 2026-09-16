@@ -4,6 +4,7 @@ from urllib.parse import urljoin
 from ..classify import (LAW_ROLE_KW, NOTICE_OPENING, infer_city, infer_employment_type,
                         infer_job_type, is_rolling)
 from ..dateparse import parse_date_text
+from .common import apply_keep_keywords, finalize, matches_keywords, s as _s
 from .http import fetch
 
 # 岗位名里出现这些词，才算"法学岗"。
@@ -112,4 +113,4 @@ class Adapter:
             if not (payload.get("data") or []):
                 break
             out.extend(parse_payload(payload, self.base))
-        return out
+        return apply_keep_keywords(out, self.cfg.get("keep_keywords"))
