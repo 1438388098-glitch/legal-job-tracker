@@ -92,7 +92,7 @@
   {% for k in ['urgent', 'fresh', 'nodeadline', 'bulk'] %}
   {% if q.get(k) %}<input type="hidden" name="{{ k }}" value="{{ q[k] }}">{% endif %}
   {% endfor %}
-  <button class="primary" type="submit">筛选</button>
+  {# 下拉框由 app.js 即选即筛（onchange 提交），不再放"筛选"按钮——少一步操作也少一个视觉元素；搜索框回车提交 #}
   {% if q.get('q') or q.get('job_type') or q.get('city') or q.get('status') or q.get('notice_kind') or q.get('sort') or q.get('fresh') or q.get('nodeadline') or q.get('employment_type') or q.get('rolling') or q.get('urgent') %}
   <a class="reset" href="/">清除</a>
   {% endif %}

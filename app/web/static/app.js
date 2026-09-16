@@ -112,3 +112,12 @@
     }, 0);
   }, true);
 })();
+
+/* ── 筛选栏即选即筛：下拉框一变就提交，不用再点"筛选" ── */
+(function () {
+  document.querySelectorAll(".filters select").forEach(function (s) {
+    s.addEventListener("change", function () {
+      if (s.form) s.form.submit();
+    });
+  });
+})();

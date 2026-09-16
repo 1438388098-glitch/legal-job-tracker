@@ -206,7 +206,7 @@ html.theme-anim, html.theme-anim * {
 }
 .nav-a:hover { background: var(--bg-hover); color: var(--fg); text-decoration: none; }
 .nav-a[aria-current="page"] {
-  color: var(--accent); background: var(--accent-soft); font-weight: 500;
+  color: var(--fg); background: var(--bg-inset); font-weight: 500;
 }
 .top-right { margin-left: auto; display: flex; align-items: center; gap: 4px; }
 
@@ -268,7 +268,9 @@ html[data-theme-intent="auto"] .theme-btn svg.i-auto { display: block; }
    一旦渲染慢一点就会出现"整页发灰/看不见"的观感，得不偿失。 */
 @keyframes rise { from { opacity: 0; transform: translateY(3px); } }
 
-/* ---------- 概览数字条：一屏内快速判断"今天要看什么" ---------- */
+/* 概览数字条：一屏内快速判断"今天要看什么"。
+   规范：数字一律中性色，只有需要行动的语义例外（3 天内=红、7 天内=黄）。
+   选中态标在文字标签上，不染数字——数字整排都是彩色是"杂乱感"的主因。 */
 .stats {
   display: flex; flex-wrap: wrap; align-items: center;
   gap: 0 4px;
@@ -281,22 +283,25 @@ html[data-theme-intent="auto"] .theme-btn svg.i-auto { display: block; }
 .stat { display: flex; align-items: baseline; gap: 6px; padding: 0 14px; }
 .stat:first-child { padding-left: 0; }
 .stat + .stat { border-left: 1px solid var(--line); }
-.stat-n { font-size: var(--fs-xl); font-weight: 600; line-height: 1.2; letter-spacing: -.02em; }
+.stat-n { font-size: var(--fs-lg); font-weight: 600; line-height: 1.2; letter-spacing: -.02em; }
 .stat-l { font-size: var(--fs-xs); color: var(--fg-3); }
 .stat.hot .stat-n { color: var(--danger); }
 .stat.warm .stat-n { color: var(--warn); }
 
-/* ---------- 筛选栏 ---------- */
+/* ---------- 筛选栏：面板化，与概览条/列表形成三层清晰分区 ---------- */
 .filters {
   display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-  padding: 0 0 10px;
-  border-bottom: 1px solid var(--line);
+  padding: 8px;
+  margin: 0 0 10px;
+  background: var(--bg-sub);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r);
 }
 .filters select, .filters input[type="text"] {
   width: auto;
-  height: 28px; padding: 0 8px;
+  height: 28px; padding: 0 10px;
   font-family: inherit; font-size: var(--fs);
-  color: var(--fg); background: var(--bg-sub);
+  color: var(--fg); background: var(--bg);
   border: 1px solid var(--line); border-radius: var(--r-sm);
 }
 .filters select:hover, .filters input[type="text"]:hover { border-color: var(--fg-3); }
@@ -304,7 +309,7 @@ html[data-theme-intent="auto"] .theme-btn svg.i-auto { display: block; }
   outline: none; border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
-.filters input[type="text"] { flex: 1 1 200px; min-width: 150px; background: var(--bg); }
+.filters input[type="text"] { flex: 1 1 200px; min-width: 150px; }
 .filters .sep { width: 1px; height: 16px; background: var(--line); }
 .filters .reset { font-size: var(--fs-sm); color: var(--fg-3); padding: 0 6px; }
 
@@ -609,8 +614,17 @@ td.num { text-align: right; }
 form.stack { display: flex; flex-direction: column; gap: 12px; max-width: 620px; }
 label { font-size: var(--fs); color: var(--fg-2); }
 label > span { display: block; margin-bottom: 4px; font-size: var(--fs-sm); color: var(--fg-3); }
-input[type="text"], input:not([type]), input[type="url"], select, textarea {
-  width: 100%; padding: 5px 8px;
+/* 控件规范：非 textarea 的输入类控件全站统一 28px 高、0 10px 内边距。
+   高度只允许两种：28（标准）/ 24（紧凑行内，见 button.icon、board 的 ops）。 */
+input[type="text"], input:not([type]), input[type="url"], select {
+  width: 100%; height: 28px; padding: 0 10px;
+  font-family: inherit; font-size: var(--fs);
+  color: var(--fg); background: var(--bg);
+  border: 1px solid var(--line); border-radius: var(--r-sm);
+  transition: border-color var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
+}
+textarea {
+  width: 100%; padding: 6px 10px;
   font-family: inherit; font-size: var(--fs);
   color: var(--fg); background: var(--bg);
   border: 1px solid var(--line); border-radius: var(--r-sm);
@@ -643,6 +657,23 @@ form.inline { display: inline; margin: 0; }
   margin: 0 0 8px; font-size: var(--fs); font-weight: 600; color: var(--fg);
   padding-bottom: 5px; border-bottom: 1px solid var(--line);
 }
+
+/* 画像页：左（上传+解析结果）右（编辑表单）两栏，窄屏叠回单列 */
+.profile-grid {
+  display: grid; grid-template-columns: minmax(240px, 320px) 1fr;
+  gap: 0 28px; align-items: start;
+}
+.profile-main .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; }
+.field { min-width: 0; }
+.field .hint { margin-top: 4px; }
+.field-grid .span2 { grid-column: 1 / -1; }
+.form-actions { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+@media (max-width: 880px) {
+  .profile-grid { grid-template-columns: 1fr; }
+  .profile-main { margin-top: 22px; }
+  .field-grid { grid-template-columns: 1fr; }
+  .field-grid .span2 { grid-column: auto; }
+}
 .check { display: flex; align-items: center; }
 .check > span { margin: 0; color: var(--fg-2); font-size: var(--fs); }
 .board-empty { grid-column: 1 / -1; border: 1px solid var(--line-soft); border-radius: var(--r); }
@@ -666,9 +697,11 @@ form.inline { display: inline; margin: 0; }
 .row .cb { display: flex; align-items: center; position: relative; z-index: 2; }
 .row .cb input { accent-color: var(--accent); }
 
-/* 行内小按钮 / 状态标记：列表行上直接加跟踪，不用进详情页 */
-button.mini { height: 22px; padding: 0 8px; font-size: var(--fs-sm); color: var(--accent); }
-button.mini:hover { background: var(--accent-soft); border-color: var(--accent); }
+/* 行内小按钮 / 状态标记：列表行上直接加跟踪，不用进详情页。
+   默认中性灰——300 行每行一个蓝字是最大的视觉噪音，hover 才点亮 */
+button.mini { height: 22px; padding: 0 8px; font-size: var(--fs-sm);
+  color: var(--fg-3); border-color: transparent; background: transparent; }
+button.mini:hover { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
 .tag-ok { font-size: var(--fs-xs); color: var(--ok); white-space: nowrap; }
 a.icon { display: inline-flex; align-items: center; justify-content: center;
   width: 24px; height: 24px; border-radius: var(--r-sm);
@@ -678,8 +711,8 @@ a.icon:hover { background: var(--bg-hover); color: var(--accent); text-decoratio
 /* "长期有效"岗位没有截止日，但不是"无信息"，给个肯定的说法 */
 .deadline.roll { color: var(--ok); font-weight: 500; }
 
-/* 概览条上的可点项被选中时 */
-a.stat.on .stat-n { color: var(--accent); }
+/* 概览条上的可点项被选中时：标签强调，数字保持中性（见上方规范） */
+a.stat.on .stat-l { color: var(--accent); font-weight: 500; }
 a.stat { color: inherit; border-radius: var(--r-sm); }
 a.stat:hover { text-decoration: none; background: var(--bg-hover); }
 a.stat:hover .stat-l { color: var(--fg-2); }

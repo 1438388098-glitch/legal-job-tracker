@@ -3,6 +3,7 @@
 {% block content %}
 <div class="page-head">
   <h1>个人画像</h1>
+  {% if prof %}<span class="meta">来源：{{ prof['source_file'] or '手动填写' }}</span>{% endif %}
   <span class="spacer"></span>
   {% if prof %}<a class="meta" href="/recommend">看推荐岗位 →</a>{% endif %}
 </div>
@@ -23,80 +24,94 @@
 </div>
 {% endif %}
 
-<div class="section first">
-  <h2>上传简历自动生成</h2>
-  <form method="post" action="/profile/upload" enctype="multipart/form-data" class="row-form">
-    <input type="file" name="file" accept=".pdf,.docx,.txt,.md">
-    <button class="primary" type="submit">解析并生成画像</button>
-  </form>
-  <p class="hint">
-    支持 PDF / Word / 纯文本。解析是规则抽取（学校、学历、技能、实习单位类型、
-    出现的城市），<b>不保证完整</b>——请在下方核对修改，画像越准推荐越有用。
-    {% if prof and prof['source_file'] %}当前来源：{{ prof['source_file'] }}{% endif %}
-  </p>
-</div>
+<div class="profile-grid">
+  <div class="profile-side">
+    <div class="section first">
+      <h2>上传简历</h2>
+      <form method="post" action="/profile/upload" enctype="multipart/form-data" class="row-form">
+        <input type="file" name="file" accept=".pdf,.docx,.txt,.md">
+        <button class="primary" type="submit">解析生成</button>
+      </form>
+      <p class="hint">
+        支持 PDF / Word / 纯文本。解析是规则抽取、不保证完整——生成后请在右侧核对修改，
+        画像越准推荐越有用。
+      </p>
+    </div>
 
-<div class="section">
-  <h2>编辑画像</h2>
-  <form method="post" action="/profile" class="form-page">
-    <div class="field">
-      <label>姓名</label>
-      <input type="text" name="name" value="{{ prof['name'] if prof else '' }}" placeholder="选填">
+    {% if prof and (prof['skills'] or prof['experiences'] or prof['cities']) %}
+    <div class="section">
+      <h2>系统解析结果</h2>
+      <dl class="kv">
+        <dt>技能</dt><dd>{{ (prof['skills'] or [])|join('、') or '—' }}</dd>
+        <dt>经历</dt><dd>{{ (prof['experiences'] or [])|map(attribute='kind')|join('、') or '—' }}</dd>
+        <dt>意向城市</dt><dd>{{ (prof['cities'] or [])|join('、') or '—' }}</dd>
+        <dt>意向类型</dt><dd>{{ (prof['job_types'] or [])|join('、') or '—' }}</dd>
+      </dl>
+      <details class="snap-raw">
+        <summary>实际参与打分的词（{{ (prof['keywords'] or [])|length }} 个）</summary>
+        <p class="hint">{{ (prof['keywords'] or [])|join('、') or '—' }}。
+          觉得推荐不准时，多半是这里需要调整。</p>
+      </details>
     </div>
-    <div class="field">
-      <label>技能 / 关键词</label>
-      <textarea name="skills" rows="3" placeholder="合同审查、法律检索、诉讼、通过法律职业资格考试…">{{ (prof['skills'] or [])|join('、') if prof else '' }}</textarea>
-      <span class="hint">逗号、顿号或换行分隔。命中岗位正文会加分。</span>
-    </div>
-    <div class="field">
-      <label>意向城市</label>
-      <input type="text" name="cities" value="{{ (prof['cities'] or [])|join('、') if prof else '' }}" placeholder="广州、深圳、佛山">
-    </div>
-    <div class="field">
-      <label>意向岗位类型</label>
-      <div class="checks">
-        {% set chosen = (prof['job_types'] or []) if prof else [] %}
-        {% for val, label in job_types %}
-        <label class="check">
-          <input type="checkbox" name="job_type_{{ val }}"
-                 {% if val in chosen %}checked{% endif %}> <span>{{ label }}</span>
-        </label>
-        {% endfor %}
-      </div>
-      <span class="hint">与岗位类型一致时加 22 分，是最重的一项。</span>
-    </div>
-    <div class="field">
-      <label>经历类型</label>
-      <input type="text" name="experiences" value="{{ (prof['experiences'] or [])|map(attribute='kind')|join('、') if prof else '' }}"
-             placeholder="律所、法院、法务">
-      <span class="hint">与岗位类型一致时额外加分（如"律所经历"配"律所岗"）。</span>
-    </div>
-    <div class="field">
-      <label>学历</label>
-      <input type="text" name="education" value="{{ (prof['education'] or [])|map(attribute='degree')|join('、') if prof else '' }}" placeholder="本科">
-    </div>
-    <div class="field">
-      <label>工作年限</label>
-      <input type="text" name="years" value="{{ prof['years'] if prof and prof['years'] is not none else '' }}" placeholder="应届填 0">
-    </div>
-    <div class="form-actions">
-      <button class="primary" type="submit">保存画像</button>
-      {% if prof %}<a class="btn" href="/recommend">看推荐岗位</a>{% endif %}
-    </div>
-  </form>
-</div>
+    {% endif %}
+  </div>
 
-{% if prof and (prof['skills'] or prof['experiences'] or prof['cities']) %}
-<div class="section">
-  <h2>系统理解到的画像</h2>
-  <dl class="kv">
-    <dt>技能</dt><dd>{{ (prof['skills'] or [])|join('、') or '—' }}</dd>
-    <dt>经历</dt><dd>{{ (prof['experiences'] or [])|map(attribute='kind')|join('、') or '—' }}</dd>
-    <dt>意向城市</dt><dd>{{ (prof['cities'] or [])|join('、') or '—' }}</dd>
-    <dt>意向类型</dt><dd>{{ (prof['job_types'] or [])|join('、') or '—' }}</dd>
-    <dt>匹配用词</dt><dd class="dim">{{ (prof['keywords'] or [])|join('、') or '—' }}</dd>
-  </dl>
-  <p class="hint">最后一项是实际参与打分的词。觉得推荐不准时，多半是这里需要调整。</p>
+  <div class="profile-main">
+    <div class="section first">
+      <h2>编辑画像</h2>
+      <form method="post" action="/profile" class="field-grid">
+        <div class="field">
+          <label><span>姓名</span>
+            <input type="text" name="name" value="{{ prof['name'] if prof else '' }}" placeholder="选填">
+          </label>
+        </div>
+        <div class="field">
+          <label><span>工作年限</span>
+            <input type="text" name="years" value="{{ prof['years'] if prof and prof['years'] is not none else '' }}" placeholder="应届填 0">
+          </label>
+        </div>
+        <div class="field span2">
+          <label><span>意向城市</span>
+            <input type="text" name="cities" value="{{ (prof['cities'] or [])|join('、') if prof else '' }}" placeholder="广州、深圳、佛山">
+          </label>
+        </div>
+        <div class="field span2">
+          <label><span>意向岗位类型</span></label>
+          <div class="checks">
+            {% set chosen = (prof['job_types'] or []) if prof else [] %}
+            {% for val, label in job_types %}
+            <label class="check">
+              <input type="checkbox" name="job_type_{{ val }}"
+                     {% if val in chosen %}checked{% endif %}> <span>{{ label }}</span>
+            </label>
+            {% endfor %}
+          </div>
+          <span class="hint">与岗位类型一致时加 22 分，是最重的一项。</span>
+        </div>
+        <div class="field span2">
+          <label><span>技能 / 关键词</span>
+            <textarea name="skills" rows="3" placeholder="合同审查、法律检索、诉讼、通过法律职业资格考试…">{{ (prof['skills'] or [])|join('、') if prof else '' }}</textarea>
+          </label>
+          <span class="hint">逗号、顿号或换行分隔。命中岗位正文会加分。</span>
+        </div>
+        <div class="field">
+          <label><span>经历类型</span>
+            <input type="text" name="experiences" value="{{ (prof['experiences'] or [])|map(attribute='kind')|join('、') if prof else '' }}"
+                   placeholder="律所、法院、法务">
+          </label>
+          <span class="hint">与岗位类型一致时额外加分（如"律所经历"配"律所岗"）。</span>
+        </div>
+        <div class="field">
+          <label><span>学历</span>
+            <input type="text" name="education" value="{{ (prof['education'] or [])|map(attribute='degree')|join('、') if prof else '' }}" placeholder="本科">
+          </label>
+        </div>
+        <div class="form-actions span2">
+          <button class="primary" type="submit">保存画像</button>
+          {% if prof %}<a class="btn" href="/recommend">看推荐岗位</a>{% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
-{% endif %}
 {% endblock %}
