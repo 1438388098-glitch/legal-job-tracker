@@ -506,12 +506,45 @@ dl.kv { display: grid; grid-template-columns: 76px 1fr; gap: 5px 14px; margin: 0
 dl.kv dt { color: var(--fg-3); font-size: var(--fs-sm); padding-top: 1px; }
 dl.kv dd { margin: 0; word-break: break-all; }
 
+/* 快照结构化视图：关键信息卡 + 分级小节标题 + 原文折叠 */
+.snap-key {
+  border: 1px solid var(--line-soft); border-left: 2px solid var(--accent);
+  border-radius: var(--r);
+  background: var(--bg-sub);
+  padding: 10px 14px; margin: 0 0 14px;
+  font-size: var(--fs-sm); line-height: 1.7; color: var(--fg-2);
+}
+.snap-key-h { font-size: var(--fs-xs); font-weight: 600; color: var(--fg-3);
+  letter-spacing: .04em; margin-bottom: 4px; }
+.snap-key-line { padding: 1px 0; }
+.snap-doc {
+  max-height: 70vh; overflow: auto;
+  padding: 14px 18px;
+  background: var(--bg-sub);
+  border: 1px solid var(--line-soft); border-radius: var(--r);
+  font-size: var(--fs); line-height: 1.85; color: var(--fg-2);
+}
+.snap-doc .snap-h1 {
+  font-size: var(--fs-md); font-weight: 600; color: var(--fg-1);
+  margin: 18px 0 6px; padding-bottom: 4px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.snap-doc .snap-h1:first-child { margin-top: 0; }
+.snap-doc .snap-h2 {
+  font-size: var(--fs); font-weight: 600; color: var(--fg-1);
+  margin: 12px 0 4px;
+}
+.snap-doc p { margin: 0 0 8px; }
+.snap-raw { margin-top: 10px; font-size: var(--fs-sm); }
+.snap-raw summary { cursor: pointer; color: var(--fg-3); user-select: none; }
+.snap-raw[open] summary { margin-bottom: 8px; }
+
 pre.snap {
   margin: 0;
   white-space: pre-wrap; word-break: break-word;
   font-family: inherit; font-size: var(--fs);
   line-height: 1.8; color: var(--fg-2);
-  max-height: 70vh; overflow: auto;
+  max-height: 60vh; overflow: auto;
   padding: 14px 16px;
   background: var(--bg-sub);
   border: 1px solid var(--line-soft); border-radius: var(--r);

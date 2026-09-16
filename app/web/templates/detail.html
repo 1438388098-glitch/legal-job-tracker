@@ -65,10 +65,20 @@
   {% endif %}
 </dl>
 
-{% if snapshot_text %}
+{% if snap %}
 <div class="section">
   <h2>正文快照（本地存档）</h2>
-  <pre class="snap">{{ snapshot_text[:20000] }}</pre>
+  {% if snap.key %}
+  <div class="snap-key">
+    <div class="snap-key-h">关键信息</div>
+    {% for k in snap.key %}<div class="snap-key-line">{{ k }}</div>{% endfor %}
+  </div>
+  {% endif %}
+  <div class="snap-doc">{{ snap.html|safe }}</div>
+  <details class="snap-raw">
+    <summary>原始文本</summary>
+    <pre class="snap">{{ snapshot_text }}</pre>
+  </details>
 </div>
 {% else %}
 <p class="muted">没有正文快照（该源未抓详情，或抓取时失败）。原文链接见上。</p>

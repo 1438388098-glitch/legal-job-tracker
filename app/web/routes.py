@@ -9,6 +9,7 @@ from fastapi import APIRouter, FastAPI, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 
+from . import snapshot_view
 from .. import db
 from .. import resume
 from ..classify import CITIES, SOURCE_CATEGORIES
@@ -261,8 +262,10 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
         sources = conn.execute("SELECT * FROM job_sources WHERE job_id=?", (job_id,)).fetchall()
         snapshot_text = None
         if job["snapshot_path"] and Path(job["snapshot_path"]).exists():
+            # 整读再按字符截：按字节读 60KB 会把多字节汉字拦腰斩断出乱码
             with open(job["snapshot_path"], "rb") as fh:
-                snapshot_text = fh.read(60000).decode("utf-8", errors="replace")
+                snapshot_text = fh.read().decode("utf-8", errors="replace")[:20000]
+        snap = snapshot_view.render_snapshot(snapshot_text) if snapshot_text else None
         # 返回列表时保住筛选：从 Referer 取站内来源页
         back = _safe_local(request.headers.get("referer"), request)
         # 有画像就算一下匹配度：用户从列表点进来时最想知道"这个跟我配不配"
@@ -271,7 +274,7 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
         if prof:
             match = resume.match_job(prof, dict(job))
         return render("detail.html", request, job=job, app_row=app_row,
-                      sources=sources, snapshot_text=snapshot_text,
+                      sources=sources, snapshot_text=snapshot_text, snap=snap,
                       back_url=back or "/", match=match)
 
     @router.post("/jobs/{job_id}/status")

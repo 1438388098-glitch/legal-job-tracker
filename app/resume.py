@@ -17,7 +17,8 @@ DEGREES = [("博士", 4), ("硕士", 3), ("研究生", 3), ("本科", 2), ("学�
 _SCHOOL = re.compile(r"([\u4e00-\u9fa5]{2,12}(?:大学|学院|学校|政法大学|财经大学))")
 _MAJOR = re.compile(r"(?:专业|主修)[:：\s]*([\u4e00-\u9fa5]{2,12})")
 _MAJOR_BARE = re.compile(r"(法学|法律|知识产权|社会学|行政管理|金融学|会计学|汉语言文学"
-                         r"|侦查学|治安学|国际经济与贸易)")
+                         r"|侦查学|治安学|监狱学|国际法|经济法|民商法|刑法|诉讼法"
+                         r"|国际经济与贸易|新闻学|英语)")
 
 # ── 经历 ──────────────────────────────────────────────────────────────────
 # 法学求职者的经历类型直接决定匹配哪类岗位，权重给得比技能高
@@ -84,6 +85,36 @@ _SEC = re.compile(
 _EDU_SEC = ("教育背景", "教育经历", "学习经历", "学历")
 _EXP_SEC = ("实习经历", "实习", "工作经历", "工作经验", "项目经历", "社会实践",
             "校园经历", "学生工作")
+_INTENT_SEC = ("求职意向", "期望")
+
+
+def _parse_edu_lines(edu_text: str) -> list[dict]:
+    """按行解析教育段：学校/学历/专业通常在同一行。
+
+    之前只在整段里各抓一个值，多段学历（本科+硕士）时学校可能配错行——
+    硕士写在第二行，却抓到了第一行的本科学校。
+    """
+    out = []
+    for line in edu_text.splitlines():
+        deg = next((d for d, lv in DEGREES if d in line), None)
+        m_school = _SCHOOL.search(line)
+        m_major = _MAJOR.search(line) or _MAJOR_BARE.search(line)
+        if not (deg or m_school):
+            continue
+        level = dict(DEGREES).get(deg, 0) if deg else 0
+        y = re.search(r"(20\d{2})", line)
+        out.append({"degree": deg or "", "level": level,
+                    "school": m_school.group(1) if m_school else None,
+                    "major": m_major.group(1) if m_major else None,
+                    "year": y.group(1) if y else None})
+    # 同一条目去重（完全相同的行），并按学历从高到低排——画像取最高学历
+    uniq, seen = [], set()
+    for e in sorted(out, key=lambda x: -x["level"]):
+        key = (e["degree"], e["school"], e["major"])
+        if key not in seen:
+            seen.add(key)
+            uniq.append(e)
+    return uniq
 
 
 def _sections(t: str) -> dict[str, str]:
@@ -109,37 +140,22 @@ def parse_resume(text: str) -> dict:
     out: dict = {"education": [], "skills": [], "experiences": [],
                  "cities": [], "job_types": [], "years": None, "name": ""}
 
-    # 姓名：取开头第一行里 2-4 个汉字且不是学校/标题的短串
-    for line in t.splitlines()[:8]:
-        line = line.strip()
-        if 2 <= len(line) <= 4 and re.fullmatch(r"[\u4e00-\u9fa5]{2,4}", line):
-            if not any(w in line for w in ("简历", "个人", "求职", "应聘", "姓名")):
-                out["name"] = line
-                break
-
-    # 学历：只在教育段里找（全文兜底会误读求职意向里的"本科以上"等表述）
-    for deg, level in DEGREES:
-        if deg in edu_text:
-            edu = {"degree": deg, "level": level, "school": None, "major": None,
-                   "year": None}
-            m = _MAJOR.search(edu_text)
-            if m:
-                edu["major"] = m.group(1)
-            else:
-                mb = _MAJOR_BARE.search(edu_text)
-                if mb:
-                    edu["major"] = mb.group(1)
-            for m in _SCHOOL.finditer(edu_text):
-                edu["school"] = m.group(1)
-                if level >= 3:      # 本科以上，靠后出现的通常是最高学历
+    # 姓名：优先"姓名：X"，其次开头短行（2-4 个汉字且不是学校/标题）
+    m_name = re.search(r"姓\s*名[:：]\s*([\u4e00-\u9fa5]{2,4})", t)
+    if m_name:
+        out["name"] = m_name.group(1)
+    else:
+        for line in t.splitlines()[:8]:
+            line = line.strip()
+            if 2 <= len(line) <= 4 and re.fullmatch(r"[\u4e00-\u9fa5]{2,4}", line):
+                if not any(w in line for w in ("简历", "个人", "求职", "应聘", "姓名")):
+                    out["name"] = line
                     break
-            y = re.search(rf"(20\d{{2}})\s*[.\-/年]?\s*(?:{deg}|毕业|入学)", edu_text)
-            if y:
-                edu["year"] = y.group(1)
-            out["education"].append(edu)
-            break
-    # 学校单独兜底（简历里可能只写学校不写"本科"）
+
+    # 学历：按行解析（学校/学历/专业同行），取最高学历放最前
+    out["education"] = _parse_edu_lines(edu_text)
     if not out["education"]:
+        # 简历里可能只写学校不写"本科"
         m = _SCHOOL.search(edu_text)
         mb = _MAJOR_BARE.search(edu_text)
         if m:
@@ -149,8 +165,12 @@ def parse_resume(text: str) -> dict:
     # 经历：只认实习/工作段落。求职意向里写的"法务专员"不算经历。
     src = exp_text or t
     for kind, pat in _EXP_PAT:
-        if pat.search(src):
-            out["experiences"].append({"kind": kind, "detail": ""})
+        m = pat.search(src)
+        if m:
+            # 抓命中所在行当 detail（限 80 字），推荐理由里能引用真东西
+            line = next((ln.strip() for ln in src.splitlines() if pat.search(ln)), "")
+            out["experiences"].append(
+                {"kind": kind, "detail": line[:80]})
     # 年限：只从经历段的时间跨度粗算（教育段的 2020-2024 是学制不是工龄）
     spans = _PERIOD.findall(exp_text)
     if spans:
@@ -173,10 +193,17 @@ def parse_resume(text: str) -> dict:
     found += [w for w in GENERAL_WORDS if w in t]
     out["skills"] = list(dict.fromkeys(found))
 
-    # 意向城市：简历里出现的广东城市（出现即视为可接受，后续可手改）
-    out["cities"] = [c for c in CITIES if c in t]
+    # 意向城市：优先"求职意向/期望"段（那里写的是想去的地方）；
+    # 没有该段才全文兜底——实习地点在东莞不代表想去东莞
+    intent_text = " ".join(v for k, v in secs.items() if k in _INTENT_SEC)
+    if not intent_text:
+        # "求职意向：xxx" 常与内容同一行，不是独立小节标题——单独抓一次
+        m = re.search(r"(?:求职意向|期望(?:岗位|城市|职位)?)[：:]\s*([^\n]{0,80})", t)
+        if m:
+            intent_text = m.group(1)
+    out["cities"] = [c for c in CITIES if c in (intent_text or t)]
 
-    # 意向岗位类型：从经历类型与个人陈述推断
+    # 意向岗位类型：经历类型是强信号；求职意向段的关键词补充
     jt = set()
     for e in out["experiences"]:
         if e["kind"] in ("法院", "检察院", "公务员", "公安", "仲裁", "公证"):
@@ -185,7 +212,13 @@ def parse_resume(text: str) -> dict:
             jt.add("lawfirm")
         elif e["kind"] == "法务":
             jt.add("legal_counsel")
-    if "实习" in t:
+    if re.search(r"法务|合规|法律顾问", intent_text):
+        jt.add("legal_counsel")
+    if re.search(r"律师|律所", intent_text):
+        jt.add("lawfirm")
+    if re.search(r"公务员|选调|事业单位|法院|检察院|公安", intent_text):
+        jt.add("public")
+    if "实习" in t or "实习" in intent_text:
         jt.add("intern")
     out["job_types"] = sorted(jt)
     return out
@@ -210,7 +243,7 @@ W_CITY = 26
 W_TYPE = 22
 W_SKILL = 8        # 每个专业词
 W_SKILL_WEAK = 3   # 每个泛词（"法律""合同"这类，命中太容易，给多了会让分数饱和）
-W_SKILL_CAP = 24
+W_SKILL_CAP = 26   # 标题命中×2 后有更多空间，但封顶防饱和
 W_EXP = 14
 W_EDU = 8
 W_DEADLINE = 6     # 还来得及投的优先
@@ -221,14 +254,21 @@ WEAK_WORDS = {"法律", "法学", "合同", "英语", "Office", "写作", "律�
 
 
 def match_job(profile: dict, job: dict, keywords: list[str] | None = None) -> dict:
-    """给单个岗位打分。返回 {score, reasons, hits}。"""
+    """给单个岗位打分。返回 {score, reasons, hits}。
+
+    打分结构（满分 100）：
+      城市匹配 ±26 · 岗位类型 +22/-4 · 关键词命中 ≤26（标题×2 / 正文×1，
+      专业词 8 泛词 3）· 经历对口 +14 · 学历 ±8/-14 · 经验要求 ±10/+6 ·
+      有明确截止日 +6
+    每一项都可解释——页面直接展示理由，用户要能判断该不该信。
+    """
     keywords = keywords if keywords is not None else profile_keywords(profile)
     reasons: list[str] = []
     hits: list[str] = []
     score = 0
 
-    haystack = f"{job.get('title') or ''} {job.get('org') or ''} " \
-               f"{job.get('city') or ''} {job.get('search_text') or ''}"
+    title_hay = f"{job.get('title') or ''} {job.get('org') or ''}"
+    body_hay = f"{job.get('search_text') or ''}"
 
     # 城市
     cities = profile.get("cities") or []
@@ -250,18 +290,29 @@ def match_job(profile: dict, job: dict, keywords: list[str] | None = None) -> di
     elif jts:
         score -= 4
 
-    # 技能/经历关键词命中：泛词给低分，否则"正文里出现过法律二字"就能顶满
+    # 关键词命中：标题/单位命中权重 ×2（标题写明"法务"比正文提一嘴"法律"
+    # 可信得多）；泛词低分——否则"正文出现过法律二字"就能顶满
+    title_hits, body_hits = [], []
     for w in keywords:
-        if w and w in haystack:
-            hits.append(w)
+        if not w:
+            continue
+        if w in title_hay:
+            title_hits.append(w)
+        elif w in body_hay:
+            body_hits.append(w)
+    hits = title_hits + body_hits
     if hits:
-        add = min(sum(W_SKILL_WEAK if w in WEAK_WORDS else W_SKILL for w in hits),
-                  W_SKILL_CAP)
+        def _w(ws, mult):
+            return sum((W_SKILL_WEAK if w in WEAK_WORDS else W_SKILL) * mult
+                       for w in ws)
+        add = min(_w(title_hits, 2) + _w(body_hits, 1), W_SKILL_CAP)
         score += add
-        strong = [w for w in hits if w not in WEAK_WORDS]
-        shown = strong or hits
-        reasons.append("命中 " + "、".join(shown[:4])
-                       + (f" 等 {len(shown)} 项" if len(shown) > 4 else ""))
+        shown = [w for w in hits if w not in WEAK_WORDS] or hits
+        msg = "、".join(shown[:4]) + (f" 等 {len(shown)} 项" if len(shown) > 4 else "")
+        if title_hits:
+            reasons.append("标题命中 " + msg)
+        else:
+            reasons.append("正文命中 " + msg)
 
     # 经历类型与岗位类型一致（比关键词更强）
     exp_kinds = {e.get("kind") for e in (profile.get("experiences") or [])}
@@ -272,15 +323,34 @@ def match_job(profile: dict, job: dict, keywords: list[str] | None = None) -> di
             score += W_EXP
             reasons.append(f"你有{want}经历")
 
-    # 学历：岗位正文提到要求学历且画像更高/相等
+    # 学历：写明的最低要求是硬门槛——不够就显著降权（+8 满足 / -14 不够）
     edu = (profile.get("education") or [{}])[0]
     if edu.get("level"):
-        m = re.search(r"(博士|硕士|研究生|本科|大专|专科)", job.get("search_text") or "")
+        m = re.search(r"(博士|硕士|研究生|本科|大专|专科)", body_hay)
         if m:
             need = dict(DEGREES).get(m.group(1), 2)
             if edu["level"] >= need:
                 score += W_EDU
                 reasons.append(f"学历满足（{m.group(1)}及以上）")
+            else:
+                score -= 14
+                reasons.append(f"学历不足（要求{m.group(1)}，你是{edu.get('degree') or '未知'}）")
+
+    # 经验要求：岗位写"X 年以上"而画像年限明显不够 → 降权；
+    # 明确欢迎应届且你是应届 → 加分（应届生投社会岗常被简历关筛掉）
+    years = profile.get("years")
+    m_exp = re.search(r"(\d+)\s*年(?:以上|工作经[验歷])", body_hay)
+    if m_exp and years is not None:
+        need_y = int(m_exp.group(1))
+        if years + 1 < need_y:
+            score -= 10
+            reasons.append(f"要求 {need_y} 年经验（你的经历约 {years} 年）")
+        else:
+            score += 6
+            reasons.append(f"经验满足（要求 {need_y} 年）")
+    elif years == 0 and re.search(r"应届|202[5-8]届毕业生", title_hay + body_hay):
+        score += 6
+        reasons.append("欢迎应届")
 
     # 临期加分：还投得上的优先（已过期的直接不进推荐）
     if job.get("deadline"):
