@@ -15,7 +15,9 @@
   <span class="city" title="{{ job['city'] or '' }}">{{ job['city'] or '' }}</span>
   <a class="t" href="/jobs/{{ job['id'] }}" title="{{ job['title'] }}">{{ job['title'] }}</a>
   <span class="org" title="{{ job['org'] or '' }}">{{ job['org'] or '' }}{% if job['merge_count'] > 1 %}<span class="chip">{{ job['merge_count'] }} 源</span>{% endif %}</span>
-  <span class="src" title="{{ job['source_slug'] }}">{{ (src_names.get(job['source_slug']) or job['source_slug'])|replace('·',' ')|truncate(10) }}</span>
+  {# 来源显示短名（"·"前的主体，如"广东省人社厅"），全名进 hover；slug 给程序员排错用 #}
+  {% set sname = (src_names.get(job['source_slug']) or job['source_slug']) %}
+  <span class="src" title="{{ sname }}（{{ job['source_slug'] }}）">{{ sname.split('·')[0] }}</span>
   <span class="meta-m">{{ jtype }}{% if job['employment_type'] %} · {{ job['employment_type'] }}{% endif %}{% if job['city'] %} · {{ job['city'] }}{% endif %}{% if job['org'] %} · {{ job['org'] }}{% endif %}</span>
   <span class="acts">
     {% if bulk_mode %}

@@ -135,11 +135,11 @@
   {% endif %}
 </div>
 {% else %}
-<div class="list{% if q.get('bulk') %} bulk{% endif %}">
-  <div class="list-head">
-    {% if q.get('bulk') %}<span class="cb"></span>{% endif %}
-    <span>截止</span><span>类型</span><span>城市</span><span>标题</span>
-    <span>单位</span><span>来源</span><span></span>
+<div class="list{% if q.get('bulk') %} bulk{% endif %}" role="table" aria-label="岗位列表">
+  <div class="list-head" role="row">
+    {% if q.get('bulk') %}<span class="cb" role="columnheader" aria-label="选择"></span>{% endif %}
+    <span role="columnheader">截止</span><span role="columnheader">类型</span><span role="columnheader">城市</span><span role="columnheader">标题</span>
+    <span role="columnheader">单位</span><span role="columnheader">来源</span><span role="columnheader" aria-label="操作"></span>
   </div>
   {% for job in jobs %}
   {% include "partials/job_row.html" %}

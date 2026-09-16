@@ -11,6 +11,8 @@
 <script src="/static/app.js?v={{ asset_v }}" defer></script>
 </head>
 <body>
+{# 键盘用户（尤其屏幕阅读器）最先想要的就是这个：跳过导航直达岗位列表 #}
+<a class="skip" href="#main">跳到内容</a>
 {% set path = request.url.path %}
 <header class="top">
   <a class="brand" href="/">法学招聘中台</a>
@@ -48,8 +50,8 @@
   <a href="/?urgent=3">只看这些</a>
 </div>
 {% endif %}
-<div class="wrap">
+<main class="wrap" id="main" tabindex="-1">
 {% block content %}{% endblock %}
-</div>
+</main>
 </body>
 </html>

@@ -94,4 +94,21 @@
       if (idsField) idsField.value = picked.map(function (b) { return b.value; }).join(",");
     });
   }
+
+  /* 采集/粘贴是同步长任务（几十秒），按钮不锁住就会被连点 N 次、
+     触发 N 轮采集。提交时禁用按钮并给出进行中的提示。 */
+  document.addEventListener("submit", function (e) {
+    var form = e.target;
+    if (!(form instanceof HTMLFormElement) || form.dataset.busy) return;
+    var slow = form.querySelector("[data-slow]") ||
+               (form.action && /collect\/run|\/paste/.test(form.action) ? form : null);
+    if (!slow) return;
+    form.dataset.busy = "1";
+    window.setTimeout(function () {
+      form.querySelectorAll("button").forEach(function (b) {
+        b.disabled = true;
+        if (b.classList.contains("primary")) b.textContent = "采集中…";
+      });
+    }, 0);
+  }, true);
 })();
