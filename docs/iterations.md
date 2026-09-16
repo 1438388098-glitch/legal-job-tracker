@@ -45,3 +45,40 @@
 - 页面全量 200：`/` `/profile` `/recommend` `/board` `/health` `/settings` `/paste` `/export.xlsx`
 - 筛选实测：`/?urgent=3`→1 行、`/?status=archived`→70 行、`/?bulk=1&job_type=lawfirm`→136 行含 136 勾选框
 - 无功能回归（原 167 项测试全部保持通过）
+
+---
+
+## 第 2 轮：信息源扩充（五院四系 + 分类优先级）
+
+### 调研
+第 1 轮五院四系核查结论落地 + 补做的珠三角摸排（上次截断）。珠三角 12 站点实测结论：
+**jysd / bysjy 两个"多校共用"平台均未攻克**（列表页 JS 渲染，XHR 接口被参数校验挡住）、
+大易系企业只命中越秀（已接入）、地方人才网仅广东人才网可抓但未证实时效 →
+本轮不做低质量接入，如实记录放弃原因（`docs/source-registry.md`）。
+
+### 10 项变更
+
+| # | 变更 | 验证 |
+|---|---|---|
+| 1 | **接入清华大学**（`tsinghua`）：唯一"静态 + 真分页 + 服务端岗位名检索(?zwmc=)"三全的高校源，6 个法学检索词。为此给 generic_html 加了 `link_attr`（真地址在 `ahref` 属性）与 `title_split`（"岗位————单位"锚文本拆分） | 实采入库 50 条，单位/日期解析正确 |
+| 2 | **接入西北政法**（`nwupl`）：法学岗占比最高的源（40%），首页 SSR 块增量；`verify=False`（证书链问题） | 实采入库 10 条，跨节点日期"09月+15日"归一化成功 |
+| 3 | **接入北京大学**（`pku`，frontpage 平台 JSON） | 接口实测 6 条，全部被法学词过滤（均为银行/制造业校招）——过滤按预期工作 |
+| 4 | **接入武汉大学**（`whu`，与北大同一套 frontpage 接口，一次逆向两校） | 实采入库 2 条（君合广州实习生等） |
+| 5 | **适配器分发改注册表** `_ADAPTER_MODULES`（原 5 个 if 分支是纯样板），新增适配器只补一行 | 181 项测试全绿 |
+| 6 | **sync_fixtures 通用化**：原来硬编码 `SOURCES[-1]` 取 zuel 的 api，源顺序一变就崩；改为按 kind 推导入口（list_url / api + probe_params + Referer） | 32 源录制 27 成功（5 个 403 为 WAF 限流，保留旧 fixture） |
+| 7 | **建立源分类体系**：`sources.category/rank` 列 + `classify.SOURCE_CATEGORIES` 单一真源。六组：五院四系(10) → 广东高校(20) → 国企央企(30) → 政务机关(40) → 律师协会(50) → 人才市场(60)，rank 越小越靠前 | 33 源全部分组成功 |
+| 8 | **源健康页按分组展示**（健康表按 rank 排序 + 分组标题），用户最关心的源在最上面 | 页面 200 |
+| 9 | **列表"来源"列显示可读名**（"广东省人社厅·事业单位招聘公告"而非 `hrss_gd`），hover 显示 slug | DOM 验证 |
+| 10 | **失效源核查**：33 源全健康（`consecutive_failures=0`）；swupl（西政 cqbys 平台）本机网络不可达但保留配置观察；珠三角放弃的源全部记录依据 | 全源采集 33/33 |
+
+### 影响范围
+`scripts/seed_sources.py`（4 新源 + 分类映射）· `scripts/sync_fixtures.py` · `app/collect/{generic_html,dateparse,runner}.py` · 新增 `app/collect/frontpage.py` · `app/{db,classify}.py` · `app/web/{routes.py,health.html,job_row.html}`
+
+### 调试插曲（记入记忆）
+seed 后 category 全空：排查 1 小时发现 **seed_sources.py 里 main() 被定义了两遍**
+（早前用脚本做字符串替换时意外残留旧定义），Python 加载时后一个 def 覆盖前一个。
+教训：**批量字符串改代码后必须 grep 确认函数没有重复定义**。
+
+### 验证结果
+- **181 项测试全绿**；全源采集 33/33 健康，总条目 **639**（新增 34）
+- 新增源的 fixture 已录制（tsinghua/nwupl/pku/whu），test_sources 回归通过

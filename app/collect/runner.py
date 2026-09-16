@@ -1,3 +1,4 @@
+import importlib
 import json
 import logging
 import sqlite3
@@ -25,21 +26,23 @@ def _source_cfg(row) -> dict:
     return cfg
 
 
+# 非 html 的适配器按 kind 分发。用注册表而不是 if 链：加一个源只要在这里补一行，
+# 不必再翻一遍 runner 的主体逻辑（原先五个 if 分支是纯重复样板）。
+_ADAPTER_MODULES = {
+    "zuel": "zuel",
+    "ggfw": "ggfw",
+    "hotjob": "hotjob",
+    "swupl": "swupl",
+    "frontpage": "frontpage",
+}
+
+
 def _adapter_for(row):
     cfg = _source_cfg(row)
     kind = row["kind"]
-    if kind == "zuel":
-        from . import zuel
-        return zuel.Adapter(cfg)
-    if kind == "ggfw":
-        from . import ggfw
-        return ggfw.Adapter(cfg)
-    if kind == "hotjob":
-        from . import hotjob
-        return hotjob.Adapter(cfg)
-    if kind == "swupl":
-        from . import swupl
-        return swupl.Adapter(cfg)
+    if mod_name := _ADAPTER_MODULES.get(kind):
+        module = importlib.import_module(f".{mod_name}", __package__)
+        return module.Adapter(cfg)
     return HtmlAdapter(cfg)
 
 

@@ -15,8 +15,13 @@ FIX = Path(__file__).resolve().parent.parent / "tests" / "fixtures"
 def grab(slug: str, url: str):
     try:
         cfg = next(s["config"] for s in SOURCES if s["slug"] == slug)
-        r = fetch(url, encoding=cfg.get("encoding"), verify=cfg.get("verify", True),
-                  tries=2)
+        # frontpage 等平台校验 Referer（缺了直接 404），带上再说；
+        # 接口型源可能还要求查询参数（如 num/positionType），从 probe_params 读
+        headers = {"Referer": cfg.get("referer")
+                   or (cfg.get("base", "").rstrip("/") + "/")}
+        r = fetch(url, params=cfg.get("probe_params"),
+                  encoding=cfg.get("encoding"), verify=cfg.get("verify", True),
+                  headers=headers, tries=2)
         out = FIX / f"{slug}_list.html"
         out.write_bytes(r.content)
         return slug, "ok", len(r.content)
@@ -25,8 +30,18 @@ def grab(slug: str, url: str):
 
 
 def main():
-    jobs = {s["slug"]: s["config"]["list_url"] for s in SOURCES if s["kind"] == "html"}
-    jobs["zuel"] = SOURCES[-1]["config"]["api"]
+    # 各 kind 的入口：html 走列表首页，接口型源直接抓 api 存为 fixture（供回归对照）。
+    # ggfw 是 POST 接口（GET 会 500），fixture 由真实采集时落库，这里跳过。
+    jobs: dict[str, str] = {}
+    for s in SOURCES:
+        if s["kind"] == "ggfw":
+            continue
+        cfg = s["config"]
+        url = cfg.get("list_url") or cfg.get("api")
+        if s["kind"] == "html" and cfg.get("list_urls"):
+            url = cfg["list_urls"][0]
+        if url:
+            jobs[s["slug"]] = url
     results = {}
     with ThreadPoolExecutor(max_workers=6) as pool:
         futs = {pool.submit(grab, slug, url): slug for slug, url in jobs.items()}

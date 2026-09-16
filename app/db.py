@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS sources(
   job_type TEXT,
   config TEXT NOT NULL DEFAULT '{}',
   enabled INTEGER NOT NULL DEFAULT 1,
+  category TEXT NOT NULL DEFAULT '',
+  rank INTEGER NOT NULL DEFAULT 50,
   last_success_at TEXT,
   consecutive_failures INTEGER NOT NULL DEFAULT 0,
   last_error TEXT
@@ -104,6 +106,8 @@ def connect(path) -> sqlite3.Connection:
 # 用户手上的库要能平滑升级，所以这里显式补。
 _MIGRATIONS = [
     ("jobs", "notice_kind", "TEXT NOT NULL DEFAULT 'opening'"),
+    ("sources", "category", "TEXT NOT NULL DEFAULT ''"),   # 展示分组
+    ("sources", "rank", "INTEGER NOT NULL DEFAULT 50"),    # 展示优先级，越小越靠前
     ("jobs", "employment_type", "TEXT"),
     ("jobs", "rolling", "INTEGER NOT NULL DEFAULT 0"),
 ]

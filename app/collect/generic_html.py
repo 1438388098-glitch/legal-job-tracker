@@ -55,9 +55,11 @@ def parse_list(html: str, cfg: dict) -> list[dict]:
     tree = HTMLParser(html)
     link_sel = cfg.get("link_sel", "a")
     items, seen = [], set()
+    # 少数站把真链接放在别处（清华的 href 是 javascript:void(0)、真地址在 ahref 属性）
+    link_attr = cfg.get("link_attr", "href")
     for node in tree.css(cfg["item_sel"]):
         link = node if link_sel == "self" else node.css_first(link_sel)
-        href = (link.attributes.get("href") or "") if link is not None else ""
+        href = (link.attributes.get(link_attr) or "").strip() if link is not None else ""
         if link is None or not href or href.startswith(("javascript", "#")):
             continue  # 占位链接（javascript:void(0)/锚点）不是条目
         url = urljoin(cfg["list_url"], href)
@@ -77,6 +79,17 @@ def parse_list(html: str, cfg: dict) -> list[dict]:
         if not title:
             continue
 
+        # 有些列表把"岗位————单位"拼在一个锚文本里（清华用全角破折号），
+        # 配了 title_split 就拆开，单位参与后续匹配与去重
+        org_from_title = None
+        sep = cfg.get("title_split")
+        if sep and sep in title:
+            title, _, rest = title.partition(sep)
+            title = title.strip()
+            org_from_title = rest.strip() or None
+            if not title:
+                continue
+
         seen.add(url)
         date_node = node.css_first(cfg["date_sel"]) if cfg.get("date_sel") else None
         dl_node = node.css_first(cfg["deadline_sel"]) if cfg.get("deadline_sel") else None
@@ -87,7 +100,7 @@ def parse_list(html: str, cfg: dict) -> list[dict]:
             "publish_date": parse_date_text(_text(date_node)) if date_node else None,
             # 部分协会站（深圳律协）列表里就带截止日列，比从正文猜更可靠
             "deadline": parse_date_text(_text(dl_node)) if dl_node else None,
-            "org": _text(org_node) or cfg.get("org"),
+            "org": _text(org_node) or org_from_title or cfg.get("org"),
         })
     return items
 

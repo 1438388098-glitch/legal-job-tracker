@@ -17,7 +17,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app import db  # noqa: E402
-from app.classify import LAW_KEYWORDS, LAW_QUERIES  # noqa: E402
+from app.classify import LAW_KEYWORDS, LAW_QUERIES, SOURCE_CATEGORIES  # noqa: E402
 
 # 校园招聘站是"全校全专业"职位板，噪音极大，只保留法学相关岗位。
 # 词表统一取自 app.classify（单一真源），这里只做别名，不再各自维护一份
@@ -251,6 +251,44 @@ SOURCES = [
         no_detail=True, max_items=60, keep_keywords=LAW_KW,
         notice_kind="opening")),
 
+    # ── 五院四系：可静态抓的 2 所 ──────────────────────────────────────
+    # 清华：唯一"静态 + 真分页(?pgno=) + 服务端岗位名检索(?zwmc=)"三全的高校源。
+    # 两个坑：① href 是 javascript:void(0)，真地址在同名自定义属性 ahref；
+    #        ② 锚文本是"岗位————单位"，用 title_split 拆开。
+    dict(slug="tsinghua", **_html(
+        "清华大学·招聘职位",
+        _kw("http://career.cic.tsinghua.edu.cn/xsglxt/f/jyxt/anony/xxfb",
+            LAW_QUERY, "zwmc"),
+        "ul#todayList li.clearfix", link_sel="a", link_attr="ahref",
+        title_attr="title", date_sel="span", title_split="————",
+        max_items=60, notice_kind="opening")),
+    # 西北政法：法学岗占比最高（实测 10 条里 4 条是法学岗），日更。
+    # 限制：只有首页块是服务端渲染（/campus /job/search 等列表页是 JS 渲染），
+    # 所以固定 10 条增量；证书链有问题，必须 verify=False。
+    dict(slug="nwupl", **_html(
+        "西北政法大学·最新职位",
+        ["https://job.nwupl.edu.cn/"],
+        "ul.css-con7 li.clearfix", link_sel="a.title",
+        date_sel="div.new-time", detail_sel="div.news-con|div.article|div.content",
+        verify=False, max_items=20, notice_kind="opening")),
+
+    # ── 五院四系：同一套 frontpage 平台的 2 所（JSON 接口）──────────────
+    # 北大/武大共用 `f/ajaxHome/ajax_findRecruitmentinfoLimitList`。接口有硬上限
+    # （只回最新 6~10 条）且分页/检索参数无效，只能当增量源，法学过滤在本地做。
+    # 武大的 corporationinfo.name 是真实单位名，北大填的是学校就业中心 → 后者从标题抽。
+    dict(slug="pku", name="北京大学·就业中心", kind="frontpage", job_type=None,
+         notice_kind="opening", config=dict(
+             base="https://scc.pku.edu.cn",
+             api="https://scc.pku.edu.cn/f/ajaxHome/ajax_findRecruitmentinfoLimitList",
+             num=30, position_types=[1, 2], keep_keywords=LAW_KW,
+             probe_params={"num": 30, "positionType": 1})),
+    dict(slug="whu", name="武汉大学·就业中心", kind="frontpage", job_type=None,
+         notice_kind="opening", config=dict(
+             base="https://xsjy.whu.edu.cn",
+             api="https://xsjy.whu.edu.cn/f/ajaxHome/ajax_findRecruitmentinfoLimitList",
+             num=30, position_types=[1, 2], keep_keywords=LAW_KW,
+             probe_params={"num": 30, "positionType": 1})),
+
     # ── 外校就业中心 JSON 接口（免登录，已验证）────────────────────────
     # 法学过滤在 zuel.py 里按"岗位名含法学角色词"完成：该接口的 majors 字段会把
     # 企业接受的所有专业列全（一条能列 38 个），拿它当过滤依据会把泛岗位全捞进来。
@@ -285,18 +323,38 @@ SOURCES = [
              list_url="https://swupl.cqbys.com/", keep_keywords=LAW_KW)),
 ]
 
+# ── 展示分组与优先级 ─────────────────────────────────────────────────────
+# 用户要求"按院校层级、地区、行业/岗位类型建立分类标签与展示优先级"。
+# 分组显示名与排序权重定义在 app.classify.SOURCE_CATEGORIES（单一真源），
+# 这里只管"哪个源属于哪个分组"。
+_SLUG_CATEGORY = {
+    "tsinghua": "top-law", "pku": "top-law", "whu": "top-law",
+    "swupl": "top-law", "zuel": "top-law",
+    "gdufs": "gd-univ", "gzhu": "gd-univ", "gduf": "gd-univ", "gcc": "gd-univ",
+    "ggfw_gq": "soe", "gzw_gd": "soe", "yuexiu": "soe", "geg": "soe",
+    "gdcourts": "gov", "gd_jcy": "gov", "hrss_gd": "gov", "hrss_gz": "gov",
+    "hrss_sz": "gov", "hrss_zh": "gov", "hrss_fs": "gov", "hrss_dg": "gov",
+    "hrss_zs": "gov", "sg_gov": "gov", "sg_rsrc": "gov",
+    "gdzz_luqu": "gov", "army_81rc": "gov",
+    "fs_lvxie": "lawfirm", "gz_lvxie": "lawfirm", "sz_lvxie": "lawfirm",
+    "hz_lvxie": "lawfirm", "zs_lvxie": "lawfirm", "jm_lvxie": "lawfirm",
+}
+
 
 def main(db_path="data/job.db"):
     conn = db.connect(db_path)
     db.init_db(conn)
     for s in SOURCES:
+        cat = _SLUG_CATEGORY.get(s["slug"], "talent")
+        cat_name, rank = SOURCE_CATEGORIES[cat]
         conn.execute(
-            "INSERT INTO sources(slug,name,kind,city,job_type,config) "
-            "VALUES(?,?,?,?,?,?) "
+            "INSERT INTO sources(slug,name,kind,city,job_type,category,rank,config) "
+            "VALUES(?,?,?,?,?,?,?,?) "
             "ON CONFLICT(slug) DO UPDATE SET name=excluded.name, kind=excluded.kind, "
-            "city=excluded.city, job_type=excluded.job_type, config=excluded.config",
+            "city=excluded.city, job_type=excluded.job_type, config=excluded.config, "
+            "category=excluded.category, rank=excluded.rank",
             (s["slug"], s["name"], s["kind"], s.get("city"), s.get("job_type"),
-             json.dumps(s["config"], ensure_ascii=False)))
+             cat, rank, json.dumps(s["config"], ensure_ascii=False)))
     conn.commit()
     print(f"seeded {len(SOURCES)} sources -> {db_path}")
 

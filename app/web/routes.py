@@ -11,7 +11,7 @@ from fastapi.templating import Jinja2Templates
 
 from .. import db
 from .. import resume
-from ..classify import CITIES
+from ..classify import CITIES, SOURCE_CATEGORIES
 from ..collect import pastebox
 from ..collect.runner import Runner
 from ..collect.store import _search_text, reindex_fts, save_item
@@ -127,7 +127,10 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
         ctx.setdefault("notice_kinds", NOTICE_KINDS)
         ctx.setdefault("employment_types", EMPLOYMENT_TYPES)
         ctx.setdefault("asset_v", asset_version())
+        # 源的展示信息：分类映射 + slug→中文名（列表页"来源"列显示可读名）
+        ctx.setdefault("source_categories", SOURCE_CATEGORIES)
         conn = request.app.state.conn
+        ctx["src_names"] = dict(conn.execute("SELECT slug, name FROM sources").fetchall())
         ctx["urgent"] = conn.execute(
             "SELECT COUNT(*) c FROM jobs WHERE deadline IS NOT NULL "
             "AND deadline BETWEEN date('now') AND date('now','+3 day') "
@@ -357,9 +360,15 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
     @router.get("/health", response_class=HTMLResponse)
     def health(request: Request):
         conn = request.app.state.conn
-        sources = conn.execute("SELECT * FROM sources ORDER BY slug").fetchall()
+        # 按分类的展示优先级排（五院四系 → 广东高校 → 国企 → 政务 → 律协 → 人才市场），
+        # 再按组内权重（rank 相同按 slug），让"用户最关心的源"出现在最上面
+        sources = conn.execute(
+            "SELECT * FROM sources ORDER BY rank, name").fetchall()
+        grouped: dict[str, list] = {}
+        for s in sources:
+            grouped.setdefault(s["category"] or "talent", []).append(s)
         logs = conn.execute("SELECT * FROM collect_logs ORDER BY id DESC LIMIT 50").fetchall()
-        return render("health.html", request, sources=sources, logs=logs)
+        return render("health.html", request, grouped=grouped, sources=sources, logs=logs)
 
     @router.post("/collect/run")
     def collect_run(request: Request, slug: str = Form("")):

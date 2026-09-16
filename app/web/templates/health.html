@@ -14,13 +14,15 @@
 </div>
 
 <div class="section first">
-  <h2>信息源</h2>
+  {% for cat, rows in grouped.items() %}
+  {% set cat_name, _ = source_categories.get(cat, (cat, 99)) %}
+  <h2>{{ cat_name }} <span class="meta">{{ rows|length }} 源</span></h2>
   <table class="tbl-src">
     <thead>
       <tr><th>源</th><th>名称</th><th>上次成功</th><th class="num">失败</th><th>最近错误</th><th></th></tr>
     </thead>
     <tbody>
-    {% for s in sources %}
+    {% for s in rows %}
     <tr>
       <td><code>{{ s['slug'] }}</code></td>
       <td>{{ s['name'] }}</td>
@@ -39,11 +41,12 @@
       </td>
     </tr>
     {% endfor %}
-    {% if sources|length == 0 %}
-    <tr><td colspan="6" class="dim">还没有信息源。运行 <code>python scripts/seed_sources.py</code>。</td></tr>
-    {% endif %}
     </tbody>
   </table>
+  {% endfor %}
+  {% if sources|length == 0 %}
+  <div class="empty">还没有信息源。运行 <code>python scripts/seed_sources.py</code>。</div>
+  {% endif %}
 </div>
 
 <div class="section">

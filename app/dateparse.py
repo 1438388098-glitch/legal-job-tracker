@@ -25,9 +25,15 @@ _SPLIT_DATE_REV = re.compile(
     r"(?<!\d)(\d{1,2})\s+((?:19|20)\d{2})\s*[-年/.]\s*(\d{1,2})(?!\d)")
 
 
+# 西北政法把"09月15日"拆进两个 <p>：'09月' 与 '15日'，取父节点文本得 '09月 15日'。
+# 月与日被空白隔开，常规 _SHORT 匹配不到（它要求"月日"紧邻）。
+_JOIN_MD = re.compile(r"(?<!\d)(\d{1,2})\s*月\s+(\d{1,2})\s*日")
+
+
 def _normalize(text: str) -> str:
     t = _SPLIT_DATE.sub(lambda m: f"{m[1]}-{int(m[2])}-{int(m[3])}", text or "")
-    return _SPLIT_DATE_REV.sub(lambda m: f"{m[2]}-{int(m[3])}-{int(m[1])}", t)
+    t = _SPLIT_DATE_REV.sub(lambda m: f"{m[2]}-{int(m[3])}-{int(m[1])}", t)
+    return _JOIN_MD.sub(lambda m: f"{int(m[1])}月{int(m[2])}日", t)
 
 
 def extract_dates(text: str, today: date | None = None) -> list[str]:
