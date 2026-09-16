@@ -20,6 +20,11 @@
     {% if job['city'] %}<span><span class="k">城市</span> {{ job['city'] }}</span>{% endif %}
     {% if job['publish_date'] %}<span><span class="k">发布</span> {{ job['publish_date'] }}</span>{% endif %}
     <span><span class="k">性质</span> {{ dict(notice_kinds).get(job['notice_kind'], job['notice_kind']) }}</span>
+    {% if match %}
+    <span class="match-chip {% if match['score'] >= 60 %}hi{% elif match['score'] >= 40 %}mid{% endif %}"
+          title="{{ match['reasons']|join('；') if match['reasons'] else '与画像关联较弱' }}">
+      匹配 {{ match['score'] }}</span>
+    {% endif %}
     <span><span class="k">状态</span> {{ job['status'] }}</span>
     {% if job['merge_count'] > 1 %}<span><span class="k">合并</span> {{ job['merge_count'] }} 个来源</span>{% endif %}
     <span><span class="k">收录</span> {{ job['created_at'] }}</span>

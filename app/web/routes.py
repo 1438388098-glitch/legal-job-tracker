@@ -265,8 +265,14 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
                 snapshot_text = fh.read(60000).decode("utf-8", errors="replace")
         # 返回列表时保住筛选：从 Referer 取站内来源页
         back = _safe_local(request.headers.get("referer"), request)
+        # 有画像就算一下匹配度：用户从列表点进来时最想知道"这个跟我配不配"
+        match = None
+        prof = resume.load_profile(conn)
+        if prof:
+            match = resume.match_job(prof, dict(job))
         return render("detail.html", request, job=job, app_row=app_row,
-                      sources=sources, snapshot_text=snapshot_text, back_url=back or "/")
+                      sources=sources, snapshot_text=snapshot_text,
+                      back_url=back or "/", match=match)
 
     @router.post("/jobs/{job_id}/status")
     def set_status(job_id: int, request: Request, status: str = Form(...)):
@@ -430,32 +436,37 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
         return RedirectResponse("/profile", status_code=303)
 
     @router.post("/profile")
-    def profile_save(request: Request, name: str = Form(""), skills: str = Form(""),
-                     cities: str = Form(""), job_types: str = Form(""),
-                     years: str = Form(""), education: str = Form(""),
-                     experiences: str = Form("")):
+    async def profile_save(request: Request):
         """手动编辑画像。解析抽错的、想调整的，都在这里改——解析只是起个草稿。
 
         列表字段按逗号/顿号/分号/换行切分，不要求用户记格式。
+        意向类型是勾选框（用户不该被要求背英文代码），勾了哪个算哪个。
         """
         conn = request.app.state.conn
         old = resume.load_profile(conn) or {}
+        form = await request.form()
 
         def split(v: str) -> list[str]:
             return [x.strip() for x in re.split(r"[,，、;；\n\r]+", v or "") if x.strip()]
 
         prof = {
-            "name": name.strip(),
-            "skills": split(skills),
-            "cities": split(cities),
-            "job_types": split(job_types),
-            "years": int(years) if years.strip().isdigit() else None,
+            "name": (form.get("name") or "").strip(),
+            "skills": split(form.get("skills") or ""),
+            "cities": split(form.get("cities") or ""),
+            # 勾选框：勾了才提交，name 形如 job_type_lawfirm
+            "job_types": [val for val, _ in JOB_TYPES if form.get(f"job_type_{val}")],
+            "years": (form.get("years") or "").strip(),
             "education": [{"degree": d, "level": 0, "school": "", "major": "",
-                           "year": ""} for d in split(education)],
-            "experiences": [{"kind": k, "detail": ""} for k in split(experiences)],
+                           "year": ""} for d in split(form.get("education") or "")],
+            "experiences": [{"kind": k, "detail": ""}
+                            for k in split(form.get("experiences") or "")],
             "raw_text": old.get("raw_text", ""),
             "source_file": old.get("source_file", ""),
         }
+        if prof["years"].isdigit():
+            prof["years"] = int(prof["years"])
+        else:
+            prof["years"] = None
         resume.save_profile(conn, prof)
         return RedirectResponse("/profile", status_code=303)
 
@@ -467,16 +478,22 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
             return render("profile.html", request, prof=None,
                           need_profile=True, job_types=JOB_TYPES)
         kws = prof.get("keywords") or []
+        # 已跟踪的不进推荐（推荐是给"还没决定投哪"用的）；已过期的没意义。
+        # 平分时按源的展示优先级排——五院四系的 71 分比人才市场的 71 分更该先看。
         rows = conn.execute(
-            "SELECT j.*, a.id AS aid FROM jobs j "
+            "SELECT j.*, a.id AS aid, s.rank AS src_rank FROM jobs j "
             "LEFT JOIN applications a ON a.job_id=j.id "
+            "LEFT JOIN sources s ON s.slug=j.source_slug "
             "WHERE j.status != 'archived' AND j.notice_kind='opening' "
+            "AND a.id IS NULL "
+            "AND (j.deadline IS NULL OR j.deadline >= date('now')) "
             "ORDER BY j.deadline IS NULL, j.deadline LIMIT 400").fetchall()
         scored = []
         for r in rows:
             m = resume.match_job(prof, dict(r), kws)
             scored.append((m, r))
-        scored.sort(key=lambda x: (-x[0]["score"], x[1]["deadline"] or "9999"))
+        scored.sort(key=lambda x: (-x[0]["score"], x[1]["src_rank"] or 99,
+                                   x[1]["deadline"] or "9999"))
         top = scored[:60]
         return render("recommend.html", request, prof=prof, items=top,
                       top_n=sum(1 for m, _ in top if m["score"] >= 60),

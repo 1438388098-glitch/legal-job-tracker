@@ -435,6 +435,17 @@ button.icon:hover { background: var(--bg-hover); color: var(--fg); }
 }
 .row.rec .chip { font-size: var(--fs-xs); }
 
+/* 详情页的匹配度徽章：复用推荐页的配色语义（≥60 绿 / ≥40 黄） */
+.match-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 0 6px; height: 20px; border-radius: var(--r-sm);
+  background: var(--bg-inset); border: 1px solid var(--line-soft);
+  font-size: var(--fs-xs); color: var(--fg-2);
+  font-variant-numeric: tabular-nums;
+}
+.match-chip.mid { color: var(--warn); background: var(--warn-bg); border-color: transparent; }
+.match-chip.hi  { color: var(--on-accent); background: var(--ok); border-color: transparent; }
+
 /* 写操作回执：操作完必须让用户知道发生了什么，并给一次反悔的机会 */
 .flash {
   display: flex; align-items: center; gap: 8px;

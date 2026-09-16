@@ -54,11 +54,16 @@
     </div>
     <div class="field">
       <label>意向岗位类型</label>
-      <input type="text" name="job_types" value="{{ (prof['job_types'] or [])|join('、') if prof else '' }}"
-             placeholder="lawfirm、public、legal_counsel、intern">
-      <span class="hint">填英文代码，多个用顿号分隔：
-        {% for v, l in job_types %}<code>{{ v }}</code>=<span>{{ l }}</span> {% endfor %}
-      </span>
+      <div class="checks">
+        {% set chosen = (prof['job_types'] or []) if prof else [] %}
+        {% for val, label in job_types %}
+        <label class="check">
+          <input type="checkbox" name="job_type_{{ val }}"
+                 {% if val in chosen %}checked{% endif %}> <span>{{ label }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      <span class="hint">与岗位类型一致时加 22 分，是最重的一项。</span>
     </div>
     <div class="field">
       <label>经历类型</label>
