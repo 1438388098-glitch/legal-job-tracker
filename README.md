@@ -122,31 +122,45 @@ Every job's detail-page body is **archived locally** (`app/snapshot.py`) — if 
 
 The complete list, verification status, and domain traps (which old domains are dead, which sites need an http downgrade or gb2312 decoding) are in [`docs/source-registry.md`](docs/source-registry.md).
 
-Per-source yield (sampled snapshot of 2026-09-15, 543 posts in total; sources added later — Tsinghua / Peking / Wuhan / NWUPL, Shaoguan HR, etc. — are not in this snapshot):
+Per-source yield (sampled snapshot of 2026-09-15, 543 posts in total; recomputed from the local SQLite database. 29 of the 33 sources were live at that time — only the four schools added later, Tsinghua / Peking / Wuhan / NWUPL, are absent):
 
 | Source | Posts | Note |
 |---|---|---|
-| GDUFS career site | 51 | on-site search with law keywords |
+| Guangdong University of Finance career site | 51 | on-site search with law keywords |
 | Provincial HR dept · SOE zone | 48 | POST JSON API, server-side filtered by 6 terms such as 法务/法律 |
+| Guangdong University of Foreign Studies career site | 45 | on-site search with law keywords |
 | Shenzhen bar association | 40 | the list carries a deadline column directly |
 | Dongguan HR bureau | 30 | fills the missing PRD cities |
 | Provincial SASAC · Million Talents column | 30 | all 【国企招聘】 announcements, zero noise |
 | Guangdong Lawyer Net (Foshan bar) | 30 | |
+| Provincial HR dept · public institutions | 27 | |
+| Guangdong provincial procuratorate | 25 | gb2312 + http downgrade (see tradeoff 3) |
+| Foshan HR bureau | 20 | |
+| Shenzhen HR bureau | 20 | runs over http (see tradeoff 2) |
+| Zhuhai HR bureau | 20 | |
 | Jiangmen bar association | 20 | |
-| Zhuhai / Foshan / Zhongshan / Shaoguan HR | 68 | |
 | Yuexiu Group | 17 | Dayi JSON, positionName server-side filter |
-| Guangzhou College of Commerce | 15 | |
+| Zhongshan HR bureau | 16 | |
+| Guangzhou College of Commerce | 15 | on-site search with law keywords |
+| Guangzhou HR bureau | 13 | |
 | Shaoguan HR · personnel & talent column | 12 | more focused than the former notices column |
+| Guangdong courts site | 11 | |
+| Huizhou bar association | 10 | |
 | GD Organization Work Net · civil service | 8 | announcement class after title-keyword filtering |
 | Zhongshan bar association | 8 | date split across two DOM nodes, now normalized |
+| Guangzhou University career site | 7 | on-site search with law keywords |
 | Guangdong Energy Group | 6 | law-related jobs after keyword filtering |
+| ZUEL career center | 6 | JSON API, filtered to law jobs by job name |
 | Guangzhou bar association | 3 | JSP fragment API |
 | Military Talent Net | 2 | annual-style updates; the civilian unified-exam notice is exclusive information here |
+| Shaoguan HR · notices column | 2 | mostly court service-of-process notices; recruitment posts are sparse |
 | Southwest University of Political Science & Law | 1 | front-page increment block; Five & Four schools are high-quality employers |
 
-Type distribution: public-sector 244 / law firm 128 / in-house 122 / internship 28 / other 21 (3.9%).
-Notice kinds: open 425 / result notices 101 / other info 17.
-Employment types: established (bianzhi) 81 / contract 18; long-term (email application) 46.
+Counts above sum to 543; derived fields (type / notice kind / long-term flag) reflect the current classification rules re-run on the same 543 posts.
+
+Type distribution: public-sector 244 / law firm 136 / in-house 125 / internship 28 / other 10 (1.8%).
+Notice kinds: open 422 / result notices 101 / other info 20.
+Employment types: established (bianzhi) 81 / contract 18; long-term (email application) 42.
 
 ### Adding a new source
 
