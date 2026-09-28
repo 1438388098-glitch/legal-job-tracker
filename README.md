@@ -1,5 +1,7 @@
 # 法学招聘信息中台
 
+> **English TL;DR** — A self-hosted legal-job aggregator for China's Pearl River Delta: 33 official sources (courts, HR bureaus, SOEs, bar associations, university career sites) scraped on schedule, strict cross-source deduplication ("prefer missing a merge over a wrong merge"), explainable resume-to-job match scoring with education hard-thresholds, application tracking and deadline reminders. Runs locally on FastAPI + SQLite; no data ever leaves the machine.
+
 一个跑在你自己电脑上的 **法学求职信息收集与管理系统**。自动从 33 个官方渠道收集
 珠三角 + 韶关的律所 / 体制内 / 法务 / 实习 / 国企岗位（含省属一级与二级公司），
 统一去重后在本机网页里筛选浏览、跟踪投递、临期提醒、导出汇总表。
