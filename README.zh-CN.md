@@ -1,5 +1,7 @@
 # 法学招聘信息中台
 
+[![CI](https://github.com/1438388098-glitch/legal-job-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/1438388098-glitch/legal-job-tracker/actions/workflows/ci.yml)
+
 [English](./README.md) · 简体中文
 
 一个跑在你自己电脑上的 **法学求职信息收集与管理系统**。自动从 33 个官方渠道收集

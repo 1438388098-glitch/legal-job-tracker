@@ -1,5 +1,7 @@
 # Legal Job Tracker
 
+[![CI](https://github.com/1438388098-glitch/legal-job-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/1438388098-glitch/legal-job-tracker/actions/workflows/ci.yml)
+
 English · [简体中文](./README.zh-CN.md)
 
 A **legal-job collector and application tracker** that runs on your own computer. It automatically collects law-firm / public-sector / in-house / internship / SOE postings (including provincial first-tier and second-tier companies) from 33 official sources covering the Pearl River Delta + Shaoguan, deduplicates them strictly, and serves a local web app where you filter and read postings, track applications, get deadline reminders, and export summary sheets. It is explainable end to end: strict cross-source deduplication ("prefer missing a merge over a wrong merge"), resume-to-job match scoring where every point has a stated reason, and education hard-thresholds. Runs locally on FastAPI + SQLite; no data ever leaves the machine.
