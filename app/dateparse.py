@@ -36,7 +36,11 @@ def _normalize(text: str) -> str:
     return _JOIN_MD.sub(lambda m: f"{int(m[1])}月{int(m[2])}日", t)
 
 
-def extract_dates(text: str, today: date | None = None) -> list[str]:
+def extract_dates(
+    text: str, today: date | None = None, year_hint: int | None = None
+) -> list[str]:
+    """year_hint：文本内已有完整年份时，省略年份的日期锚定到该年份，而非按
+    "下一个未来日期"推断——公告里的发布年份就是省略年份的所指年份。"""
     today = today or date.today()
     text = _normalize(text)
     out = []
@@ -47,6 +51,9 @@ def extract_dates(text: str, today: date | None = None) -> list[str]:
     for pat in (_SHORT, _MD, _MD_SLASH):
         for m in pat.finditer(text or ""):
             mo, d = int(m[1]), int(m[2])
+            if year_hint is not None and _valid(year_hint, mo, d):
+                out.append(date(year_hint, mo, d).isoformat())
+                continue
             if not _valid(today.year, mo, d):
                 continue
             dt = date(today.year, mo, d)
@@ -95,7 +102,10 @@ def guess_deadline(text: str, today: date | None = None) -> str | None:
         return None
     found: list[str] = []
     for m in _CTX_KEY.finditer(text):
-        found.extend(extract_dates(_sentence_at(text, m.start()), today))
+        sent = _sentence_at(text, m.start())
+        hint_m = _FULL.search(sent)
+        found.extend(
+            extract_dates(sent, today, int(hint_m[1]) if hint_m else None))
     for m in _BEFORE_DATE.finditer(text):
         found.extend(extract_dates(m.group(0), today))
     return max(found) if found else None
