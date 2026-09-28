@@ -1,6 +1,6 @@
 from app import resume
 
-CV = """陈晓岚
+CV = """张三
 求职意向：法务专员 / 律师助理（广州、深圳）
 
 教育经历
@@ -20,7 +20,7 @@ CV = """陈晓岚
 
 def test_parse_education_and_name():
     p = resume.parse_resume(CV)
-    assert p["name"] == "陈晓岚"
+    assert p["name"] == "张三"
     edu = p["education"][0]
     assert edu["degree"] == "本科" and edu["level"] == 2
     assert "广东外语外贸大学" in edu["school"]
