@@ -1,0 +1,27 @@
+# CI：全量测试门禁（pytest，192 例）
+# 依赖按 README 安装（fastapi/uvicorn/jinja2/httpx/selectolax/apscheduler/
+# python-multipart/openpyxl/pytest，与 pyproject.toml 声明一致）；
+# ubuntu 有现成 wheel，selectolax 无需本地编译。
+# 只跑单测：不触发采集器、不起服务。
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: 安装依赖（按 README）
+        run: python -m pip install fastapi "uvicorn[standard]" jinja2 httpx selectolax apscheduler python-multipart openpyxl pytest
+
+      - name: 全量测试（192 例）
+        run: python -m pytest -q
