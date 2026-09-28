@@ -1,26 +1,27 @@
 {% extends "base.html" %}
 {% set jtmap = dict(job_types) %}
+{% block tkey %}title_rec{% endblock %}
 {% block title %}推荐岗位 · 法学招聘中台{% endblock %}
 {% block content %}
 <div class="page-head">
-  <h1>推荐岗位</h1>
-  <span class="meta">按与你的画像匹配度排序</span>
+  <h1 data-i18n="reco_h">推荐岗位</h1>
+  <span class="meta" data-i18n="reco_meta">按与你的画像匹配度排序</span>
   <span class="spacer"></span>
-  <a class="meta" href="/profile">调整画像 →</a>
+  <a class="meta" href="/profile" data-i18n="to_profile">调整画像 →</a>
 </div>
 
 <div class="stats">
   <a class="stat" href="/recommend">
     <span class="stat-n">{{ items|length }}</span>
-    <span class="stat-l">已评分岗位</span>
+    <span class="stat-l" data-i18n="stat_scored">已评分岗位</span>
   </a>
   <a class="stat {% if top_n %}hot{% endif %}" href="#top">
     <span class="stat-n">{{ top_n }}</span>
-    <span class="stat-l">高度匹配（≥60）</span>
+    <span class="stat-l" data-i18n="stat_top">高度匹配（≥60）</span>
   </a>
 </div>
 
-<p class="hint" style="margin:0 0 12px">
+<p class="hint" style="margin:0 0 12px" data-i18n="reco_basis">
   打分依据：意向城市（±26）· 岗位类型（+22/−4）· 关键词命中（标题命中权重×2，上限 26）·
   经历对口（+14）· 学历（满足 +8 / 不够 −14）· 经验要求（不够 −10 / 满足或欢迎应届 +6）·
   有明确截止日（+6）。
@@ -29,20 +30,20 @@
 
 <div id="top"></div>
 {% if not items %}
-<div class="empty">还没有可推荐的岗位。先去 <a href="/health">源健康</a> 采集一轮。</div>
+<div class="empty"><span data-i18n="reco_empty_a">还没有可推荐的岗位。先去</span> <a href="/health" data-i18n="nav_health">源健康</a><span data-i18n="reco_empty_b">采集一轮。</span></div>
 {% else %}
 <div class="list">
   <div class="list-head wide">
-    <span>匹配</span><span>截止</span><span>岗位</span><span>推荐理由</span><span></span>
+    <span data-i18n="h_match">匹配</span><span data-i18n="h_deadline">截止</span><span data-i18n="h_job">岗位</span><span data-i18n="h_why">推荐理由</span><span></span>
   </div>
   {% for m, job in items %}
   <div class="row rec">
     <span class="score {% if m['score'] >= 60 %}hi{% elif m['score'] >= 40 %}mid{% endif %}"
-          title="匹配度 {{ m['score'] }}/100">{{ m['score'] }}</span>
+          title="匹配度 {{ m['score'] }}/100" data-i18n-title="t_match" data-i18n-args='{{ {"n": m["score"]}|tojson }}'>{{ m['score'] }}</span>
     {% if job['deadline'] %}
     <span class="deadline {{ job['deadline']|dcolor }}">{{ job['deadline'][5:] }}</span>
     {% elif job['rolling'] %}
-    <span class="deadline roll" title="长期有效">长期</span>
+    <span class="deadline roll" title="长期有效" data-i18n-title="roll_short"><span data-i18n="row_roll">长期</span></span>
     {% else %}
     <span class="deadline none">—</span>
     {% endif %}
@@ -50,23 +51,23 @@
       <a class="t" href="/jobs/{{ job['id'] }}" title="{{ job['title'] }}">{{ job['title'] }}</a>
       <span class="meta-m">
         {% if job['org'] %}{{ job['org'] }} · {% endif %}
-        {{ job['city'] or '—' }} · {{ jtmap.get(job['job_type'], job['job_type']) }}
+        {{ job['city'] or '—' }} · <span data-i18n="{{ 'jt_' + job['job_type'] }}">{{ jtmap.get(job['job_type'], job['job_type']) }}</span>
         {% if job['employment_type'] %} · {{ job['employment_type'] }}{% endif %}
       </span>
     </span>
     <span class="why">
       {% for r in m['reasons'] %}<span class="chip">{{ r }}</span>{% endfor %}
-      {% if not m['reasons'] %}<span class="dim">仅基础分，画像与岗位关联较弱</span>{% endif %}
+      {% if not m['reasons'] %}<span class="dim" data-i18n="reco_weak">仅基础分，画像与岗位关联较弱</span>{% endif %}
     </span>
     <span class="acts">
       {% if job['aid'] %}
-      <span class="tag-ok">跟踪中</span>
+      <span class="tag-ok" data-i18n="tag_tracking">跟踪中</span>
       {% else %}
       <form class="inline" method="post" action="/jobs/{{ job['id'] }}/apply">
-        <button class="mini" title="加入投递跟踪">跟踪</button>
+        <button class="mini" data-i18n="row_follow" title="加入投递跟踪">跟踪</button>
       </form>
       {% endif %}
-      <a class="icon" href="{{ job['url'] }}" target="_blank" rel="noopener" title="打开原文">↗</a>
+      <a class="icon" href="{{ job['url'] }}" target="_blank" rel="noopener" title="打开原文" data-i18n-title="t_open2">↗</a>
     </span>
   </div>
   {% endfor %}

@@ -1,8 +1,9 @@
-/* 主题切换 + 顶栏滚动阴影。
+/* 主题切换 + 界面语言联动 + 顶栏滚动阴影。
  *
- * 为什么要单独一份：首帧的主题必须在 <head> 里用内联脚本写死（否则会闪白/闪黑），
- * 但"交互"没必要塞进 HTML，放这里由浏览器缓存。
- * 三态：auto（跟随系统）→ light → dark 循环，选择存 localStorage。
+ * 为什么要单独一份：首帧的主题/语言必须在 <head> 里用内联脚本写死（否则会闪白/闪黑、
+ * 闪中文），但"交互"没必要塞进 HTML，放这里由浏览器缓存。
+ * 主题三态：auto（跟随系统）→ light → dark 循环，选择存 localStorage。
+ * 界面语言（中 / EN）的字典与切换在 i18n.js，这里只在切换后重画按钮文案。
  */
 (function () {
   "use strict";
@@ -12,6 +13,12 @@
   var ORDER = ["auto", "light", "dark"];
   var LABEL = { auto: "跟随系统", light: "浅色", dark: "深色" };
   var mq = window.matchMedia("(prefers-color-scheme: dark)");
+
+  /* 主题按钮的悬停提示：EN 模式取 i18n 字典，中文用上面的原文 */
+  function tip(intent) {
+    var t = window.LJI18N && LJI18N.t("theme_tip_" + intent);
+    return t || ("主题：" + LABEL[intent] + "（点击切换）");
+  }
 
   function resolve(intent) {
     if (intent === "light" || intent === "dark") return intent;
@@ -28,9 +35,8 @@
     var btn = document.querySelector("[data-theme-toggle]");
     if (btn) {
       btn.dataset.intent = intent;
-      var text = "主题：" + LABEL[intent] + "（点击切换）";
-      btn.setAttribute("title", text);
-      btn.setAttribute("aria-label", text);
+      btn.setAttribute("title", tip(intent));
+      btn.setAttribute("aria-label", tip(intent));
     }
   }
 
@@ -47,6 +53,11 @@
   };
   if (mq.addEventListener) mq.addEventListener("change", onSystemChange);
   else if (mq.addListener) mq.addListener(onSystemChange);
+
+  // 切界面语言后，主题按钮的提示文案跟着换
+  document.addEventListener("langchange", function () {
+    paint(root.dataset.themeIntent || "auto", false);
+  });
 
   document.addEventListener("click", function (e) {
     var btn = e.target.closest && e.target.closest("[data-theme-toggle]");
@@ -104,10 +115,11 @@
                (form.action && /collect\/run|\/paste/.test(form.action) ? form : null);
     if (!slow) return;
     form.dataset.busy = "1";
+    var busyText = (window.LJI18N && LJI18N.t("btn_collecting")) || "采集中…";
     window.setTimeout(function () {
       form.querySelectorAll("button").forEach(function (b) {
         b.disabled = true;
-        if (b.classList.contains("primary")) b.textContent = "采集中…";
+        if (b.classList.contains("primary")) b.textContent = busyText;
       });
     }, 0);
   }, true);

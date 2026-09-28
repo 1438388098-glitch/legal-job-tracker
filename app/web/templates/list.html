@@ -2,91 +2,92 @@
 {% set bulk_mode = q.get('bulk') %}
 {% block content %}
 <div class="page-head">
-  <h1>岗位</h1>
+  <h1 data-i18n="nav_jobs">岗位</h1>
   <span class="meta">
-    {{ total }} 条{% if q.get('q') or q.get('job_type') or q.get('city') or q.get('status') or q.get('notice_kind') or q.get('fresh') or q.get('nodeadline') or q.get('employment_type') or q.get('rolling') or q.get('urgent') %}（已筛选）{% endif %}
-    {% if total > jobs|length %}· 显示前 {{ jobs|length }} 条{% endif %}
+    <span data-i18n="list_n_jobs" data-i18n-args='{{ {"n": total}|tojson }}'>{{ total }} 条</span>{% if q.get('q') or q.get('job_type') or q.get('city') or q.get('status') or q.get('notice_kind') or q.get('fresh') or q.get('nodeadline') or q.get('employment_type') or q.get('rolling') or q.get('urgent') %}<span data-i18n="list_filtered">（已筛选）</span>{% endif %}
+    {% if total > jobs|length %}<span data-i18n="list_showing" data-i18n-args='{{ {"n": jobs|length}|tojson }}'>· 显示前 {{ jobs|length }} 条</span>{% endif %}
   </span>
   <span class="spacer"></span>
   <span class="meta">
-    {% if q.get('notice_kind') == 'all' %}全部稿件
-    {% elif q.get('notice_kind') == 'result' %}结果公示
-    {% elif q.get('notice_kind') == 'info' %}其他信息
-    {% else %}仅可投递{% endif %}
-    · 按{{ '发布' if q.get('sort') == 'pub' else ('收录' if q.get('sort') == 'new' else '截止') }}排序
+    {% if q.get('notice_kind') == 'all' %}<span data-i18n="nk_all">全部稿件</span>
+    {% elif q.get('notice_kind') == 'result' %}<span data-i18n="nk_result">结果公示</span>
+    {% elif q.get('notice_kind') == 'info' %}<span data-i18n="nk_info">其他信息</span>
+    {% else %}<span data-i18n="nk_opening_only">仅可投递</span>{% endif %}
+    <span data-i18n="{{ 'sort_pub_meta' if q.get('sort') == 'pub' else ('sort_new_meta' if q.get('sort') == 'new' else 'sort_dl_meta') }}">· 按{{ '发布' if q.get('sort') == 'pub' else ('收录' if q.get('sort') == 'new' else '截止') }}排序</span>
   </span>
-  <a class="meta" href="{{ qs(bulk=None if q.get('bulk') else 1) }}">
+  <a class="meta" href="{{ qs(bulk=None if q.get('bulk') else 1) }}" data-i18n="{{ 'bulk_on' if q.get('bulk') else 'bulk_off' }}">
     {{ '退出批量' if q.get('bulk') else '批量' }}</a>
 </div>
 
 <div class="stats">
   <a class="stat {% if not q.get('urgent') %}on{% endif %}" href="{{ qs(urgent=None) }}"
-     title="全部可投递岗位">
+     title="全部可投递岗位" data-i18n-title="stat_opening_title">
     <span class="stat-n">{{ stats.opening }}</span>
-    <span class="stat-l">可投递岗位</span>
+    <span class="stat-l" data-i18n="stat_opening">可投递岗位</span>
   </a>
   <a class="stat {% if stats.d3 %}hot{% endif %} {% if q.get('urgent') == '3' %}on{% endif %}"
      href="{{ qs(urgent=None if q.get('urgent') == '3' else 3) }}">
     <span class="stat-n">{{ stats.d3 }}</span>
-    <span class="stat-l">3 天内截止</span>
+    <span class="stat-l" data-i18n="stat_d3">3 天内截止</span>
   </a>
   <a class="stat {% if stats.d7 and not stats.d3 %}warm{% endif %} {% if q.get('urgent') == '7' %}on{% endif %}"
      href="{{ qs(urgent=None if q.get('urgent') == '7' else 7) }}">
     <span class="stat-n">{{ stats.d7 }}</span>
-    <span class="stat-l">7 天内截止</span>
+    <span class="stat-l" data-i18n="stat_d7">7 天内截止</span>
   </a>
   <a class="stat {% if q.get('fresh') %}on{% endif %}"
      href="{{ qs(fresh=None if q.get('fresh') else 1, sort=None if q.get('fresh') else 'new') }}">
     <span class="stat-n">{{ stats.fresh }}</span>
-    <span class="stat-l">今日新增</span>
+    <span class="stat-l" data-i18n="stat_fresh">今日新增</span>
   </a>
   <a class="stat {% if q.get('nodeadline') %}on{% endif %}"
      href="{{ qs(nodeadline=None if q.get('nodeadline') else 1) }}"
-     title="未标注截止日期的岗位（多为邮箱投递、长期有效），不会进临期提醒，容易漏看">
+     title="未标注截止日期的岗位（多为邮箱投递、长期有效），不会进临期提醒，容易漏看"
+     data-i18n-title="stat_nodeadline_title">
     <span class="stat-n">{{ no_deadline }}</span>
-    <span class="stat-l">无截止日</span>
+    <span class="stat-l" data-i18n="stat_nodeadline">无截止日</span>
   </a>
 </div>
 
 <form class="filters" method="get" action="/">
-  <input type="text" name="q" value="{{ q.get('q', '') }}" placeholder="搜索标题 / 单位 / 正文 / 备注">
-  <select name="job_type" aria-label="岗位类型">
-    <option value="">全部类型</option>
+  <input type="text" name="q" value="{{ q.get('q', '') }}" placeholder="搜索标题 / 单位 / 正文 / 备注" data-i18n-ph="ph_search">
+  <select name="job_type" aria-label="岗位类型" data-i18n-aria="aria_jobtype">
+    <option value="" data-i18n="opt_all_type">全部类型</option>
     {% for val, label in job_types %}
-    <option value="{{ val }}" {% if q.get('job_type') == val %}selected{% endif %}>{{ label }}</option>
+    <option value="{{ val }}" {% if q.get('job_type') == val %}selected{% endif %} data-i18n="{{ 'jt_' + val }}">{{ label }}</option>
     {% endfor %}
   </select>
-  <select name="city" aria-label="城市">
-    <option value="">全部城市</option>
+  <select name="city" aria-label="城市" data-i18n-aria="aria_city">
+    <option value="" data-i18n="opt_all_city">全部城市</option>
     {% for c in cities %}
     <option value="{{ c }}" {% if q.get('city') == c %}selected{% endif %}>{{ c }}</option>
     {% endfor %}
   </select>
-  <select name="employment_type" aria-label="用工性质">
-    <option value="">全部用工</option>
+  <select name="employment_type" aria-label="用工性质" data-i18n-aria="aria_emp">
+    <option value="" data-i18n="opt_all_emp">全部用工</option>
     {% for val, label in employment_types %}
     <option value="{{ val }}" {% if q.get('employment_type') == val %}selected{% endif %}>{{ label }}</option>
     {% endfor %}
   </select>
-  <select name="notice_kind" aria-label="公告性质">
-    <option value="">仅可投递</option>
-    <option value="all" {% if q.get('notice_kind') == 'all' %}selected{% endif %}>全部稿件</option>
+  <select name="notice_kind" aria-label="公告性质" data-i18n-aria="aria_kind">
+    <option value="" data-i18n="nk_opening_only">仅可投递</option>
+    <option value="all" {% if q.get('notice_kind') == 'all' %}selected{% endif %} data-i18n="nk_all">全部稿件</option>
     {% for val, label in notice_kinds %}
     {% if val != 'opening' %}
-    <option value="{{ val }}" {% if q.get('notice_kind') == val %}selected{% endif %}>只看{{ label }}</option>
+    <option value="{{ val }}" {% if q.get('notice_kind') == val %}selected{% endif %} data-i18n="{{ 'opt_only_' + val }}">只看{{ label }}</option>
     {% endif %}
     {% endfor %}
   </select>
-  <select name="status" aria-label="状态">
-    <option value="">全部状态</option>
+  <select name="status" aria-label="状态" data-i18n-aria="aria_status">
+    <option value="" data-i18n="opt_all_status">全部状态</option>
     {% for s, label in [('new', '未读'), ('read', '已读'), ('pending', '待确认'), ('archived', '已归档')] %}
-    <option value="{{ s }}" {% if q.get('status') == s %}selected{% endif %}>{{ label }}</option>
+    <option value="{{ s }}" {% if q.get('status') == s %}selected{% endif %} data-i18n="{{ 'st_' + s }}">{{ label }}</option>
     {% endfor %}
   </select>
-  <select name="sort" aria-label="排序">
-    <option value="">按截止日</option>
-    <option value="pub" {% if q.get('sort') == 'pub' %}selected{% endif %}>按发布日</option>
-    <option value="new" {% if q.get('sort') == 'new' %}selected{% endif %}>按收录时间</option>
+  <select name="sort" aria-label="排序" data-i18n-aria="aria_sort">
+    <option value="" data-i18n="opt_by_dl">按截止日</option>
+    <option value="pub" {% if q.get('sort') == 'pub' %}selected{% endif %} data-i18n="opt_by_pub">按发布日</option>
+    <option value="new" {% if q.get('sort') == 'new' %}selected{% endif %} data-i18n="opt_by_new">按收录时间</option>
   </select>
   {# 不在表单里的筛选条件要显式带上，否则改一次筛选就把它们清掉了 #}
   {% for k in ['urgent', 'fresh', 'nodeadline', 'bulk'] %}
@@ -94,20 +95,20 @@
   {% endfor %}
   {# 下拉框由 app.js 即选即筛（onchange 提交），不再放"筛选"按钮——少一步操作也少一个视觉元素；搜索框回车提交 #}
   {% if q.get('q') or q.get('job_type') or q.get('city') or q.get('status') or q.get('notice_kind') or q.get('sort') or q.get('fresh') or q.get('nodeadline') or q.get('employment_type') or q.get('rolling') or q.get('urgent') %}
-  <a class="reset" href="/">清除</a>
+  <a class="reset" href="/" data-i18n="f_clear">清除</a>
   {% endif %}
 </form>
 
 {% if flash %}
 <div class="flash" role="status">
-  <span>已{{ '归档' if flash['action'] == 'archive' else '恢复' }} {{ flash['n'] }} 条</span>
+  <span data-i18n="{{ 'flash_restored' if flash['action'] != 'archive' else 'flash_archived' }}" data-i18n-args='{{ {"n": flash["n"]}|tojson }}'>已{{ '归档' if flash['action'] == 'archive' else '恢复' }} {{ flash['n'] }} 条</span>
   <form class="inline" method="post" action="/jobs/batch">
     <input type="hidden" name="ids" value="{{ flash['ids'] }}">
     <input type="hidden" name="action" value="{{ 'unarchive' if flash['action'] == 'archive' else 'archive' }}">
-    <button type="submit">撤销</button>
+    <button type="submit" data-i18n="f_undo">撤销</button>
   </form>
   <span class="spacer"></span>
-  <a class="meta" href="{{ qs(done=None, ids=None) }}">知道了</a>
+  <a class="meta" href="{{ qs(done=None, ids=None) }}" data-i18n="f_got">知道了</a>
 </div>
 {% endif %}
 
@@ -115,31 +116,31 @@
 {# 批量模式：勾选框不在任何表单里（HTML 不允许 form 套 form），提交时由 app.js 汇总 #}
 <form class="bulkbar" method="post" action="/jobs/batch">
   <input type="hidden" name="ids" data-bulk-ids>
-  <label class="check"><input type="checkbox" data-select-all> <span>全选</span></label>
-  <span class="meta">已选 <b data-selected-count>0</b> 条</span>
-  <button type="submit" name="action" value="read">标为已读</button>
-  <button type="submit" name="action" value="archive">归档</button>
+  <label class="check"><input type="checkbox" data-select-all> <span data-i18n="b_all">全选</span></label>
+  <span class="meta"><span data-i18n="b_sel_pre">已选</span> <b data-selected-count>0</b> <span data-i18n="b_sel_post">条</span></span>
+  <button type="submit" name="action" value="read" data-i18n="b_read">标为已读</button>
+  <button type="submit" name="action" value="archive" data-i18n="k_archive">归档</button>
   {% if q.get('status') == 'archived' %}
-  <button type="submit" name="action" value="unarchive">恢复</button>
+  <button type="submit" name="action" value="unarchive" data-i18n="k_restore">恢复</button>
   {% endif %}
   <span class="spacer"></span>
-  <span class="meta">操作完回到当前筛选视图</span>
+  <span class="meta" data-i18n="b_note">操作完回到当前筛选视图</span>
 </form>
 {% endif %}
 
 {% if jobs|length == 0 %}
 <div class="empty">
-  没有匹配的岗位。
+  <span data-i18n="empty_none">没有匹配的岗位。</span>
   {% if not q %}
-  先去 <a href="/health">源健康</a> 点「立即采集」，或在 <a href="/paste">粘贴箱</a> 粘入公众号链接。
+  <span data-i18n="empty_a">先去</span> <a href="/health" data-i18n="nav_health">源健康</a><span data-i18n="empty_b">点「立即采集」，或在</span> <a href="/paste" data-i18n="nav_paste">粘贴箱</a><span data-i18n="empty_c">粘入公众号链接。</span>
   {% endif %}
 </div>
 {% else %}
-<div class="list{% if q.get('bulk') %} bulk{% endif %}" role="table" aria-label="岗位列表">
+<div class="list{% if q.get('bulk') %} bulk{% endif %}" role="table" aria-label="岗位列表" data-i18n-aria="aria_joblist">
   <div class="list-head" role="row">
-    {% if q.get('bulk') %}<span class="cb" role="columnheader" aria-label="选择"></span>{% endif %}
-    <span role="columnheader">截止</span><span role="columnheader">类型</span><span role="columnheader">城市</span><span role="columnheader">标题</span>
-    <span role="columnheader">单位</span><span role="columnheader">来源</span><span role="columnheader" aria-label="操作"></span>
+    {% if q.get('bulk') %}<span class="cb" role="columnheader" aria-label="选择" data-i18n-aria="aria_pick"></span>{% endif %}
+    <span role="columnheader" data-i18n="h_deadline">截止</span><span role="columnheader" data-i18n="h_type">类型</span><span role="columnheader" data-i18n="h_city">城市</span><span role="columnheader" data-i18n="h_title">标题</span>
+    <span role="columnheader" data-i18n="h_org">单位</span><span role="columnheader" data-i18n="h_src">来源</span><span role="columnheader" aria-label="操作" data-i18n-aria="aria_actions"></span>
   </div>
   {% for job in jobs %}
   {% include "partials/job_row.html" %}

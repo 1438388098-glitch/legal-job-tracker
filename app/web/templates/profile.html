@@ -1,38 +1,45 @@
 {% extends "base.html" %}
+{% block tkey %}title_profile{% endblock %}
 {% block title %}个人画像 · 法学招聘中台{% endblock %}
 {% block content %}
 <div class="page-head">
-  <h1>个人画像</h1>
-  {% if prof %}<span class="meta">来源：{{ prof['source_file'] or '手动填写' }}</span>{% endif %}
+  <h1 data-i18n="profile_h">个人画像</h1>
+  {% if prof %}
+  {% if prof['source_file'] %}
+  <span class="meta" data-i18n="profile_src" data-i18n-args='{{ {"s": prof["source_file"]}|tojson }}'>来源：{{ prof['source_file'] }}</span>
+  {% else %}
+  <span class="meta" data-i18n="profile_src_manual">来源：手动填写</span>
+  {% endif %}
+  {% endif %}
   <span class="spacer"></span>
-  {% if prof %}<a class="meta" href="/recommend">看推荐岗位 →</a>{% endif %}
+  {% if prof %}<a class="meta" href="/recommend" data-i18n="to_reco">看推荐岗位 →</a>{% endif %}
 </div>
 
 {% if err == 'no-parser' %}
-<div class="alert warn">这个格式需要额外依赖：在 venv 里执行
-  <code>pip install python-docx pypdf</code> 后重试（.txt / .md 可直接传）。</div>
+<div class="alert warn"><span data-i18n="err_no_parser_a">这个格式需要额外依赖：在 venv 里执行</span>
+  <code>pip install python-docx pypdf</code><span data-i18n="err_no_parser_b">后重试（.txt / .md 可直接传）。</span></div>
 {% elif err == 'empty' %}
-<div class="alert warn">没从文件里读到文字。扫描版 PDF（图片）无法解析，请改用文字版或 .docx。</div>
+<div class="alert warn" data-i18n="err_empty">没从文件里读到文字。扫描版 PDF（图片）无法解析，请改用文字版或 .docx。</div>
 {% elif err == 'too-big' %}
-<div class="alert warn">文件超过 8MB，请压缩后重试。</div>
+<div class="alert warn" data-i18n="err_too_big">文件超过 8MB，请压缩后重试。</div>
 {% endif %}
 
 {% if not prof %}
 <div class="empty">
-  还没有画像。上传一份简历自动生成，也可以直接手填下面的表单。<br>
-  画像只存在本机 <code>data/job.db</code>，不会上传到任何地方。
+  <span data-i18n="prof_empty_a">还没有画像。上传一份简历自动生成，也可以直接手填下面的表单。</span><br>
+  <span data-i18n="prof_empty_b">画像只存在本机</span> <code>data/job.db</code><span data-i18n="prof_empty_c">，不会上传到任何地方。</span>
 </div>
 {% endif %}
 
 <div class="profile-grid">
   <div class="profile-side">
     <div class="section first">
-      <h2>上传简历</h2>
+      <h2 data-i18n="sec_upload">上传简历</h2>
       <form method="post" action="/profile/upload" enctype="multipart/form-data" class="row-form">
         <input type="file" name="file" accept=".pdf,.docx,.txt,.md">
-        <button class="primary" type="submit">解析生成</button>
+        <button class="primary" type="submit" data-i18n="btn_parse">解析生成</button>
       </form>
-      <p class="hint">
+      <p class="hint" data-i18n="upload_hint">
         支持 PDF / Word / 纯文本。解析是规则抽取、不保证完整——生成后请在右侧核对修改，
         画像越准推荐越有用。
       </p>
@@ -40,17 +47,16 @@
 
     {% if prof and (prof['skills'] or prof['experiences'] or prof['cities']) %}
     <div class="section">
-      <h2>系统解析结果</h2>
+      <h2 data-i18n="sec_parsed">系统解析结果</h2>
       <dl class="kv">
-        <dt>技能</dt><dd>{{ (prof['skills'] or [])|join('、') or '—' }}</dd>
-        <dt>经历</dt><dd>{{ (prof['experiences'] or [])|map(attribute='kind')|join('、') or '—' }}</dd>
-        <dt>意向城市</dt><dd>{{ (prof['cities'] or [])|join('、') or '—' }}</dd>
-        <dt>意向类型</dt><dd>{{ (prof['job_types'] or [])|join('、') or '—' }}</dd>
+        <dt data-i18n="k_skills">技能</dt><dd>{{ (prof['skills'] or [])|join('、') or '—' }}</dd>
+        <dt data-i18n="k_exp">经历</dt><dd>{{ (prof['experiences'] or [])|map(attribute='kind')|join('、') or '—' }}</dd>
+        <dt data-i18n="k_int_city">意向城市</dt><dd>{{ (prof['cities'] or [])|join('、') or '—' }}</dd>
+        <dt data-i18n="k_int_type">意向类型</dt><dd>{{ (prof['job_types'] or [])|join('、') or '—' }}</dd>
       </dl>
       <details class="snap-raw">
-        <summary>实际参与打分的词（{{ (prof['keywords'] or [])|length }} 个）</summary>
-        <p class="hint">{{ (prof['keywords'] or [])|join('、') or '—' }}。
-          觉得推荐不准时，多半是这里需要调整。</p>
+        <summary data-i18n="profile_kw" data-i18n-args='{{ {"n": (prof["keywords"] or [])|length}|tojson }}'>实际参与打分的词（{{ (prof['keywords'] or [])|length }} 个）</summary>
+        <p class="hint">{{ (prof['keywords'] or [])|join('、') or '—' }}。<span data-i18n="profile_kw_hint">觉得推荐不准时，多半是这里需要调整。</span></p>
       </details>
     </div>
     {% endif %}
@@ -58,57 +64,57 @@
 
   <div class="profile-main">
     <div class="section first">
-      <h2>编辑画像</h2>
+      <h2 data-i18n="sec_edit">编辑画像</h2>
       <form method="post" action="/profile" class="field-grid">
         <div class="field">
-          <label><span>姓名</span>
-            <input type="text" name="name" value="{{ prof['name'] if prof else '' }}" placeholder="选填">
+          <label><span data-i18n="f_name">姓名</span>
+            <input type="text" name="name" value="{{ prof['name'] if prof else '' }}" placeholder="选填" data-i18n-ph="ph_optional">
           </label>
         </div>
         <div class="field">
-          <label><span>工作年限</span>
-            <input type="text" name="years" value="{{ prof['years'] if prof and prof['years'] is not none else '' }}" placeholder="应届填 0">
+          <label><span data-i18n="f_years">工作年限</span>
+            <input type="text" name="years" value="{{ prof['years'] if prof and prof['years'] is not none else '' }}" placeholder="应届填 0" data-i18n-ph="ph_fresh">
           </label>
         </div>
         <div class="field span2">
-          <label><span>意向城市</span>
-            <input type="text" name="cities" value="{{ (prof['cities'] or [])|join('、') if prof else '' }}" placeholder="广州、深圳、佛山">
+          <label><span data-i18n="f_cities">意向城市</span>
+            <input type="text" name="cities" value="{{ (prof['cities'] or [])|join('、') if prof else '' }}" placeholder="广州、深圳、佛山" data-i18n-ph="ph_cities">
           </label>
         </div>
         <div class="field span2">
-          <label><span>意向岗位类型</span></label>
+          <label><span data-i18n="f_types">意向岗位类型</span></label>
           <div class="checks">
             {% set chosen = (prof['job_types'] or []) if prof else [] %}
             {% for val, label in job_types %}
             <label class="check">
               <input type="checkbox" name="job_type_{{ val }}"
-                     {% if val in chosen %}checked{% endif %}> <span>{{ label }}</span>
+                     {% if val in chosen %}checked{% endif %}> <span data-i18n="{{ 'jt_' + val }}">{{ label }}</span>
             </label>
             {% endfor %}
           </div>
-          <span class="hint">与岗位类型一致时加 22 分，是最重的一项。</span>
+          <span class="hint" data-i18n="hint_type">与岗位类型一致时加 22 分，是最重的一项。</span>
         </div>
         <div class="field span2">
-          <label><span>技能 / 关键词</span>
-            <textarea name="skills" rows="3" placeholder="合同审查、法律检索、诉讼、通过法律职业资格考试…">{{ (prof['skills'] or [])|join('、') if prof else '' }}</textarea>
+          <label><span data-i18n="f_skills">技能 / 关键词</span>
+            <textarea name="skills" rows="3" placeholder="合同审查、法律检索、诉讼、通过法律职业资格考试…" data-i18n-ph="ph_skills">{{ (prof['skills'] or [])|join('、') if prof else '' }}</textarea>
           </label>
-          <span class="hint">逗号、顿号或换行分隔。命中岗位正文会加分。</span>
+          <span class="hint" data-i18n="hint_skills">逗号、顿号或换行分隔。命中岗位正文会加分。</span>
         </div>
         <div class="field">
-          <label><span>经历类型</span>
+          <label><span data-i18n="f_exp">经历类型</span>
             <input type="text" name="experiences" value="{{ (prof['experiences'] or [])|map(attribute='kind')|join('、') if prof else '' }}"
-                   placeholder="律所、法院、法务">
+                   placeholder="律所、法院、法务" data-i18n-ph="ph_exp">
           </label>
-          <span class="hint">与岗位类型一致时额外加分（如"律所经历"配"律所岗"）。</span>
+          <span class="hint" data-i18n="hint_exp">与岗位类型一致时额外加分（如"律所经历"配"律所岗"）。</span>
         </div>
         <div class="field">
-          <label><span>学历</span>
-            <input type="text" name="education" value="{{ (prof['education'] or [])|map(attribute='degree')|join('、') if prof else '' }}" placeholder="本科">
+          <label><span data-i18n="f_edu">学历</span>
+            <input type="text" name="education" value="{{ (prof['education'] or [])|map(attribute='degree')|join('、') if prof else '' }}" placeholder="本科" data-i18n-ph="ph_edu">
           </label>
         </div>
         <div class="form-actions span2">
-          <button class="primary" type="submit">保存画像</button>
-          {% if prof %}<a class="btn" href="/recommend">看推荐岗位</a>{% endif %}
+          <button class="primary" type="submit" data-i18n="btn_save_profile">保存画像</button>
+          {% if prof %}<a class="btn" href="/recommend" data-i18n="to_reco_btn">看推荐岗位</a>{% endif %}
         </div>
       </form>
     </div>

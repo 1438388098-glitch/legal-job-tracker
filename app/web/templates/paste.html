@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="page-head">
-  <h1>粘贴箱</h1>
-  <span class="meta">抓取公众号等无固定栏目页面的招聘文章</span>
+  <h1 data-i18n="paste_h">粘贴箱</h1>
+  <span class="meta" data-i18n="paste_meta">抓取公众号等无固定栏目页面的招聘文章</span>
 </div>
 
 <form method="post" action="/paste" class="filters">
   <input name="url" placeholder="https://mp.weixin.qq.com/s/xxxx" required>
-  <button class="primary" type="submit">抓取</button>
+  <button class="primary" type="submit" data-i18n="paste_fetch">抓取</button>
 </form>
 
-<p class="muted form-narrow">
+<p class="muted form-narrow" data-i18n="paste_help">
   贴入链接后，系统抓取正文并自动提取标题、城市、截止时间等字段，再让你核对入库。
   若抓取失败（部分公众号文章需登录/风控），可手动另存网页后用浏览器打开原文链接，直接在岗位详情页「修改字段」录入关键信息。
 </p>
-{% if error %}<p class="err">抓取失败：{{ error }}</p>{% endif %}
+{% if error %}<p class="err"><span data-i18n="err_fetch">抓取失败：</span>{{ error }}</p>{% endif %}
 {% endblock %}

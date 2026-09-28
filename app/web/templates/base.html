@@ -4,29 +4,35 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>{% block title %}法学招聘信息中台{% endblock %}</title>
-{# 主题必须在样式表之前写死，否则首帧会闪一下默认配色 #}
-<script>try{var t=localStorage.getItem("theme")||"auto";var d=t==="dark"||(t==="auto"&&window.matchMedia("(prefers-color-scheme: dark)").matches);var e=document.documentElement;e.dataset.theme=d?"dark":"light";e.dataset.themeIntent=t;}catch(err){document.documentElement.dataset.theme="light";document.documentElement.dataset.themeIntent="auto";}</script>
+{# tkey/targs：给 <title> 挂翻译键（详情页把动态岗位名塞进 args，只翻后缀） #}
+<title data-i18n="{% block tkey %}title_home{% endblock %}" data-i18n-args='{% block targs %}{}{% endblock %}'>{% block title %}法学招聘信息中台{% endblock %}</title>
+{# 主题与语言都必须在样式表/渲染前写死，否则首帧会闪一下默认配色/中文 #}
+<script>try{var t=localStorage.getItem("theme")||"auto";var d=t==="dark"||(t==="auto"&&window.matchMedia("(prefers-color-scheme: dark)").matches);var e=document.documentElement;e.dataset.theme=d?"dark":"light";e.dataset.themeIntent=t;}catch(err){document.documentElement.dataset.theme="light";document.documentElement.dataset.themeIntent="auto";}
+try{var l=localStorage.getItem("lang")==="en"?"en":"zh";document.documentElement.lang=l==="en"?"en":"zh-CN";document.documentElement.dataset.lang=l;}catch(e2){document.documentElement.dataset.lang="zh";}</script>
 <link rel="stylesheet" href="/static/style.css?v={{ asset_v }}">
+<script src="/static/i18n.js?v={{ asset_v }}" defer></script>
 <script src="/static/app.js?v={{ asset_v }}" defer></script>
 </head>
 <body>
 {# 键盘用户（尤其屏幕阅读器）最先想要的就是这个：跳过导航直达岗位列表 #}
-<a class="skip" href="#main">跳到内容</a>
+<a class="skip" href="#main" data-i18n="skip">跳到内容</a>
 {% set path = request.url.path %}
 <header class="top">
-  <a class="brand" href="/">法学招聘中台</a>
-  <a class="nav-a" href="/" {% if path == '/' %}aria-current="page"{% endif %}>岗位</a>
-  <a class="nav-a" href="/board" {% if path == '/board' %}aria-current="page"{% endif %}>投递</a>
-  <a class="nav-a" href="/recommend" {% if path == '/recommend' %}aria-current="page"{% endif %}>推荐</a>
-  <a class="nav-a" href="/paste" {% if path == '/paste' %}aria-current="page"{% endif %}>粘贴箱</a>
-  <a class="nav-a" href="/health" {% if path == '/health' %}aria-current="page"{% endif %}>源健康</a>
-  <a class="nav-a" href="/profile" {% if path == '/profile' %}aria-current="page"{% endif %}>画像</a>
-  <a class="nav-a" href="/settings" {% if path == '/settings' %}aria-current="page"{% endif %}>设置</a>
+  <a class="brand" href="/" data-i18n="brand">法学招聘中台</a>
+  <a class="nav-a" href="/" {% if path == '/' %}aria-current="page"{% endif %} data-i18n="nav_jobs">岗位</a>
+  <a class="nav-a" href="/board" {% if path == '/board' %}aria-current="page"{% endif %} data-i18n="nav_board">投递</a>
+  <a class="nav-a" href="/recommend" {% if path == '/recommend' %}aria-current="page"{% endif %} data-i18n="nav_reco">推荐</a>
+  <a class="nav-a" href="/paste" {% if path == '/paste' %}aria-current="page"{% endif %} data-i18n="nav_paste">粘贴箱</a>
+  <a class="nav-a" href="/health" {% if path == '/health' %}aria-current="page"{% endif %} data-i18n="nav_health">源健康</a>
+  <a class="nav-a" href="/profile" {% if path == '/profile' %}aria-current="page"{% endif %} data-i18n="nav_profile">画像</a>
+  <a class="nav-a" href="/settings" {% if path == '/settings' %}aria-current="page"{% endif %} data-i18n="nav_settings">设置</a>
   <span class="top-right">
-    <a class="nav-a" href="/export.xlsx">导出</a>
+    <span class="lang-switch" role="group" aria-label="Language / 语言">
+      <button type="button" data-lang-set="zh" aria-pressed="true">中</button><button type="button" data-lang-set="en" aria-pressed="false">EN</button>
+    </span>
+    <a class="nav-a" href="/export.xlsx" data-i18n="nav_export">导出</a>
     <button class="icon theme-btn" type="button" data-theme-toggle
-            title="主题：跟随系统（点击切换）" aria-label="主题：跟随系统（点击切换）">
+            title="主题：跟随系统（点击切换）" data-i18n-title="theme_tip_auto" aria-label="主题：跟随系统（点击切换）" data-i18n-aria="theme_tip_auto">
       <svg class="i-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
         <circle cx="12" cy="12" r="8.2"></circle>
@@ -46,8 +52,8 @@
 </header>
 {% if urgent and urgent > 0 %}
 <div class="alert">
-  <span><b>{{ urgent }}</b> 个岗位 3 天内截止</span>
-  <a href="/?urgent=3">只看这些</a>
+  <span><b>{{ urgent }}</b> <span data-i18n="alert_urgent">个岗位 3 天内截止</span></span>
+  <a href="/?urgent=3" data-i18n="alert_view">只看这些</a>
 </div>
 {% endif %}
 <main class="wrap" id="main" tabindex="-1">

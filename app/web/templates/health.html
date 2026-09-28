@@ -1,25 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="page-head">
-  <h1>源健康</h1>
+  <h1 data-i18n="health_h">源健康</h1>
   <span class="meta">
-    {{ sources|length }} 个源
+    <span data-i18n="health_n" data-i18n-args='{{ {"n": sources|length}|tojson }}'>{{ sources|length }} 个源</span>
     {% set bad = sources|selectattr('consecutive_failures', 'gt', 0)|list %}
-    {% if bad %}· <span class="fail">{{ bad|length }} 个异常</span>{% endif %}
+    {% if bad %}· <span class="fail" data-i18n="health_bad" data-i18n-args='{{ {"n": bad|length}|tojson }}'>{{ bad|length }} 个异常</span>{% endif %}
   </span>
   <span class="spacer"></span>
   <form class="inline" method="post" action="/collect/run">
-    <button class="primary" type="submit">立即采集全部源</button>
+    <button class="primary" type="submit" data-i18n="health_run_all">立即采集全部源</button>
   </form>
 </div>
 
 <div class="section first">
   {% for cat, rows in grouped.items() %}
   {% set cat_name, _ = source_categories.get(cat, (cat, 99)) %}
-  <h2>{{ cat_name }} <span class="meta">{{ rows|length }} 源</span></h2>
+  <h2><span data-i18n="{{ 'cat_' + cat }}">{{ cat_name }}</span> <span class="meta" data-i18n="health_n_grp" data-i18n-args='{{ {"n": rows|length}|tojson }}'>{{ rows|length }} 源</span></h2>
   <table class="tbl-src">
     <thead>
-      <tr><th>源</th><th>名称</th><th>上次成功</th><th class="num">失败</th><th>最近错误</th><th></th></tr>
+      <tr><th data-i18n="th_src">源</th><th data-i18n="th_name">名称</th><th data-i18n="th_lastok">上次成功</th><th class="num" data-i18n="th_fails">失败</th><th data-i18n="th_err">最近错误</th><th></th></tr>
     </thead>
     <tbody>
     {% for s in rows %}
@@ -36,7 +36,7 @@
       <td>
         <form class="inline" method="post" action="/collect/run">
           <input type="hidden" name="slug" value="{{ s['slug'] }}">
-          <button type="submit">采集</button>
+          <button type="submit" data-i18n="health_collect">采集</button>
         </form>
       </td>
     </tr>
@@ -45,15 +45,15 @@
   </table>
   {% endfor %}
   {% if sources|length == 0 %}
-  <div class="empty">还没有信息源。运行 <code>python scripts/seed_sources.py</code>。</div>
+  <div class="empty"><span data-i18n="health_empty_a">还没有信息源。运行</span> <code>python scripts/seed_sources.py</code><span data-i18n="health_empty_b">。</span></div>
   {% endif %}
 </div>
 
 <div class="section">
-  <h2>最近采集日志</h2>
+  <h2 data-i18n="logs_h">最近采集日志</h2>
   <table class="tbl-log">
     <thead>
-      <tr><th>时间</th><th>源</th><th class="num">新增</th><th class="num">合并</th><th>错误</th></tr>
+      <tr><th data-i18n="th_time">时间</th><th data-i18n="th_src">源</th><th class="num" data-i18n="th_ins">新增</th><th class="num" data-i18n="th_merged">合并</th><th data-i18n="th_err2">错误</th></tr>
     </thead>
     <tbody>
     {% for l in logs %}
@@ -69,7 +69,7 @@
       {% endif %}
     </tr>
     {% endfor %}
-    {% if logs|length == 0 %}<tr><td colspan="5" class="dim">暂无日志</td></tr>{% endif %}
+    {% if logs|length == 0 %}<tr><td colspan="5" class="dim" data-i18n="no_logs">暂无日志</td></tr>{% endif %}
     </tbody>
   </table>
 </div>

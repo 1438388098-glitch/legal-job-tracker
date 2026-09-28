@@ -89,9 +89,9 @@ def mount(app: FastAPI, tpl_dir: str) -> Jinja2Templates:
 
     def asset_version() -> str:
         # 注意：这里刻意**不缓存**。mtime 每次都取，改 CSS/JS 刷新页面即生效——
-        # 这是已交付的开发体验；两次 stat 的开销（微秒级）远不值得破坏它。
+        # 这是已交付的开发体验；三次 stat 的开销（微秒级）远不值得破坏它。
         stamps = []
-        for name in ("style.css", "app.js"):
+        for name in ("style.css", "app.js", "i18n.js"):
             try:
                 stamps.append(int((static_dir / name).stat().st_mtime))
             except OSError:

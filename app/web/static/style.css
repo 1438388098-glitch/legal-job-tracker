@@ -225,6 +225,24 @@ html[data-theme-intent="dark"]  .theme-btn .i-dark { display: block; }
 html[data-theme-intent] .theme-btn svg.i-auto { display: none; }
 html[data-theme-intent="auto"] .theme-btn svg.i-auto { display: block; }
 
+/* 语言切换（中 / EN）：与主题按钮同族的两态分段控件，28px 标准档 */
+.lang-switch {
+  display: inline-flex; align-items: center;
+  height: 28px;
+  border: 1px solid var(--line); border-radius: var(--r-sm);
+  overflow: hidden;
+}
+.lang-switch button {
+  height: 100%; padding: 0 8px;
+  border: 0; border-radius: 0;
+  background: transparent; color: var(--fg-3);
+  font-family: inherit; font-size: var(--fs-sm); line-height: 1;
+  cursor: pointer;
+  transition: background-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+.lang-switch button:hover { background: var(--bg-hover); color: var(--fg); }
+.lang-switch button.on { background: var(--bg-inset); color: var(--fg); font-weight: 500; }
+
 /* 临期横幅 */
 .alert {
   display: flex; align-items: center; gap: 10px;

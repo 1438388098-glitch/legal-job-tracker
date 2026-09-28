@@ -1,4 +1,5 @@
 {% set jtype = dict(job_types).get(job['job_type'], job['job_type']) %}
+{% set jkey = 'jt_' + job['job_type'] %}
 <div class="row{% if job['status'] == 'read' %} is-read{% endif %}{% if job['notice_kind'] != 'opening' %} kind-result{% endif %}{% if job['deadline']|urgency %} {{ job['deadline']|urgency }}{% endif %}">
   {% if bulk_mode %}
   <span class="cb"><input type="checkbox" class="bulk-cb" value="{{ job['id'] }}"></span>
@@ -7,36 +8,36 @@
   <span class="deadline {{ job['deadline']|dcolor }}"
         title="{{ job['deadline'] }}{{ job['deadline']|dleft }}">{{ job['deadline'][5:] }}</span>
   {% elif job['rolling'] %}
-  <span class="deadline roll" title="长期有效岗位，按单位要求邮箱投递即可">长期</span>
+  <span class="deadline roll" title="长期有效岗位，按单位要求邮箱投递即可" data-i18n-title="t_roll"><span data-i18n="row_roll">长期</span></span>
   {% else %}
-  <span class="deadline none" title="公告未注明截止日期">—</span>
+  <span class="deadline none" title="公告未注明截止日期" data-i18n-title="t_nodeadline">—</span>
   {% endif %}
-  <span class="type t-{{ job['job_type'] }}" title="{{ jtype }}{% if job['employment_type'] %} · {{ job['employment_type'] }}{% endif %}"><i></i>{{ jtype }}</span>
+  <span class="type t-{{ job['job_type'] }}" title="{{ jtype }}{% if job['employment_type'] %} · {{ job['employment_type'] }}{% endif %}"><i></i><span data-i18n="{{ jkey }}">{{ jtype }}</span></span>
   <span class="city" title="{{ job['city'] or '' }}">{{ job['city'] or '' }}</span>
   <a class="t" href="/jobs/{{ job['id'] }}" title="{{ job['title'] }}">{{ job['title'] }}</a>
-  <span class="org" title="{{ job['org'] or '' }}">{{ job['org'] or '' }}{% if job['merge_count'] > 1 %}<span class="chip">{{ job['merge_count'] }} 源</span>{% endif %}</span>
+  <span class="org" title="{{ job['org'] or '' }}">{{ job['org'] or '' }}{% if job['merge_count'] > 1 %}<span class="chip" data-i18n="row_nsrcs" data-i18n-args='{{ {"n": job["merge_count"]}|tojson }}'>{{ job['merge_count'] }} 源</span>{% endif %}</span>
   {# 来源显示短名（"·"前的主体，如"广东省人社厅"），全名进 hover；slug 给程序员排错用 #}
   {% set sname = (src_names.get(job['source_slug']) or job['source_slug']) %}
   <span class="src" title="{{ sname }}（{{ job['source_slug'] }}）">{{ sname.split('·')[0] }}</span>
-  <span class="meta-m">{{ jtype }}{% if job['employment_type'] %} · {{ job['employment_type'] }}{% endif %}{% if job['city'] %} · {{ job['city'] }}{% endif %}{% if job['org'] %} · {{ job['org'] }}{% endif %}</span>
+  <span class="meta-m"><span data-i18n="{{ jkey }}">{{ jtype }}</span>{% if job['employment_type'] %} · {{ job['employment_type'] }}{% endif %}{% if job['city'] %} · {{ job['city'] }}{% endif %}{% if job['org'] %} · {{ job['org'] }}{% endif %}</span>
   <span class="acts">
     {% if bulk_mode %}
     {# 批量模式：acts 位留给勾选提示，避免误触行内操作 #}
     {% elif job['aid'] %}
     <form class="inline" method="post" action="/applications/{{ job['aid'] }}/remove"
           title="取消跟踪（岗位回到未跟踪状态）">
-      <button class="mini plain">取消跟踪</button>
+      <button class="mini plain" data-i18n="row_unfollow" title="取消跟踪（岗位回到未跟踪状态）" data-i18n-title="t_unfollow">取消跟踪</button>
     </form>
     {% else %}
     <form class="inline" method="post" action="/jobs/{{ job['id'] }}/apply">
-      <button class="mini" title="加入投递跟踪（不用进详情页）">跟踪</button>
+      <button class="mini" data-i18n="row_follow" title="加入投递跟踪（不用进详情页）" data-i18n-title="t_follow">跟踪</button>
     </form>
     {% endif %}
     <a class="icon" href="{{ job['url'] }}" target="_blank" rel="noopener"
-       title="打开原文（{{ job['source_slug'] }}）">↗</a>
+       title="打开原文（{{ job['source_slug'] }}）" data-i18n-title="t_open" data-i18n-args='{{ {"s": job["source_slug"]}|tojson }}'>↗</a>
     <form class="inline" method="post" action="/jobs/{{ job['id'] }}/status">
       <input type="hidden" name="status" value="{{ 'new' if job['status'] == 'archived' else 'archived' }}">
-      <button class="icon danger" title="{{ '恢复' if job['status'] == 'archived' else '归档（归档后可在筛选「已归档」里找回）' }}">{{ '↺' if job['status'] == 'archived' else '×' }}</button>
+      <button class="icon danger" title="{{ '恢复' if job['status'] == 'archived' else '归档（归档后可在筛选「已归档」里找回）' }}" data-i18n-title="{{ 'k_restore' if job['status'] == 'archived' else 't_archive' }}">{{ '↺' if job['status'] == 'archived' else '×' }}</button>
     </form>
   </span>
 </div>

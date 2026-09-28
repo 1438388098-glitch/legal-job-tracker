@@ -1,8 +1,11 @@
 {% extends "base.html" %}
+{% set st_keys = ['as_todo', 'as_sent', 'as_exam', 'as_iv', 'as_offer', 'as_rej'] %}
+{% block tkey %}title_detail{% endblock %}
+{% block targs %}{{ {"t": job["title"]}|tojson }}{% endblock %}
 {% block title %}{{ job['title'] }} · 法学招聘信息中台{% endblock %}
 {% block content %}
 <div class="page-head">
-  <a class="nav-a" href="{{ back_url or '/' }}">← 岗位列表</a>
+  <a class="nav-a" href="{{ back_url or '/' }}" data-i18n="back_list">← 岗位列表</a>
   <span class="spacer"></span>
   <span class="meta">#{{ job['id'] }}</span>
 </div>
@@ -12,75 +15,76 @@
   <div class="detail-meta">
     {% if job['deadline'] %}
     <span class="{{ job['deadline']|dcolor }}">
-      <span class="k">截止</span> {{ job['deadline'] }}{{ job['deadline']|dleft }}
+      <span class="k" data-i18n="k_deadline">截止</span> {{ job['deadline'] }}{{ job['deadline']|dleft }}
     </span>
     {% endif %}
-    <span class="type t-{{ job['job_type'] }}"><i></i>{{ dict(job_types).get(job['job_type'], job['job_type']) }}</span>
-    {% if job['org'] %}<span><span class="k">单位</span> {{ job['org'] }}</span>{% endif %}
-    {% if job['city'] %}<span><span class="k">城市</span> {{ job['city'] }}</span>{% endif %}
-    {% if job['publish_date'] %}<span><span class="k">发布</span> {{ job['publish_date'] }}</span>{% endif %}
-    <span><span class="k">性质</span> {{ dict(notice_kinds).get(job['notice_kind'], job['notice_kind']) }}</span>
+    <span class="type t-{{ job['job_type'] }}"><i></i><span data-i18n="{{ 'jt_' + job['job_type'] }}">{{ dict(job_types).get(job['job_type'], job['job_type']) }}</span></span>
+    {% if job['org'] %}<span><span class="k" data-i18n="k_org">单位</span> {{ job['org'] }}</span>{% endif %}
+    {% if job['city'] %}<span><span class="k" data-i18n="h_city">城市</span> {{ job['city'] }}</span>{% endif %}
+    {% if job['publish_date'] %}<span><span class="k" data-i18n="k_pub">发布</span> {{ job['publish_date'] }}</span>{% endif %}
+    <span><span class="k" data-i18n="k_kind">性质</span> <span data-i18n="{{ 'nk_' + job['notice_kind'] }}">{{ dict(notice_kinds).get(job['notice_kind'], job['notice_kind']) }}</span></span>
     {% if match %}
     <span class="match-chip {% if match['score'] >= 60 %}hi{% elif match['score'] >= 40 %}mid{% endif %}"
-          title="{{ match['reasons']|join('；') if match['reasons'] else '与画像关联较弱' }}">
+          {% if match['reasons'] %}title="{{ match['reasons']|join('；') }}"{% else %}title="与画像关联较弱" data-i18n-title="weak_match"{% endif %}
+          data-i18n="match_chip" data-i18n-args='{{ {"n": match["score"]}|tojson }}'>
       匹配 {{ match['score'] }}</span>
     {% endif %}
-    <span><span class="k">状态</span> {{ job['status'] }}</span>
-    {% if job['merge_count'] > 1 %}<span><span class="k">合并</span> {{ job['merge_count'] }} 个来源</span>{% endif %}
-    <span><span class="k">收录</span> {{ job['created_at'] }}</span>
+    <span><span class="k" data-i18n="k_status">状态</span> {{ job['status'] }}</span>
+    {% if job['merge_count'] > 1 %}<span><span class="k" data-i18n="k_merge">合并</span> <span data-i18n="n_sources" data-i18n-args='{{ {"n": job["merge_count"]}|tojson }}'>{{ job['merge_count'] }} 个来源</span></span>{% endif %}
+    <span><span class="k" data-i18n="k_added">收录</span> {{ job['created_at'] }}</span>
   </div>
   <div class="detail-actions">
     {% if app_row %}
-    <span class="muted">投递状态：{{ app_row['status'] }}</span>
-    <a class="btn" href="/board">去看板管理</a>
+    <span class="muted"><span data-i18n="act_status">投递状态：</span><span data-i18n="{{ st_keys[app_statuses.index(app_row['status'])] if app_row['status'] in app_statuses else '' }}">{{ app_row['status'] }}</span></span>
+    <a class="btn" href="/board" data-i18n="act_view_board">去看板管理</a>
     {% else %}
     <form class="inline" method="post" action="/jobs/{{ job['id'] }}/apply">
-      <button class="primary" type="submit">加入投递跟踪</button>
+      <button class="primary" type="submit" data-i18n="act_track">加入投递跟踪</button>
     </form>
     {% endif %}
     {% if job['status'] != 'read' %}
     <form class="inline" method="post" action="/jobs/{{ job['id'] }}/status">
-      <input type="hidden" name="status" value="read"><button type="submit">标记已读</button>
+      <input type="hidden" name="status" value="read"><button type="submit" data-i18n="act_mark_read">标记已读</button>
     </form>
     {% endif %}
-    <a class="btn" href="/jobs/{{ job['id'] }}/edit">修改字段</a>
+    <a class="btn" href="/jobs/{{ job['id'] }}/edit" data-i18n="act_edit">修改字段</a>
     <form class="inline" method="post" action="/jobs/{{ job['id'] }}/status">
       <input type="hidden" name="status" value="{{ 'new' if job['status'] == 'archived' else 'archived' }}">
-      <button type="submit">{{ '恢复' if job['status'] == 'archived' else '归档' }}</button>
+      <button type="submit" data-i18n="{{ 'k_restore' if job['status'] == 'archived' else 'k_archive' }}">{{ '恢复' if job['status'] == 'archived' else '归档' }}</button>
     </form>
   </div>
 </div>
 
 <dl class="kv">
-  <dt>原文</dt>
+  <dt data-i18n="k_orig">原文</dt>
   <dd>
     {% for s in sources %}
     <a href="{{ s['url'] }}" target="_blank" rel="noopener">{{ s['url'] }}</a>{% if not loop.last %}<br>{% endif %}
     {% endfor %}
   </dd>
-  <dt>来源</dt>
+  <dt data-i18n="k_srcs">来源</dt>
   <dd>{% for s in sources %}{{ s['source_slug'] }}{% if not loop.last %} · {% endif %}{% endfor %}</dd>
   {% if job['notes'] %}
-  <dt>备注</dt><dd>{{ job['notes'] }}</dd>
+  <dt data-i18n="k_notes">备注</dt><dd>{{ job['notes'] }}</dd>
   {% endif %}
 </dl>
 
 {% if snap %}
 <div class="section">
-  <h2>正文快照（本地存档）</h2>
+  <h2 data-i18n="snap_h">正文快照（本地存档）</h2>
   {% if snap.key %}
   <div class="snap-key">
-    <div class="snap-key-h">关键信息</div>
+    <div class="snap-key-h" data-i18n="snap_key_h">关键信息</div>
     {% for k in snap.key %}<div class="snap-key-line">{{ k }}</div>{% endfor %}
   </div>
   {% endif %}
   <div class="snap-doc">{{ snap.html|safe }}</div>
   <details class="snap-raw">
-    <summary>原始文本</summary>
+    <summary data-i18n="snap_raw">原始文本</summary>
     <pre class="snap">{{ snapshot_text }}</pre>
   </details>
 </div>
 {% else %}
-<p class="muted">没有正文快照（该源未抓详情，或抓取时失败）。原文链接见上。</p>
+<p class="muted" data-i18n="snap_none">没有正文快照（该源未抓详情，或抓取时失败）。原文链接见上。</p>
 {% endif %}
 {% endblock %}

@@ -1,23 +1,24 @@
 {% extends "base.html" %}
+{% set st_keys = ['as_todo', 'as_sent', 'as_exam', 'as_iv', 'as_offer', 'as_rej'] %}
 {% block content %}
 <div class="page-head">
-  <h1>投递看板</h1>
-  <span class="meta">共 {{ cols.values()|map('length')|sum }} 个在跟</span>
+  <h1 data-i18n="board_h">投递看板</h1>
+  <span class="meta" data-i18n="board_count" data-i18n-args='{{ {"n": cols.values()|map("length")|sum}|tojson }}'>共 {{ cols.values()|map('length')|sum }} 个在跟</span>
   <span class="spacer"></span>
-  <span class="meta">← 退回上一步 · 填备注后推进到下一步</span>
+  <span class="meta" data-i18n="board_help">← 退回上一步 · 填备注后推进到下一步</span>
 </div>
 
 <div class="board">
 {% set total = cols.values()|map('length')|sum %}
 {% if total == 0 %}
 <div class="empty board-empty">
-  还没有在跟的投递。打开任意岗位详情页点「加入投递跟踪」，就会出现在这里；
-  之后每推进一步（投递 → 笔试 → 面试 → Offer）在这里更新状态并记备注。
+  <span data-i18n="board_empty_1">还没有在跟的投递。打开任意岗位详情页点「加入投递跟踪」，就会出现在这里；</span>
+  <span data-i18n="board_empty_2">之后每推进一步（投递 → 笔试 → 面试 → Offer）在这里更新状态并记备注。</span>
 </div>
 {% endif %}
 {% for status, rows in cols.items() %}
   <div class="col">
-    <h2><span>{{ status }}</span><span class="count">{{ rows|length }}</span></h2>
+    <h2><span data-i18n="{{ st_keys[app_statuses.index(status)] }}">{{ status }}</span><span class="count">{{ rows|length }}</span></h2>
     <div class="col-body">
       {% set idx = app_statuses.index(status) %}
       {% for r in rows %}
@@ -32,18 +33,18 @@
           <form class="inline" method="post" action="/applications/{{ r['aid'] }}/status">
             <input type="hidden" name="status" value="{{ app_statuses[idx-1] }}">
             <input type="hidden" name="note" value="">
-            <button class="icon" title="退回 {{ app_statuses[idx-1] }}">←</button>
+            <button class="icon" title="退回 {{ app_statuses[idx-1] }}" data-i18n-title="{{ 'prev_' ~ (idx-1) }}">←</button>
           </form>
           {% endif %}
           {% if idx < app_statuses|length - 1 %}
           <form class="inline ops-next" method="post" action="/applications/{{ r['aid'] }}/status">
             <input type="hidden" name="status" value="{{ app_statuses[idx+1] }}">
-            <input type="text" name="note" placeholder="备注">
-            <button class="primary nowrap" type="submit">{{ app_statuses[idx+1] }} →</button>
+            <input type="text" name="note" placeholder="备注" data-i18n-ph="ph_note">
+            <button class="primary nowrap" type="submit" data-i18n="{{ 'next_' ~ (idx+1) }}">{{ app_statuses[idx+1] }} →</button>
           </form>
           {% endif %}
         </div>
-        {% if r['notes'] %}<div class="meta" style="margin-top:3px">备注：{{ r['notes'] }}</div>{% endif %}
+        {% if r['notes'] %}<div class="meta" style="margin-top:3px"><span data-i18n="pfx_note">备注：</span>{{ r['notes'] }}</div>{% endif %}
       </div>
       {% endfor %}
       {% if not rows %}<div class="meta" style="padding:6px 4px">—</div>{% endif %}
