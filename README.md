@@ -8,6 +8,14 @@ A **legal-job collector and application tracker** that runs on your own computer
 - No Node / frontend build chain; one command to start
 - Collectors are driven by "config + selectors": when an official site redesigns, you edit config, not code
 
+## Screenshots
+
+Job list — the overview stats bar (actionable / closing in 3 or 7 days / fresh today / no deadline), the filter row, and per-row urgency bars with deadline coloring:
+
+![Job list page (demo data)](docs/screenshots/jobs-list.png)
+
+> The screenshot uses **self-written demo data only** (five fictional postings titled with "demo"); no real postings or personal application records are included.
+
 ---
 
 ## Quick start
