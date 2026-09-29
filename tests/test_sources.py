@@ -1,7 +1,9 @@
-"""以真实录制的列表页 fixture 校验 13 个源的选择器配置。
+"""以真实录制的列表页 fixture 校验 27 个 html 源的选择器配置。
 
-fixture 由 scripts/sync_fixtures.py 录制；选择器由 scripts/probe_sources.py
-与 scripts/peek.py 对照真实页面校准。任何源改版导致选择器失效时，本测试会失败。
+33 个源中其余 6 个非 html 源（frontpage/zuel/ggfw/hotjob/swupl）由各自专属测试覆盖
+（如 test_zuel.py）。fixture 由 scripts/sync_fixtures.py 录制；选择器由
+scripts/probe_sources.py 与 scripts/peek.py 对照真实页面校准。
+任何源改版导致选择器失效时，本测试会失败。
 """
 from datetime import date
 from pathlib import Path

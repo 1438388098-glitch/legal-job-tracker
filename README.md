@@ -265,7 +265,7 @@ scripts/
   contrast_check.py    Verify both themes' palette contrast (WCAG AA)
   dev_shots.py         Batch screenshots to check visuals (can force light/dark)
   png_probe.py / png_crop.py  Sample/crop screenshots without installing Pillow, to verify colors really took effect
-tests/                 192 tests, including real-page fixture regression for all 33 sources
+tests/                 192 tests, including real-page fixture regression for 32 of the 33 sources (ggfw_gq fixture pending)
 docs/
   source-registry.md                     Full source list and domain traps
   iterations.md                          Iteration log (7 rounds, each with research/execution/verification)
@@ -285,7 +285,7 @@ docs/
 
 ## Known tradeoffs
 
-1. **Selector drift**: a site redesign can break one source's parsing — `tests/test_sources.py` runs fixture regression on real pages and `/health` shows source health. Each of the 33 sources has a page recorded in 2026-09; after a redesign this fails first, prompting recalibration.
+1. **Selector drift**: a site redesign can break one source's parsing — `tests/test_sources.py` runs fixture regression on real pages and `/health` shows source health. 32 of the 33 sources have a page recorded in 2026-09 (ggfw_gq fixture pending); after a redesign this fails first, prompting recalibration.
 2. **Shenzhen HR runs over http**: its https handshake fails under this machine's OpenSSL 3 (BAD_ECPOINT), so the config forces a downgrade with `url_scheme: "http"`.
 3. **Provincial procuratorate needs gb2312**: configured with `encoding: "gb2312"` + http downgrade.
 4. **JS-rendered sites** (Shenzhen/Guangzhou intermediate courts, Dongguan bar association, China Southern Power Grid, etc.) are out of scope for now; coverage comes from upstream aggregation sources (Guangdong courts site / provincial HR dept) and the paste box.
@@ -307,7 +307,7 @@ docs/
 ```
 
 - Unit tests: dedup (including 3 classes of false-merge regression + short-title-with-org merges), date parsing (including deadline-year anchoring), classification (including org extraction, employment type, long-term, and source-level config injection regressions), storage, HTTP retry strategy, resume parsing and match scoring, snapshot structuring (key-info card / section headings / HTML escaping), web routes and filters (including synonyms, bulk operations, filters-preserved-on-return, auto-mark-read), export
-- Fixture regression: each of the 33 sources has a real recorded page, verifying the selectors still parse items
+- Fixture regression: 32 of the 33 sources have a real recorded page (ggfw_gq fixture pending), verifying the selectors still parse items
 - Fixture recording time: 2026-09 (tests use a fixed baseline date, so they don't decay as real dates move)
 
 ---
